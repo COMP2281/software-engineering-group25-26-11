@@ -1,0 +1,61 @@
+
+Library/Bee/artifacts/Android/d8kzr/libil2cpp.so
+Library/ArtifactDB
+Library/Bee/artifacts/Android/il2cppOutput/build/arm64-v8a/libil2cpp.dbg.so
+Library/Bee/artifacts/objcopy_5lmi/libil2cpp.dbg.so
+Library/PackageCache/com.unity.burst@1.8.7/.Runtime/libburst-llvm-15.dylib
+Temp/
+
+*.exr
+*.hdr
+Assets/Samples/
+
+[LFS cleanup]
+*.exr
+*.hdr
+*.tga
+*.psd
+
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Bb]uild/
+[Bb]uilds/
+[Oo]bj/
+[Ll]ogs/
+MemoryCaptures/
+UserSettings/
+Apk/
+
+# Visual Studio / Rider
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+
+# Crash and debug files
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+
+# Backup files
+*.bak
+*.old
+
+# Unity Cloud Build
+/[Cc]ache/
+
+# LFS hint (if needed later)
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.fbx filter=lfs diff=lfs merge=lfs -text
+
+
+ Apk/Taichi and Lacquer Paint_BackUpThisFolder_ButDontShipItWithYourGame/GameAssembly.pdb
