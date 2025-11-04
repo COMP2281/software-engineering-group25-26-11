@@ -21,3 +21,6 @@ A:
 
 Q: Can you assist with our using the code you have provided **INSERT SPECIFIC QUESTION HERE**?
 A: 
+
+Q: What does breath interaction mean? Does it refer to tellin us when to inhale/exhale or if our breathing should affect the oil painting itself?
+A:
