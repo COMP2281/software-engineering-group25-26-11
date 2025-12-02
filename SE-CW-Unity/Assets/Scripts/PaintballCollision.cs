@@ -32,7 +32,11 @@ public class PaintballCollision : MonoBehaviour
             Debug.Log("Paintball entered water trigger: " + other.name);
             SpawnPaintOnWater();
             StartCoroutine(RespawnPaintball());
+        } else if (other.CompareTag("Barrier")) {
+            Debug.Log("Paintball left boundaries: " + other.name);
+            StartCoroutine(RespawnPaintball());
         }
+        
     }
 
     void SpawnPaintOnWater()
