@@ -1452,6 +1452,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 667191799}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &149078308
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 149078310}
+  - component: {fileID: 149078309}
+  m_Layer: 0
+  m_Name: StartModeController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &149078309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 149078308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3a0f3020a5465b40ac6613ea1bddb4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiManager: {fileID: 1104625333}
+  paintballManager: {fileID: 1555851431}
+  startInPaintingMode: 0
+  defaultColorButtons:
+  - {fileID: 126468558}
+  - {fileID: 245247791}
+  - {fileID: 1862202470}
+  - {fileID: 1879708340}
+--- !u!4 &149078310
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 149078308}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 30.85202, y: -66.53299, z: 88.38062}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &152111351 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4616165200164398447, guid: 76f3439a0ae796e4b81bee3f91f888ee,
@@ -20814,29 +20866,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e9813c68d7d6f44282ace8bd2d1fd46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UseOptimizedControls: 0
-  m_LeftHandMesh: {fileID: 1508879670}
-  m_RightHandMesh: {fileID: 1508879669}
-  m_HandMeshMaterial: {fileID: 2100000, guid: 6ee6561ebf75a4b15857523107eae6bd, type: 2}
-  m_DrawMeshes: 1
-  m_DebugDrawPrefab: {fileID: 6507399986997092475, guid: 254b742d65a15d14b9df756ae77de868,
-    type: 3}
-  m_DebugDrawJoints: 1
-  m_VelocityPrefab: {fileID: 8538602047018081646, guid: 629fd7882ec6bfc499a5fcf20035282b,
-    type: 3}
-  m_VelocityType: 2
---- !u!1 &1508879669 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 109181983709556962, guid: fe72fd31c72aac74fa838329f11d5d03,
-    type: 3}
-  m_PrefabInstance: {fileID: 1508879666}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1508879670 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2311389069919823739, guid: fe72fd31c72aac74fa838329f11d5d03,
-    type: 3}
-  m_PrefabInstance: {fileID: 1508879666}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1527398518
 GameObject:
   m_ObjectHideFlags: 0
@@ -24827,3 +24856,4 @@ SceneRoots:
   - {fileID: 708920881}
   - {fileID: 1790746654}
   - {fileID: 1481660086}
+  - {fileID: 149078310}
