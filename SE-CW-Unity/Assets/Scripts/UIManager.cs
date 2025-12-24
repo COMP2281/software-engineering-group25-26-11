@@ -8,7 +8,7 @@ public class UIManager : MonoBehaviour
 
     public PaintballManager paintballManager; //  Assign this in the Inspector
 
-    void Start()
+    public void SetInitialState()
     {
         colorPalettePanel.SetActive(true);
         submitClothButton.SetActive(true);
@@ -29,6 +29,7 @@ public class UIManager : MonoBehaviour
 
         if (paintballManager != null)
         {
+            paintballManager.GeneratePaintballs();
             paintballManager.EnableAllPaintballPhysics(); //  Activate paintball physics
         }
         else
