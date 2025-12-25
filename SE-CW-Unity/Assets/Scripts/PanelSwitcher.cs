@@ -10,4 +10,10 @@ public class PanelSwitcher : MonoBehaviour
         colorSelectionPanel.SetActive(false);
         paintingExperiencePanel.SetActive(true);
     }
+
+    public void ShowColorSelectionPanel()
+    {
+        colorSelectionPanel.SetActive(true);
+        paintingExperiencePanel.SetActive(false);
+    }
 }
