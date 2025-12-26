@@ -14,6 +14,7 @@ public class Paintball : MonoBehaviour
     {
         if (other.CompareTag("Water"))
         {
+            if (Accuracy.Instance != null) Accuracy.Instance.RegisterHit();
             other.GetComponent<WaterSimulation>().AddPaint(transform.position, paintColor);
             Destroy(gameObject);
         }
