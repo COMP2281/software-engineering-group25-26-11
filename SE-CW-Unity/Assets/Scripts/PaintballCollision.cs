@@ -74,8 +74,28 @@ public class PaintballCollision : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(faceDir);
 
         GameObject paint = Instantiate(paintOnWaterPrefab, spawnPos + faceDir * yOffset, rotation);
-        paint.transform.localScale = Vector3.one * 0.3f;
+
+        // 1) Parent under WaterCube, keeping current world pose
+        paint.transform.SetParent(waterSurface, true);
+
+        // 2) Now force a uniform world scale (e.g. 0.3 units)
+        float targetWorldSize = 0.3f;
+
+        // current world scale after parenting (already includes WaterCube rotation/scale)
+        Vector3 currentWorld = paint.transform.lossyScale;
+
+        // compute the factor needed on localScale to reach targetWorldSize
+        Vector3 local = paint.transform.localScale;
+        paint.transform.localScale = new Vector3(
+            local.x * (targetWorldSize / currentWorld.x),
+            local.y * (targetWorldSize / currentWorld.y),
+            local.z * (targetWorldSize / currentWorld.z)
+        );
+
         paint.tag = "OilPaint";
+
+
+
 
         Renderer paintRend = paint.GetComponent<Renderer>();
         if (paintRend != null)
@@ -93,15 +113,16 @@ public class PaintballCollision : MonoBehaviour
 
     IEnumerator AnimatePaintExpansionWithPush(Transform paint, float finalScale, float duration)
     {
-        float startScale = paint.localScale.x;
+        float startScale = paint.localScale.x;   // use as reference, but don't overwrite scale
         float time = 0f;
 
         while (time < duration)
         {
             time += Time.deltaTime;
             float t = time / duration;
+
+            // Use a radius based on the original scale, not by changing paint.localScale
             float currentScale = Mathf.Lerp(startScale, finalScale, t);
-            paint.localScale = Vector3.one * currentScale;
 
             Collider[] others = Physics.OverlapSphere(paint.position, currentScale * 3f);
             foreach (Collider col in others)
@@ -128,8 +149,10 @@ public class PaintballCollision : MonoBehaviour
             yield return null;
         }
 
-        paint.localScale = Vector3.one * finalScale;
+        // Do NOT override the final scale; keep whatever SpawnPaintOnWater set
+        // paint.localScale = Vector3.one * finalScale;
     }
+
 
     Vector3 ClampInsideCube(Vector3 pos, Vector3 cubeCenter, Vector3 cubeSize, float margin)
     {
@@ -147,28 +170,39 @@ public class PaintballCollision : MonoBehaviour
         );
     }
 
+    // just make it spawn on the front face
     Vector3 GetClosestAxisAlignedNormal(Vector3 direction)
     {
-        Vector3[] normals = {
-            Vector3.right, Vector3.left,
-            Vector3.up, Vector3.down,
-            Vector3.forward, Vector3.back
-        };
-
-        Vector3 closest = normals[0];
-        float maxDot = Vector3.Dot(direction, closest);
-
-        for (int i = 1; i < normals.Length; i++)
-        {
-            float dot = Vector3.Dot(direction, normals[i]);
-            if (dot > maxDot)
-            {
-                maxDot = dot;
-                closest = normals[i];
-            }
-        }
-        return closest;
+        // Use the WaterCube's visual front face after a +90° X rotation.
+        // If your cube is rotated -90° instead, flip the sign.
+        return -waterSurface.up;
+        // or waterSurface.up;  // try this if the normal points the wrong way
     }
+
+
+
+    //Vector3 GetClosestAxisAlignedNormal(Vector3 direction)
+    //{
+    //    Vector3[] normals = {
+    //        Vector3.right, Vector3.left,
+    //        Vector3.up, Vector3.down,
+    //        Vector3.forward, Vector3.back
+    //    };
+
+    //    Vector3 closest = normals[0];
+    //    float maxDot = Vector3.Dot(direction, closest);
+
+    //    for (int i = 1; i < normals.Length; i++)
+    //    {
+    //        float dot = Vector3.Dot(direction, normals[i]);
+    //        if (dot > maxDot)
+    //        {
+    //            maxDot = dot;
+    //            closest = normals[i];
+    //        }
+    //    }
+    //    return closest;
+    //}
 
     IEnumerator RespawnPaintball()
     {

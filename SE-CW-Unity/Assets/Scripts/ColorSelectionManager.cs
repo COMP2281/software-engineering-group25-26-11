@@ -9,13 +9,17 @@ public class ColorSelectionManager : MonoBehaviour
     public Transform spawnBasePoint;
     public float ballSpacing = 0.5f;
 
+    [Header("Water")]
+    public Transform waterSurface;   // assign WaterCube from the scene in Inspector
+
     private int totalBallCount = 0;
 
     // Track used colors
     private HashSet<Color32> usedColors = new HashSet<Color32>();
 
     // Store original positions for respawn
-    public static Dictionary<Color32, Queue<Vector3>> colorToSpawnQueue = new Dictionary<Color32, Queue<Vector3>>();
+    public static Dictionary<Color32, Queue<Vector3>> colorToSpawnQueue =
+        new Dictionary<Color32, Queue<Vector3>>();
 
     public bool CanSpawn()
     {
@@ -26,11 +30,10 @@ public class ColorSelectionManager : MonoBehaviour
     {
         Color32 colorKey = (Color32)color;
 
-        //  Check for duplicates
+        // Check for duplicates
         if (usedColors.Contains(colorKey))
         {
             Debug.LogWarning($"Color {colorKey} has already been selected. Cannot select the same color again.");
-            // You can also trigger a UI popup here
             return;
         }
 
@@ -45,7 +48,7 @@ public class ColorSelectionManager : MonoBehaviour
         Vector3 spawnOffset = new Vector3(totalBallCount * ballSpacing, 0.2f, 0);
         Vector3 spawnPosition = spawnBasePoint.position + spawnOffset;
 
-        //  Create and color ball
+        // Create and color ball
         GameObject newBall = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
         newBall.name = $"Paintball_{colorKey}";
 
@@ -59,14 +62,25 @@ public class ColorSelectionManager : MonoBehaviour
             Debug.LogWarning("Spawned ball missing Renderer component.");
         }
 
-        //  Save position for respawn
+        // Inject WaterCube into the new ball
+        var collision = newBall.GetComponent<PaintballCollision>();
+        if (collision != null)
+        {
+            collision.waterSurface = waterSurface;
+        }
+        else
+        {
+            Debug.LogWarning("Spawned ball missing PaintballCollision component.");
+        }
+
+        // Save position for respawn
         if (!colorToSpawnQueue.ContainsKey(colorKey))
         {
             colorToSpawnQueue[colorKey] = new Queue<Vector3>();
         }
         colorToSpawnQueue[colorKey].Enqueue(spawnPosition);
 
-        //  Add color to used set
+        // Add color to used set
         usedColors.Add(colorKey);
         totalBallCount++;
 

@@ -14698,6 +14698,7 @@ MonoBehaviour:
     type: 3}
   spawnBasePoint: {fileID: 62322064}
   ballSpacing: 0.5
+  waterSurface: {fileID: 1297503606}
 --- !u!4 &963904579
 Transform:
   m_ObjectHideFlags: 0
@@ -28149,8 +28150,7 @@ PrefabInstance:
         type: 3}
       propertyPath: waterSurface
       value: 
-      objectReference: {fileID: 5281227007351242407, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
-        type: 3}
+      objectReference: {fileID: 1297503606}
     - target: {fileID: 1645496540768573153, guid: e5ea5eaec8b838946a48b59a2e399938,
         type: 3}
       propertyPath: dissolveFXPrefab

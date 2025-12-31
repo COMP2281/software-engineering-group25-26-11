@@ -312,8 +312,7 @@ MonoBehaviour:
   paintballPrefab: {fileID: 6497404434841896049}
   paintOnWaterPrefab: {fileID: 2862489268302902330, guid: 8bcc648b1b336fb47a88cbca2aa0881c,
     type: 3}
-  waterSurface: {fileID: 5281227007351242407, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
-    type: 3}
+  waterSurface: {fileID: 0}
   yOffset: 0.01
 --- !u!114 &-5265812744950701298
 MonoBehaviour:
