@@ -6,7 +6,7 @@ using UnityEngine.XR;
 public class HandPresence : MonoBehaviour
 {
     public InputDeviceCharacteristics controllerCharacteristics;    
-    private InputDevice targetDevice;
+    public InputDevice targetDevice;
     public Animator handAnimator;
 
     void Start()
