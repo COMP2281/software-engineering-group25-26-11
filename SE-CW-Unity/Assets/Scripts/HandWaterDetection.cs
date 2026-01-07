@@ -33,7 +33,7 @@ public class HandWaterDetector : MonoBehaviour
             // Automatically add an AudioSource if one is missing
             audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 0.0f; // Make sound 3D (coming from the hand)
+            audioSource.spatialBlend = 1.0f; // Make sound 3D (coming from the hand)
         }
     }
 
