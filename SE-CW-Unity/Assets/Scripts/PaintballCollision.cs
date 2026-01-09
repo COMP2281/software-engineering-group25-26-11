@@ -217,7 +217,7 @@ public class PaintballCollision : MonoBehaviour
             paintColor = rend.material.color;
         }
 
-        yield return new WaitForSeconds(0.5f);
+        // yield return new WaitForSeconds(0.5f);
 
         Vector3 spawnPos = Vector3.zero;
         bool hasSpawnPos = false;
@@ -248,5 +248,6 @@ public class PaintballCollision : MonoBehaviour
         }
 
         Destroy(gameObject);
+        yield break;
     }
 }
