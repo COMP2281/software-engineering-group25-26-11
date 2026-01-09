@@ -12,6 +12,9 @@ public class PaintballCollision : MonoBehaviour
     private Transform safeRespawnPoint;
     private bool isDissolving = false;
 
+    public float minY = -20f;   // if ball falls below this, respawn
+
+
     void Start()
     {
         GameObject respawnObj = GameObject.Find("PaintballRespawnPoint");
@@ -24,6 +27,31 @@ public class PaintballCollision : MonoBehaviour
             Debug.LogError("PaintballRespawnPoint not found in the scene.");
         }
     }
+
+
+        void Update()
+    {
+        // Only do the check if we have a respawn point
+        if (safeRespawnPoint == null) return;
+
+        // If ball fell below the threshold, teleport it back
+        if (transform.position.y < minY)
+        {
+            transform.position = safeRespawnPoint.position;
+            transform.rotation = safeRespawnPoint.rotation;
+
+            // Reset physics so it doesn't keep falling
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            Debug.Log("PaintballCollision: fell below minY, teleported to safeRespawnPoint");
+        }
+    }
+
 
     void OnTriggerEnter(Collider other)
     {

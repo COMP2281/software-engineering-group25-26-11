@@ -314,6 +314,7 @@ MonoBehaviour:
     type: 3}
   waterSurface: {fileID: 0}
   yOffset: 0.01
+  minY: -20
 --- !u!114 &-5265812744950701298
 MonoBehaviour:
   m_ObjectHideFlags: 0
