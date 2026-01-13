@@ -1,5 +1,26 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/B06_mcpV)
 
+## What has been done?
+- Menu to make easier to navigate:
+    - Switch between choosing paint and painting canvas
+    - Make the environment transparent/coloured to make it easier to edit
+    - Flip the board to make the paint balls behave differently
+- Colour pallette 
+    - Can choose the colour of the paintballs (using mouse clicks)
+- Fixes to code:
+    - Oil paints no longer change scaling
+    - Connected the correct scripts to the prefabs on new instance
+    - Made the oilpaints children of the water surface when spawned in 
+    - Paintballs respawn even when falling through the floor
+    - Paintballs disappear properly
+- Accuracy of the paintballs hitting the water surface
+    - Little panel to show you your accuracy
+
+
+
+
+
+
 
 ## Key takeaways from Wilson
 - There is a lot of unused code in the game: ColorPickerCanvas/Panel_ColourSelection, Submit/Visuals/Submit Text, OilPaint, new right and left controller stuff, respawn point
