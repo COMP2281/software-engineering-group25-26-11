@@ -8,49 +8,37 @@ public class ShellRelease : MonoBehaviour
 
     private void Start()
     {
-        // Inside the shell: mini balls have no active physics
         foreach (Transform child in transform)
         {
             Rigidbody rb = child.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                rb.isKinematic = true;   // follows parent, no forces
-                rb.useGravity = false;   // no gravity while inside
+                rb.isKinematic = true;
+                rb.useGravity = false;
             }
 
             Collider col = child.GetComponent<Collider>();
             if (col != null)
             {
-                col.enabled = false;     // no collisions while inside
+                col.enabled = false;
             }
         }
     }
 
-    // Use this if water has a normal (non-trigger) collider
-    private void OnTriggerEnter(Collision collision)
-    {
-        if (hasReleased) return;
-
-        if (collision.collider.CompareTag(waterTag))
-        {
-            ReleaseChildren();
-            hasReleased = true;
-        }
-    }
-
-    /*
-    // Use this instead if the water collider is set to "Is Trigger"
+    // MUST be Collider, not Collision
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Shell trigger with: " + other.name + " tag=" + other.tag);
+
         if (hasReleased) return;
 
         if (other.CompareTag(waterTag))
         {
+            Debug.Log("Hit water, releasing children");
             ReleaseChildren();
             hasReleased = true;
         }
     }
-    */
 
     private void ReleaseChildren()
     {
@@ -65,25 +53,21 @@ public class ShellRelease : MonoBehaviour
 
             if (rb != null)
             {
-                // Detach from shell
                 child.parent = null;
 
-                // Turn physics on
                 rb.isKinematic = false;
                 rb.useGravity = true;
 
-                // Optional random push so they spread out
                 Vector3 randomImpulse = Random.insideUnitSphere * 1.5f;
                 rb.AddForce(randomImpulse, ForceMode.Impulse);
             }
 
             if (col != null)
             {
-                col.enabled = true; // now they can collide with world
+                col.enabled = true;
             }
         }
 
-        // Destroy the shell after releasing the mini balls
         Destroy(gameObject);
     }
 }
