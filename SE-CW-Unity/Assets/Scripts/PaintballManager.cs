@@ -21,7 +21,13 @@ public class PaintballManager : MonoBehaviour
     {
         foreach (Color color in selectedColors)
         {
-            int count = paintballCounts[color];
+            // Skip if color is not in the paintballCounts dictionary
+            if (!paintballCounts.TryGetValue(color, out int count))
+            {
+                Debug.LogWarning($"PaintballManager: Color {color} not found in paintballCounts, skipping.");
+                continue;
+            }
+            
             for (int i = 0; i < count; i++)
             {
                 Vector3 position = paintballSpawnArea.position + new Vector3(0, 0, i * 0.2f);
