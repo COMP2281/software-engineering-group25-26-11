@@ -21,6 +21,11 @@ public class PaintballManager : MonoBehaviour
     {
         foreach (Color color in selectedColors)
         {
+            // Check if the color is actually in the dictionary before trying to use it
+            if (!paintballCounts.ContainsKey(color))
+            {
+                continue; // Skip to the next color
+            }
             int count = paintballCounts[color];
             for (int i = 0; i < count; i++)
             {
