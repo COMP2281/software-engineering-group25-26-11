@@ -14157,9 +14157,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 11500000, guid: 10fc61b00085d7e4fbc6cb76c2c4d0f0, type: 3}
-        m_TargetAssemblyTypeName: WaterCubeFlipper, Assembly-CSharp
-        m_MethodName: 
+      - m_Target: {fileID: 1104625336}
+        m_TargetAssemblyTypeName: DropPaintBall, Assembly-CSharp
+        m_MethodName: DropDefaultPaintball
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -15566,6 +15566,7 @@ GameObject:
   - component: {fileID: 1104625333}
   - component: {fileID: 1104625334}
   - component: {fileID: 1104625335}
+  - component: {fileID: 1104625336}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -15652,6 +15653,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waterCube: {fileID: 1297503606}
+--- !u!114 &1104625336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104625330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 147afd8af9743fe4ba7d6c714ceb9dc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  colorSelectionManager: {fileID: 963904578}
+  spawnPoint: {fileID: 2103049233}
+  defaultColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &1115011952
 GameObject:
   m_ObjectHideFlags: 0
@@ -24713,6 +24729,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e9813c68d7d6f44282ace8bd2d1fd46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_UseOptimizedControls: 0
+  m_LeftHandMesh: {fileID: 0}
+  m_RightHandMesh: {fileID: 0}
+  m_HandMeshMaterial: {fileID: 0}
+  m_DrawMeshes: 0
+  m_DebugDrawPrefab: {fileID: 0}
+  m_DebugDrawJoints: 0
+  m_VelocityPrefab: {fileID: 0}
+  m_VelocityType: 0
 --- !u!1 &1527398518
 GameObject:
   m_ObjectHideFlags: 0
