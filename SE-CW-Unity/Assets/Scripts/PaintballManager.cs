@@ -12,11 +12,6 @@ public class PaintballManager : MonoBehaviour
     
     private List<GameObject> allPaintballs = new List<GameObject>(); //  Keep track
 
-    void Start()
-    {
-        GeneratePaintballs();
-    }
-
     public void GeneratePaintballs()
     {
         foreach (Color color in selectedColors)
