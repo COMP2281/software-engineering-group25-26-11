@@ -50,8 +50,10 @@ public class Spawner2D : MonoBehaviour
 
 	float2[] SpawnInRegion(SpawnRegion region)
 	{
-		Vector2 centre = region.position;
+		// Centre is region offset + spawner object position
+		Vector2 centre = (Vector2)transform.position + region.position;
 		Vector2 size = region.size;
+
 		int i = 0;
 		Vector2Int numPerAxis = CalculateSpawnCountPerAxisBox2D(region.size, spawnDensity);
 		float2[] points = new float2[numPerAxis.x * numPerAxis.y];
@@ -62,7 +64,6 @@ public class Spawner2D : MonoBehaviour
 			{
 				float tx = x / (numPerAxis.x - 1f);
 				float ty = y / (numPerAxis.y - 1f);
-
 				float px = (tx - 0.5f) * size.x + centre.x;
 				float py = (ty - 0.5f) * size.y + centre.y;
 				points[i] = new float2(px, py);
@@ -72,6 +73,7 @@ public class Spawner2D : MonoBehaviour
 
 		return points;
 	}
+
 
 	static Vector2Int CalculateSpawnCountPerAxisBox2D(Vector2 size, float spawnDensity)
 	{
@@ -127,6 +129,7 @@ public class Spawner2D : MonoBehaviour
 			{
 				Gizmos.color = region.debugCol;
 				Gizmos.DrawWireCube((Vector2)transform.position + region.position, region.size);
+
 			}
 		}
 	}

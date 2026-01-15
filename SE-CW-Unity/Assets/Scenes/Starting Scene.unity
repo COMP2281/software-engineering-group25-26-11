@@ -14439,10 +14439,10 @@ MonoBehaviour:
   jitterStr: 0.03
   spawnRegions:
   - position: {x: 0, y: 0.66}
-    size: {x: 5, y: 4.39}
-    debugCol: {r: 0.9716981, g: 0.03116761, b: 0.03116761, a: 0}
-  showSpawnBoundsGizmos: 0
-  spawnParticleCount: 3584
+    size: {x: 1, y: 1}
+    debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
+  showSpawnBoundsGizmos: 1
+  spawnParticleCount: 169
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14461,16 +14461,16 @@ MonoBehaviour:
   gravity: 0
   gravityDir: {x: 0, y: -1}
   collisionDamping: 0.95
-  smoothingRadius: 2
+  smoothingRadius: 0.35
   targetDensity: 55
   pressureMultiplier: 500
   nearPressureMultiplier: 5
   viscosityStrength: 0.03
-  boundsSize: {x: 10, y: 4}
+  boundsSize: {x: 8.6, y: 3.4}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}
   interactionRadius: 2
-  interactionStrength: 90.9
+  interactionStrength: 90
   compute: {fileID: 7200000, guid: 1c77ce8de78fddb419ed2d15cae41af0, type: 3}
   spawner2D: {fileID: 865727573}
 --- !u!4 &882779412 stripped
@@ -30352,7 +30352,7 @@ PrefabInstance:
     - target: {fileID: 5281227007351242407, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1483
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5281227007351242407, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
         type: 3}
