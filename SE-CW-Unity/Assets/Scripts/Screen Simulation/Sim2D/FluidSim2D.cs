@@ -9,6 +9,11 @@ namespace Seb.Fluid2D.Simulation
 	public class FluidSim2D : MonoBehaviour
 	{
 		public event System.Action SimulationStepCompleted;
+		[Header("World Mapping")]
+		public Vector2 worldOffset;   // X/Y origin of the 2D sim in world space
+		public float worldScale = 1f; // Optional: scale sim units to world units
+		[Tooltip("Spawn initial particles at startup")]
+		public bool spawnOnStart = true;
 
 		[Header("Simulation Settings")]
 		public float timeScale = 1;
@@ -35,6 +40,7 @@ namespace Seb.Fluid2D.Simulation
 		public ComputeShader compute;
 
 		public Spawner2D spawner2D;
+		public ParticleDisplay2D particleDisplay;
 
 		// Buffers
 		public ComputeBuffer positionBuffer { get; private set; }
@@ -79,21 +85,32 @@ namespace Seb.Fluid2D.Simulation
 			Time.fixedDeltaTime = deltaTime;
 
 			spawnData = spawner2D.GetSpawnData();
-			numParticles = spawnData.positions.Length;
-			spatialHash = new SpatialHash(numParticles);
+			numParticles = spawnOnStart ? spawnData.positions.Length : 0;
+			int bufferCapacity = Mathf.Max(numParticles, 1);
+			spatialHash = new SpatialHash(bufferCapacity);
 
 			// Create buffers
-			positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-			predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
+			predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
+			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
+			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 
-			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
-			sortTarget_Velocity = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
+			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
+			sortTarget_Velocity = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 
 			// Set buffer data
-			SetInitialBufferData(spawnData);
+			if (spawnOnStart)
+			{
+				SetInitialBufferData(spawnData);
+			}
+			else
+			{
+				float2[] empty = new float2[bufferCapacity];
+				positionBuffer.SetData(empty);
+				predictedPositionBuffer.SetData(empty);
+				velocityBuffer.SetData(empty);
+			}
 
 			// Init compute
 			ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel, reorderKernel, copybackKernel);
@@ -183,6 +200,9 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetVector("obstacleSize", obstacleSize);
 			compute.SetVector("obstacleCentre", obstacleCentre);
 
+			compute.SetVector("worldOffset", new Vector4(worldOffset.x, worldOffset.y, 0f, 0f));
+        	compute.SetFloat("worldScale", worldScale);
+
 			compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(smoothingRadius, 8)));
 			compute.SetFloat("SpikyPow3ScalingFactor", 10 / (Mathf.PI * Mathf.Pow(smoothingRadius, 5)));
 			compute.SetFloat("SpikyPow2ScalingFactor", 6 / (Mathf.PI * Mathf.Pow(smoothingRadius, 4)));
@@ -235,6 +255,83 @@ namespace Seb.Fluid2D.Simulation
 				RunSimulationStep();
 				SetInitialBufferData(spawnData);
 			}
+
+			if (Input.GetKeyDown(KeyCode.P))
+			{
+				SpawnParticles(spawner2D.GetSpawnData(), Vector2.zero);
+			}
+		}
+
+		public void SpawnParticles(Spawner2D.ParticleSpawnData spawnData, Vector2 spawnOffsetLocal)
+		{
+			float2 offset = new float2(spawnOffsetLocal.x, spawnOffsetLocal.y);
+			int additionalCount = spawnData.positions.Length;
+			float2[] offsetPositions = new float2[additionalCount];
+			for (int i = 0; i < additionalCount; i++)
+			{
+				offsetPositions[i] = spawnData.positions[i] + offset;
+			}
+
+			// Store current particle data
+			var oldPositions = new float2[numParticles];
+			var oldVelocities = new float2[numParticles];
+			positionBuffer.GetData(oldPositions);
+			velocityBuffer.GetData(oldVelocities);
+
+			// Create new arrays with combined size
+			int newParticleCount = numParticles + additionalCount;
+			var allPositions = new float2[newParticleCount];
+			var allVelocities = new float2[newParticleCount];
+
+			// Copy old and new data
+			System.Array.Copy(oldPositions, allPositions, numParticles);
+			System.Array.Copy(offsetPositions, 0, allPositions, numParticles, additionalCount);
+			System.Array.Copy(oldVelocities, allVelocities, numParticles);
+			System.Array.Copy(spawnData.velocities, 0, allVelocities, numParticles, spawnData.velocities.Length);
+
+			// Release old buffers
+			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition);
+			spatialHash.Release();
+
+			// Update particle count and re-initialize buffers and spatial hash
+			numParticles = newParticleCount;
+			spatialHash = new SpatialHash(numParticles);
+
+			// Create new buffers
+			positionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			sortTarget_Velocity = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+
+			// Set data on new buffers
+			positionBuffer.SetData(allPositions);
+			predictedPositionBuffer.SetData(allPositions);
+			velocityBuffer.SetData(allVelocities);
+
+			// Re-bind all buffers to the compute shader
+			ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel, reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, predictedPositionBuffer, "PredictedPositions", externalForcesKernel, spatialHashKernel, densityKernel, pressureKernel, viscosityKernel, reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel, reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, densityBuffer, "Densities", densityKernel, pressureKernel, viscosityKernel);
+			ComputeHelper.SetBuffer(compute, spatialHash.SpatialIndices, "SortedIndices", spatialHashKernel, reorderKernel);
+			ComputeHelper.SetBuffer(compute, spatialHash.SpatialOffsets, "SpatialOffsets", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
+			ComputeHelper.SetBuffer(compute, spatialHash.SpatialKeys, "SpatialKeys", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_Position, "SortTarget_Positions", reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_PredicitedPosition, "SortTarget_PredictedPositions", reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_Velocity, "SortTarget_Velocities", reorderKernel, copybackKernel);
+
+			compute.SetInt("numParticles", numParticles);
+		}
+
+		public Vector2 WorldToSimLocal(Vector3 worldPos)
+		{
+			Transform anchor = particleDisplay != null ? particleDisplay.worldAnchor : null;
+			Vector3 local = anchor != null ? anchor.InverseTransformPoint(worldPos) : worldPos;
+			float scale = Mathf.Approximately(worldScale, 0f) ? 1f : worldScale;
+			return ((Vector2)local - worldOffset) / scale;
 		}
 
 
@@ -247,9 +344,18 @@ namespace Seb.Fluid2D.Simulation
 
 		void OnDrawGizmos()
 		{
+			// Determine the center for the gizmo
+			Vector3 gizmoCentre = transform.position;
+			if (particleDisplay != null && particleDisplay.worldAnchor != null)
+			{
+				gizmoCentre = particleDisplay.worldAnchor.position;
+			}
+			gizmoCentre += (Vector3)worldOffset;
+
+
 			Gizmos.color = new Color(0, 1, 0, 0.4f);
-			Gizmos.DrawWireCube(transform.position, boundsSize);
-			Gizmos.DrawWireCube(obstacleCentre, obstacleSize);
+			Gizmos.DrawWireCube(gizmoCentre, boundsSize * worldScale);
+			Gizmos.DrawWireCube(gizmoCentre + (Vector3)obstacleCentre, obstacleSize * worldScale);
 
 			if (Application.isPlaying)
 			{

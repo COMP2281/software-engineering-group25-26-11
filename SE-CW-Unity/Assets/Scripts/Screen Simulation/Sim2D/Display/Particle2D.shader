@@ -27,6 +27,12 @@ Shader "Instanced/Particle2D" {
 			SamplerState linear_clamp_sampler;
 			float velocityMax;
 
+			// NEW: anchor matrix
+			float4x4 _WorldAnchorMatrix;
+			// NEW: world mapping from sim space -> local anchor space
+			float4 _SimWorldOffset; // xy used
+			float _SimWorldScale;
+
 			struct v2f
 			{
 				float4 pos : SV_POSITION;
@@ -39,16 +45,23 @@ Shader "Instanced/Particle2D" {
 				float speed = length(Velocities[instanceID]);
 				float speedT = saturate(speed / velocityMax);
 				float colT = speedT;
-				
-				float3 centreWorld = float3(Positions2D[instanceID], 0);
-				float3 worldVertPos = centreWorld + mul(unity_ObjectToWorld, v.vertex * scale);
-				float3 objectVertPos = mul(unity_WorldToObject, float4(worldVertPos.xyz, 1));
 
+				// 2D sim position, mapped to local anchor space
+                float2 p2 = Positions2D[instanceID];
+                float2 mapped = p2 * _SimWorldScale + _SimWorldOffset.xy;
 
-				colT = 0.5;
+                // sim X/Y -> local X/Y (2D plane)
+                float3 localCentre = float3(mapped.x, mapped.y, 0);
+
+				// add quad vertex offset in local space
+				float3 localVertPos = localCentre + v.vertex.xyz * scale;
+
+				// local anchor space -> world
+				float4 worldPos = mul(_WorldAnchorMatrix, float4(localVertPos, 1));
+
 				v2f o;
 				o.uv = v.texcoord;
-				o.pos = UnityObjectToClipPos(objectVertPos);
+				o.pos = UnityWorldToClipPos(worldPos.xyz);
 				o.colour = ColourMap.SampleLevel(linear_clamp_sampler, float2(colT, 0.5), 0);
 
 				return o;

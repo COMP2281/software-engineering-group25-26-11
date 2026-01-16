@@ -50,8 +50,8 @@ public class Spawner2D : MonoBehaviour
 
 	float2[] SpawnInRegion(SpawnRegion region)
 	{
-		// Centre is region offset + spawner object position
-		Vector2 centre = (Vector2)transform.position + region.position;
+		// Centre is region offset (local space)
+		Vector2 centre = region.position;
 		Vector2 size = region.size;
 
 		int i = 0;
@@ -123,7 +123,7 @@ public class Spawner2D : MonoBehaviour
 
 	void OnDrawGizmos()
 	{
-		if (showSpawnBoundsGizmos && !Application.isPlaying)
+		if (showSpawnBoundsGizmos)
 		{
 			foreach (SpawnRegion region in spawnRegions)
 			{

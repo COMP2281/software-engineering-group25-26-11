@@ -14,6 +14,8 @@ namespace Seb.Fluid2D.Rendering
 		public int gradientResolution;
 		public float velocityDisplayMax;
 
+		[Header("Anchor")]
+	    public Transform worldAnchor; 
 		Material material;
 		ComputeBuffer argsBuffer;
 		Bounds bounds;
@@ -27,7 +29,7 @@ namespace Seb.Fluid2D.Rendering
 
 		void LateUpdate()
 		{
-			if (shader != null)
+			if (shader != null && sim != null && sim.numParticles > 0)
 			{
 				UpdateSettings();
 				Graphics.DrawMeshInstancedIndirect(mesh, 0, material, bounds, argsBuffer);
@@ -36,23 +38,29 @@ namespace Seb.Fluid2D.Rendering
 
 		void UpdateSettings()
 		{
-			
+			material.SetFloat("scale", scale);
+			material.SetFloat("velocityMax", velocityDisplayMax);
+
 			material.SetBuffer("Positions2D", sim.positionBuffer);
 			material.SetBuffer("Velocities", sim.velocityBuffer);
 			material.SetBuffer("DensityData", sim.densityBuffer);
 
-			ComputeHelper.CreateArgsBuffer(ref argsBuffer, mesh, sim.positionBuffer.count);
-			bounds = new Bounds(Vector3.zero, Vector3.one * 10000);
+			ComputeHelper.CreateArgsBuffer(ref argsBuffer, mesh, sim.numParticles);
+			Vector3 centre = worldAnchor != null ? worldAnchor.position : Vector3.zero;
+	    	bounds = new Bounds(centre, Vector3.one * 10000);
 
 			if (needsUpdate)
 			{
 				needsUpdate = false;
 				TextureFromGradient(ref gradientTexture, gradientResolution, colourMap);
 				material.SetTexture("ColourMap", gradientTexture);
-
-				material.SetFloat("scale", scale);
-				material.SetFloat("velocityMax", velocityDisplayMax);
 			}
+
+			// Pass transform info to shader (use identity if no anchor)
+			Matrix4x4 anchorMatrix = worldAnchor != null ? worldAnchor.localToWorldMatrix : Matrix4x4.identity;
+			material.SetMatrix("_WorldAnchorMatrix", anchorMatrix);
+			material.SetVector("_SimWorldOffset", new Vector4(sim.worldOffset.x, sim.worldOffset.y, 0f, 0f));
+			material.SetFloat("_SimWorldScale", sim.worldScale);
 		}
 
 		public static void TextureFromGradient(ref Texture2D texture, int width, Gradient gradient, FilterMode filterMode = FilterMode.Bilinear)
