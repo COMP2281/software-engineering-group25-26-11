@@ -150,6 +150,11 @@ namespace Seb.Fluid2D.Simulation
 
 		void RunSimulationFrame(float frameTime)
 		{
+			if (numParticles <= 0)
+			{
+				return;
+			}
+
 			float timeStep = frameTime / iterationsPerFrame;
 
 			UpdateSettings(timeStep);
@@ -163,6 +168,11 @@ namespace Seb.Fluid2D.Simulation
 
 		void RunSimulationStep()
 		{
+			if (numParticles <= 0)
+			{
+				return;
+			}
+
 			ComputeHelper.Dispatch(compute, numParticles, kernelIndex: externalForcesKernel);
 
 			RunSpatial();
@@ -175,6 +185,11 @@ namespace Seb.Fluid2D.Simulation
 
 		void RunSpatial()
 		{
+			if (numParticles <= 0)
+			{
+				return;
+			}
+
 			ComputeHelper.Dispatch(compute, numParticles, kernelIndex: spatialHashKernel);
 			spatialHash.Run();
 
