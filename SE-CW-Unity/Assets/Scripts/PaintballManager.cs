@@ -12,21 +12,17 @@ public class PaintballManager : MonoBehaviour
     
     private List<GameObject> allPaintballs = new List<GameObject>(); //  Keep track
 
-    void Start()
-    {
-        GeneratePaintballs();
-    }
-
     public void GeneratePaintballs()
     {
         foreach (Color color in selectedColors)
         {
-            // Check if the color is actually in the dictionary before trying to use it
-            if (!paintballCounts.ContainsKey(color))
+            // Skip if color is not in the paintballCounts dictionary
+            if (!paintballCounts.TryGetValue(color, out int count))
             {
-                continue; // Skip to the next color
+                Debug.LogWarning($"PaintballManager: Color {color} not found in paintballCounts, skipping.");
+                continue;
             }
-            int count = paintballCounts[color];
+            
             for (int i = 0; i < count; i++)
             {
                 Vector3 position = paintballSpawnArea.position + new Vector3(0, 0, i * 0.2f);
