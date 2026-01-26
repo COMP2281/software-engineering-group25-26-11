@@ -32,6 +32,8 @@ namespace Seb.Fluid2D.Simulation
 		public Vector2 obstacleCentre;
 
 		[Header("Interaction Settings")]
+		[Tooltip("The 3D object (e.g., WaterCube) whose collider is used to detect mouse interaction points")]
+		public Collider interactionPlane;
 		public float interactionRadius;
 
 		public float interactionStrength;
@@ -225,7 +227,17 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetFloat("SpikyPow2DerivativeScalingFactor", 12 / (Mathf.Pow(smoothingRadius, 4) * Mathf.PI));
 
 			// Mouse interaction settings:
-			Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			Vector2 interactionPoint = Vector2.zero;
+			if (interactionPlane != null)
+			{
+				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+				if (interactionPlane.Raycast(ray, out RaycastHit hit, float.MaxValue))
+				{
+					// Convert world-space hit point to simulation local coordinates
+					interactionPoint = WorldToSimLocal(hit.point);
+				}
+			}
+
 			bool isPullInteraction = Input.GetMouseButton(0);
 			bool isPushInteraction = Input.GetMouseButton(1);
 			float currInteractStrength = 0;
@@ -234,7 +246,7 @@ namespace Seb.Fluid2D.Simulation
 				currInteractStrength = isPushInteraction ? -interactionStrength : interactionStrength;
 			}
 
-			compute.SetVector("interactionInputPoint", mousePos);
+			compute.SetVector("interactionInputPoint", interactionPoint);
 			compute.SetFloat("interactionInputStrength", currInteractStrength);
 			compute.SetFloat("interactionInputRadius", interactionRadius);
 		}
