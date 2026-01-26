@@ -238,8 +238,8 @@ namespace Seb.Fluid2D.Simulation
 				}
 			}
 
-			bool isPullInteraction = Input.GetMouseButton(0);
-			bool isPushInteraction = Input.GetMouseButton(1);
+			bool isPushInteraction = Input.GetMouseButton(0);
+			bool isPullInteraction = Input.GetMouseButton(1);
 			float currInteractStrength = 0;
 			if (isPushInteraction || isPullInteraction)
 			{
