@@ -17457,7 +17457,7 @@ MonoBehaviour:
   spawnOnStart: 0
   timeScale: 0.5
   maxTimestepFPS: 60
-  iterationsPerFrame: 20
+  iterationsPerFrame: 30
   gravity: 0
   gravityDir: {x: 0, y: -1}
   collisionDamping: 0.95
