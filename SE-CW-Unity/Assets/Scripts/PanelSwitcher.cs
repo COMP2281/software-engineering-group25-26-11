@@ -9,6 +9,13 @@ public class PanelSwitcher : MonoBehaviour
     {
         colorSelectionPanel.SetActive(false);
         paintingExperiencePanel.SetActive(true);
+        
+        // Clear the submit button when switching to painting panel
+        UIManager uiManager = FindObjectOfType<UIManager>();
+        if (uiManager != null && uiManager.submitClothButton != null)
+        {
+            uiManager.submitClothButton.SetActive(false);
+        }
     }
 
     public void ShowColorSelectionPanel()
