@@ -9,11 +9,13 @@ public class PaintballCollision : MonoBehaviour
     public Transform waterSurface;             // Assign your WaterCube object
     public float yOffset = 0.01f;              // Slight inward offset to avoid z-fighting
 
+    public ParticleSystem ripplePS;            // Assign in Inspector
     private Transform safeRespawnPoint;
     private bool isDissolving = false;
 
     public float minY = -20f;   // if ball falls below this, respawn
 
+    
 
     void Start()
     {
@@ -59,6 +61,9 @@ public class PaintballCollision : MonoBehaviour
         {
             Debug.Log("Paintball entered water trigger: " + other.name);
             if (Accuracy.Instance != null) Accuracy.Instance.RegisterHit();
+            // Spawn particle effect at ball position
+            ripplePS.Emit(1);
+
             SpawnPaintOnWater();
             StartCoroutine(RespawnPaintball());
         } else if (other.CompareTag("Barrier")) {
