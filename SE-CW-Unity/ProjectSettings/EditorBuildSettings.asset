@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/water.unity
     guid: b41cda818ac6c1c4d993afa4051640aa
   - enabled: 0
-    path: Assets/Scenes/DemoScene.unity
+    path: Assets/Samples/XR Interaction Toolkit/2.4.3/Starter Assets/DemoScene.unity
     guid: 319dafa5c80f29f428dc1e0d03f04177
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: af44711762ab94e4c8ae8b2b3d6572a8,
