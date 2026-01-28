@@ -7,7 +7,7 @@ public class PlayerBoundary : MonoBehaviour
     public GameObject[] barriers;
 
     [Header("Teleport Target")]
-    public Transform safeZoneMarker; // Drag an empty GameObject here to act as your 'Home'
+    public Transform safeZoneMarker; 
 
     private float minX, maxX, minZ, maxZ;
     private XROrigin xrOrigin;
@@ -41,6 +41,7 @@ public class PlayerBoundary : MonoBehaviour
         Debug.Log($"Boundaries Synced! World Box: X({minX} to {maxX}) Z({minZ} to {maxZ})");
     }
 
+    // ensures player dosent exceed world boundary
     void Update()
     {
         Vector3 headPos = xrOrigin != null ? xrOrigin.Camera.transform.position : transform.position;
@@ -51,11 +52,11 @@ public class PlayerBoundary : MonoBehaviour
         }
     }
 
+    // if player does exceed barrier boundary, teleports them back to the safe pos
     public void ExecuteTeleport()
     {
         if (controller != null) controller.enabled = false;
 
-        // Use the marker's position so you can move it easily in the editor
         Vector3 target = safeZoneMarker != null ? safeZoneMarker.position : new Vector3(-30, 1, -93);
 
         if (xrOrigin != null)
@@ -73,9 +74,9 @@ public class PlayerBoundary : MonoBehaviour
         if (controller != null) controller.enabled = true;
     }
 
+    // test in scene
     private void OnDrawGizmos()
     {
-        // This will draw the box in World Space so you can see if it matches the walls
         Gizmos.color = Color.yellow;
         Vector3 center = new Vector3((minX + maxX) / 2, 1, (minZ + maxZ) / 2);
         Vector3 size = new Vector3(maxX - minX, 4, maxZ - minZ);

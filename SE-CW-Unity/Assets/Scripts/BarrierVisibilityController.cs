@@ -9,6 +9,11 @@ public class BarrierVisibilityController : MonoBehaviour
 
     bool isOpaque = false;
 
+    void Start()
+    {
+        ToggleBarrierOpacity(); // This runs once at the start to set everything to transparent
+    }
+
     public void ToggleBarrierOpacity()
     {
         Debug.Log("ToggleBarrierOpacity called. isOpaque before = " + isOpaque);
@@ -35,3 +40,5 @@ public class BarrierVisibilityController : MonoBehaviour
         }
     }
 }
+
+
