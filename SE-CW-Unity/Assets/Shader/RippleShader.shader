@@ -51,7 +51,7 @@ Shader "Unlit/RippleShader"
                 float2 texel = _CurrentRT_TexelSize.xy / safeScale;
 
                 float2 uv = i.uv;
-                float speed = 1.0f;
+                float speed = 1.5f; // Increased from 1.0 for faster ripples
 
                 float p10 = tex2D(_CurrentRT, uv - float2(texel.x, 0.0) * speed).x;
                 float p01 = tex2D(_CurrentRT, uv - float2(0.0, texel.y) * speed).x;
