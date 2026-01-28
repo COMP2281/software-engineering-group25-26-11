@@ -6,7 +6,7 @@ public class WaterInteraction : MonoBehaviour
     public Collider waterCollider;
     public RenderTexture rippleTexture;
     public float splashSize = 0.05f;
-    public float timeBetweenRipples = 0.05f; // Cooldown between ripples
+    public float timeBetweenRipples = 0.2f; // Cooldown between ripples
 
     private Material drawMaterial;
     private float lastRippleTime;
