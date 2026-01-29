@@ -16,17 +16,22 @@ public class SpawnOnContact : MonoBehaviour
 
     float lastSpawnTime = -999f;
 
-    void Start()
+    FluidSim2D GetSim()
     {
-        GameObject fluidSimObj = GameObject.FindWithTag("FLUIDSIM");
-        if (fluidSimObj != null)
-        {
-            sim = fluidSimObj.GetComponent<FluidSim2D>();
-        }
         if (sim == null)
         {
-            Debug.LogWarning("SpawnOnContact: Could not find FluidSim2D on object tagged 'FLUIDSIM'");
+            GameObject fluidSimObj = GameObject.FindWithTag("FLUIDSIM");
+            if (fluidSimObj != null)
+            {
+                sim = fluidSimObj.GetComponent<FluidSim2D>();
+            }
         }
+        return sim;
+    }
+
+    void Start()
+    {
+        GetSim(); // Try to find it at start
     }
 
     void Reset()
@@ -40,6 +45,7 @@ public class SpawnOnContact : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"SpawnOnContact.OnTriggerEnter called on {gameObject.name} with {other.name} (tag: {other.tag})");
         TrySpawn(other);
     }
 
@@ -50,34 +56,44 @@ public class SpawnOnContact : MonoBehaviour
 
     void TrySpawn(Collider other)
     {
-        if (sim == null || sim.spawner2D == null)
+        Debug.Log($"TrySpawn entered for {gameObject.name}");
+        
+        FluidSim2D currentSim = GetSim();
+        if (currentSim == null || currentSim.spawner2D == null)
         {
+            Debug.LogWarning($"SpawnOnContact on {gameObject.name}: sim is null={currentSim == null}, spawner2D is null={currentSim?.spawner2D == null}");
             return;
         }
 
         if (!string.IsNullOrEmpty(targetTag) && !other.CompareTag(targetTag))
         {
+            Debug.Log($"SpawnOnContact on {gameObject.name}: Collided with {other.name} but tag '{other.tag}' doesn't match '{targetTag}'");
             return;
         }
 
         if (Time.time - lastSpawnTime < cooldown)
         {
+            Debug.Log($"SpawnOnContact on {gameObject.name}: Cooldown active ({Time.time - lastSpawnTime:F2}s ago)");
             return;
         }
 
-        Transform anchor = sim.particleDisplay != null ? sim.particleDisplay.worldAnchor : null;
+        Transform anchor = currentSim.particleDisplay != null ? currentSim.particleDisplay.worldAnchor : null;
         if (anchor == null)
         {
+            Debug.LogWarning($"SpawnOnContact on {gameObject.name}: No worldAnchor found on particleDisplay");
             return;
         }
 
-        // Get color from the triggering object
-        Color spawnColor = GetColorFromObject(other.gameObject);
+        Debug.Log($"SpawnOnContact on {gameObject.name}: Spawning particles!");
+
+        // Get color from THIS object (the paintball), not the trigger
+        Color spawnColor = GetColorFromObject(gameObject);
+        Debug.Log($"SpawnOnContact color: {spawnColor}");
         float4 color = new float4(spawnColor.r, spawnColor.g, spawnColor.b, spawnColor.a);
 
         Vector3 samplePoint = other.ClosestPoint(transform.position);
-        Vector2 localSpawn = sim.WorldToSimLocal(samplePoint);
-        sim.SpawnParticles(sim.spawner2D.GetSpawnData(color), localSpawn);
+        Vector2 localSpawn = currentSim.WorldToSimLocal(samplePoint);
+        currentSim.SpawnParticles(currentSim.spawner2D.GetSpawnData(color), localSpawn);
         lastSpawnTime = Time.time;
     }
 
