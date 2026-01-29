@@ -44,6 +44,7 @@ namespace Seb.Fluid2D.Rendering
 			material.SetBuffer("Positions2D", sim.positionBuffer);
 			material.SetBuffer("Velocities", sim.velocityBuffer);
 			material.SetBuffer("DensityData", sim.densityBuffer);
+			material.SetBuffer("ParticleColors", sim.colorBuffer);
 
 			ComputeHelper.CreateArgsBuffer(ref argsBuffer, mesh, sim.numParticles);
 			Vector3 centre = worldAnchor != null ? worldAnchor.position : Vector3.zero;

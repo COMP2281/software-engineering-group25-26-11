@@ -48,6 +48,7 @@ namespace Seb.Fluid2D.Simulation
 		public ComputeBuffer positionBuffer { get; private set; }
 		public ComputeBuffer velocityBuffer { get; private set; }
 		public ComputeBuffer densityBuffer { get; private set; }
+		public ComputeBuffer colorBuffer { get; private set; }
 
 		ComputeBuffer sortTarget_Position;
 		ComputeBuffer sortTarget_PredicitedPosition;
@@ -96,6 +97,7 @@ namespace Seb.Fluid2D.Simulation
 			predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
+			colorBuffer = ComputeHelper.CreateStructuredBuffer<float4>(bufferCapacity);
 
 			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
@@ -259,6 +261,21 @@ namespace Seb.Fluid2D.Simulation
 			positionBuffer.SetData(allPoints);
 			predictedPositionBuffer.SetData(allPoints);
 			velocityBuffer.SetData(spawnData.velocities);
+
+			// Set colors (default to white if not provided)
+			if (spawnData.colors != null && spawnData.colors.Length > 0)
+			{
+				colorBuffer.SetData(spawnData.colors);
+			}
+			else
+			{
+				float4[] defaultColors = new float4[spawnData.positions.Length];
+				for (int i = 0; i < defaultColors.Length; i++)
+				{
+					defaultColors[i] = new float4(1, 1, 1, 1);
+				}
+				colorBuffer.SetData(defaultColors);
+			}
 		}
 
 		void HandleInput()
@@ -302,22 +319,38 @@ namespace Seb.Fluid2D.Simulation
 			// Store current particle data
 			var oldPositions = new float2[numParticles];
 			var oldVelocities = new float2[numParticles];
+			var oldColors = new float4[numParticles];
 			positionBuffer.GetData(oldPositions);
 			velocityBuffer.GetData(oldVelocities);
+			colorBuffer.GetData(oldColors);
 
 			// Create new arrays with combined size
 			int newParticleCount = numParticles + additionalCount;
 			var allPositions = new float2[newParticleCount];
 			var allVelocities = new float2[newParticleCount];
+			var allColors = new float4[newParticleCount];
 
 			// Copy old and new data
 			System.Array.Copy(oldPositions, allPositions, numParticles);
 			System.Array.Copy(offsetPositions, 0, allPositions, numParticles, additionalCount);
 			System.Array.Copy(oldVelocities, allVelocities, numParticles);
 			System.Array.Copy(spawnData.velocities, 0, allVelocities, numParticles, spawnData.velocities.Length);
+			System.Array.Copy(oldColors, allColors, numParticles);
+			// Copy new colors (default to white if not provided)
+			if (spawnData.colors != null && spawnData.colors.Length > 0)
+			{
+				System.Array.Copy(spawnData.colors, 0, allColors, numParticles, spawnData.colors.Length);
+			}
+			else
+			{
+				for (int i = numParticles; i < newParticleCount; i++)
+				{
+					allColors[i] = new float4(1, 1, 1, 1);
+				}
+			}
 
 			// Release old buffers
-			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition);
+			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, colorBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition);
 			spatialHash.Release();
 
 			// Update particle count and re-initialize buffers and spatial hash
@@ -329,6 +362,7 @@ namespace Seb.Fluid2D.Simulation
 			predictedPositionBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
+			colorBuffer = ComputeHelper.CreateStructuredBuffer<float4>(numParticles);
 			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			sortTarget_Velocity = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
@@ -337,6 +371,7 @@ namespace Seb.Fluid2D.Simulation
 			positionBuffer.SetData(allPositions);
 			predictedPositionBuffer.SetData(allPositions);
 			velocityBuffer.SetData(allVelocities);
+			colorBuffer.SetData(allColors);
 
 			// Re-bind all buffers to the compute shader
 			ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel, reorderKernel, copybackKernel);
@@ -364,7 +399,7 @@ namespace Seb.Fluid2D.Simulation
 
 		void OnDestroy()
 		{
-			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition);
+			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, colorBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition);
 			spatialHash.Release();
 		}
 

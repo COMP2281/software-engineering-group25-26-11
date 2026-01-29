@@ -21,6 +21,7 @@ Shader "Instanced/Particle2D" {
 			StructuredBuffer<float2> Positions2D;
 			StructuredBuffer<float2> Velocities;
 			StructuredBuffer<float2> DensityData;
+			StructuredBuffer<float4> ParticleColors;
 			float scale;
 			float4 colA;
 			Texture2D<float4> ColourMap;
@@ -46,6 +47,9 @@ Shader "Instanced/Particle2D" {
 				float speedT = saturate(speed / velocityMax);
 				float colT = speedT;
 
+				// Get per-particle color
+				float4 particleCol = ParticleColors[instanceID];
+
 				// 2D sim position, mapped to local anchor space
                 float2 p2 = Positions2D[instanceID];
                 float2 mapped = p2 * _SimWorldScale + _SimWorldOffset.xy;
@@ -62,7 +66,15 @@ Shader "Instanced/Particle2D" {
 				v2f o;
 				o.uv = v.texcoord;
 				o.pos = UnityWorldToClipPos(worldPos.xyz);
-				o.colour = ColourMap.SampleLevel(linear_clamp_sampler, float2(colT, 0.5), 0);
+				// Use per-particle color if it's not default (1,1,1,1), otherwise use gradient
+				if (particleCol.r < 0.99 || particleCol.g < 0.99 || particleCol.b < 0.99)
+				{
+					o.colour = particleCol.rgb;
+				}
+				else
+				{
+					o.colour = ColourMap.SampleLevel(linear_clamp_sampler, float2(colT, 0.5), 0);
+				}
 
 				return o;
 			}

@@ -16,11 +16,17 @@ public class Spawner2D : MonoBehaviour
 
 	public ParticleSpawnData GetSpawnData()
 	{
+		return GetSpawnData(new float4(1, 1, 1, 1)); // Default white color
+	}
+
+	public ParticleSpawnData GetSpawnData(float4 color)
+	{
 		var rng = new Unity.Mathematics.Random(42);
 
 		List<float2> allPoints = new();
 		List<float2> allVelocities = new();
 		List<int> allIndices = new();
+		List<float4> allColors = new();
 
 		for (int regionIndex = 0; regionIndex < spawnRegions.Length; regionIndex++)
 		{
@@ -35,6 +41,7 @@ public class Spawner2D : MonoBehaviour
 				allPoints.Add(points[i] + jitter);
 				allVelocities.Add(initialVelocity);
 				allIndices.Add(regionIndex);
+				allColors.Add(color);
 			}
 		}
 
@@ -43,6 +50,7 @@ public class Spawner2D : MonoBehaviour
 			positions = allPoints.ToArray(),
 			velocities = allVelocities.ToArray(),
 			spawnIndices = allIndices.ToArray(),
+			colors = allColors.ToArray(),
 		};
 
 		return data;
@@ -94,12 +102,14 @@ public class Spawner2D : MonoBehaviour
 		public float2[] positions;
 		public float2[] velocities;
 		public int[] spawnIndices;
+		public float4[] colors;
 
 		public ParticleSpawnData(int num)
 		{
 			positions = new float2[num];
 			velocities = new float2[num];
 			spawnIndices = new int[num];
+			colors = new float4[num];
 		}
 	}
 

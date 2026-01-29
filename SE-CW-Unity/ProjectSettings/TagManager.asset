@@ -8,6 +8,7 @@ TagManager:
   - Paintball
   - OilPaint
   - Barrier
+  - Floor
   layers:
   - Default
   - TransparentFX
