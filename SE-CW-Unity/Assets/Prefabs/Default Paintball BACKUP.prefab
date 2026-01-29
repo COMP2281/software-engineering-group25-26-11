@@ -14,9 +14,11 @@ GameObject:
   - component: {fileID: 5788664669739971124}
   - component: {fileID: 3978121609412062109}
   - component: {fileID: 2440929815015591782}
+  - component: {fileID: 8035882733990411755}
+  - component: {fileID: -5265812744950701298}
   - component: {fileID: 4299335489023441582}
   m_Layer: 0
-  m_Name: Default Paintball
+  m_Name: Default Paintball BACKUP
   m_TagString: Paintball
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -103,7 +105,7 @@ SphereCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.5
@@ -283,6 +285,31 @@ MonoBehaviour:
   m_StartingSingleGrabTransformers: []
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
+--- !u!114 &8035882733990411755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6497404434841896049}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa8d52419de87b54a9898999698f06d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-5265812744950701298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6497404434841896049}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0081c9e01109fa4fa005163d2a2a7bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0.2
 --- !u!114 &4299335489023441582
 MonoBehaviour:
   m_ObjectHideFlags: 0

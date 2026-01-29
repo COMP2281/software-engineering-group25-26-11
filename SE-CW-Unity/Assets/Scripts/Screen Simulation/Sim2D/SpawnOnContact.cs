@@ -5,7 +5,7 @@ using Unity.Mathematics;
 [RequireComponent(typeof(Collider))]
 public class SpawnOnContact : MonoBehaviour
 {
-    public FluidSim2D sim;
+    FluidSim2D sim;
     [Tooltip("Tag on the collider that should trigger spawning")]
     public string targetTag = "Water";
     public float cooldown = 0.25f;
@@ -15,6 +15,19 @@ public class SpawnOnContact : MonoBehaviour
     public Color defaultColor = Color.white;
 
     float lastSpawnTime = -999f;
+
+    void Start()
+    {
+        GameObject fluidSimObj = GameObject.FindWithTag("FLUIDSIM");
+        if (fluidSimObj != null)
+        {
+            sim = fluidSimObj.GetComponent<FluidSim2D>();
+        }
+        if (sim == null)
+        {
+            Debug.LogWarning("SpawnOnContact: Could not find FluidSim2D on object tagged 'FLUIDSIM'");
+        }
+    }
 
     void Reset()
     {
