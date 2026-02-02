@@ -77,4 +77,35 @@ public class WaterInteraction : MonoBehaviour
         
         RenderTexture.active = prev;
     }
+
+    /// <summary>
+    /// Creates a ripple effect at the given world position.
+    /// Call this from other scripts to trigger ripples programmatically.
+    /// </summary>
+    /// <param name="worldPosition">The world position where the ripple should originate</param>
+    public void CreateRippleAtPosition(Vector3 worldPosition)
+    {
+        // Ensure drawMaterial is initialized
+        if (drawMaterial == null)
+        {
+            drawMaterial = new Material(Shader.Find("Hidden/Internal-Colored"));
+        }
+        
+        if (waterCollider == null || rippleTexture == null) return;
+
+        // Convert world position to UV coordinates (0-1 range)
+        Bounds bounds = waterCollider.bounds;
+        
+        // Flip both coordinates to fix the mirroring (same as mouse click logic)
+        float u = 1.0f - (worldPosition.x - bounds.min.x) / bounds.size.x;
+        float v = 1.0f - (worldPosition.y - bounds.min.y) / bounds.size.y;
+        
+        // Clamp UV to valid range
+        u = Mathf.Clamp01(u);
+        v = Mathf.Clamp01(v);
+        
+        // Draw the splash
+        DrawSplash(u, v);
+        lastRippleTime = Time.time;
+    }
 }

@@ -95,6 +95,13 @@ public class SpawnOnContact : MonoBehaviour
         Vector2 localSpawn = currentSim.WorldToSimLocal(samplePoint);
         currentSim.SpawnParticles(currentSim.spawner2D.GetSpawnData(color), localSpawn);
         lastSpawnTime = Time.time;
+        
+        // Trigger ripple effect at the impact position
+        WaterInteraction waterInteraction = Object.FindFirstObjectByType<WaterInteraction>();
+        if (waterInteraction != null)
+        {
+            waterInteraction.CreateRippleAtPosition(samplePoint);
+        }
     }
 
     /// <summary>
