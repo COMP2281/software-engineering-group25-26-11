@@ -2,8 +2,7 @@ Shader "Unlit/Add"
 {
     Properties
     {
-        // object scale passed from script (x = U axis scale, y = V axis scale)
-        _ObjectScale("Object Scale", Vector) = (1,1,0,0)
+        
     }
     SubShader
     {
@@ -33,7 +32,6 @@ Shader "Unlit/Add"
             sampler2D _ObjectsRT;
             sampler2D _CurrentRT;
             float4 _ObjectsRT_ST;
-            float4 _ObjectScale; // kept for API parity; not used here
 
             v2f vert (appdata v)
             {
@@ -45,13 +43,9 @@ Shader "Unlit/Add"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture (objects)
+                // sample the texture
                 fixed4 tex1 = tex2D(_ObjectsRT, i.uv);
-
-                // Sample the ripple/current RT using the mesh UV directly.
-                // CurrRT stores the ripple field in UV space, so we must sample with the same UV.
                 fixed4 tex2 = tex2D(_CurrentRT, i.uv);
-
                 return tex1 + tex2;
             }
             ENDCG

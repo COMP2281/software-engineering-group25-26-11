@@ -1,3 +1,4 @@
+using Seb.Fluid2D.Rendering;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,18 +6,27 @@ using UnityEngine.Rendering;
 
 public class RippleEffect : MonoBehaviour
 {
-    public int TextureSize = 512;
+    public float timeBetweenRipples = 0.2f;
+    public Collider waterCollider;
+    public ParticleSystem splashParticleSystem;
+
+    public int TextureWidth = 1024;
+    public int TextureHeight = 400;
     public RenderTexture ObjectsRT;
     private RenderTexture CurrRT, PrevRT, TempRT;
     public Shader RippleShader, AddShader;
     private Material RippleMat, AddMat;
+    private float lastRippleTime;
+    private Camera _mainCam;
     // Start is called before the first frame update
     void Start()
     {
+        // Ray casting camera
+        _mainCam = Camera.main;
         //Creating render textures and materials
-        CurrRT = new RenderTexture(TextureSize, TextureSize, 0, RenderTextureFormat.RFloat);
-        PrevRT = new RenderTexture(TextureSize, TextureSize, 0, RenderTextureFormat.RFloat);
-        TempRT = new RenderTexture(TextureSize, TextureSize, 0, RenderTextureFormat.RFloat);
+        CurrRT = new RenderTexture(TextureWidth, TextureHeight, 0, RenderTextureFormat.RFloat);
+        PrevRT = new RenderTexture(TextureWidth, TextureHeight, 0, RenderTextureFormat.RFloat);
+        TempRT = new RenderTexture(TextureWidth, TextureHeight, 0, RenderTextureFormat.RFloat);
         RippleMat = new Material(RippleShader);
         AddMat = new Material(AddShader);
 
@@ -27,18 +37,26 @@ public class RippleEffect : MonoBehaviour
     }
 
     // Update is called once per frame
+    private void Update()
+    {
+        // GetMouseButton instead of GetMouseButtonDown for continuous drawing while dragging
+        if (Input.GetMouseButton(0) && Time.time - lastRippleTime >= timeBetweenRipples)
+        {
+            Ray ray = _mainCam.ScreenPointToRay(Input.mousePosition);
+            if (waterCollider.Raycast(ray, out RaycastHit hit, float.MaxValue))
+            {
+                splashParticleSystem.transform.position = hit.point;    
+                splashParticleSystem.Emit(1);
+                lastRippleTime = Time.time;
+            }
+        }
+    }
     IEnumerator ripples()
     {
         // compute object scale vector and pass to shaders
         // use the two axes that map to mesh's UV U and V:
-        // - For a typical horizontal plane mesh, U maps to transform.lossyScale.x and V maps to transform.lossyScale.z.
-        // - If mesh uses X/Y for UVs, change .z to .y below.
         float scaleU = transform.lossyScale.x;
-        float scaleV = transform.lossyScale.z; // change to .y if your mesh maps V to Y
-        // protect against zero scale
-        if (Mathf.Abs(scaleU) < 1e-6f) scaleU = 1e-6f;
-        if (Mathf.Abs(scaleV) < 1e-6f) scaleV = 1e-6f;
-
+        float scaleV = transform.lossyScale.z;
         Vector4 objScale = new Vector4(scaleU, scaleV, 0f, 0f);
 
         //Copy the result of blending the render textures to TempRT.
