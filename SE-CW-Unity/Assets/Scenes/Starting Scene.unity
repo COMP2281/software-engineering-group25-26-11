@@ -17240,6 +17240,8 @@ MonoBehaviour:
   spawnDensity: 159
   initialVelocity: {x: 0, y: 0}
   jitterStr: 0.03
+  clumpScale: 1
+  spawnVelocityScale: 0.2
   spawnRegions:
   - position: {x: 0, y: 0.66}
     size: {x: 1, y: 1}
@@ -17267,11 +17269,11 @@ MonoBehaviour:
   gravity: 0
   gravityDir: {x: 0, y: -1}
   collisionDamping: 0.95
-  smoothingRadius: 0.35
-  targetDensity: 55
-  pressureMultiplier: 500
+  smoothingRadius: 0.28
+  targetDensity: 45
+  pressureMultiplier: 350
   nearPressureMultiplier: 5
-  viscosityStrength: 0.1
+  viscosityStrength: 0.03
   boundsSize: {x: 8.6, y: 3.4}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}
@@ -21472,6 +21474,7 @@ MonoBehaviour:
   blurIterations: 3
   blurSpread: 1.5
   blurStrength: 0.8
+  blurMaterial: {fileID: 0}
 --- !u!1 &1267829206
 GameObject:
   m_ObjectHideFlags: 0
@@ -22184,12 +22187,30 @@ MonoBehaviour:
   particleRadius: 2
   blurIterations: 4
   blurRadius: 2
-  fluidColor: {r: 0.2, g: 0.5, b: 0.9, a: 0.9}
-  edgeColor: {r: 0.4, g: 0.7, b: 1, a: 1}
+  fluidColor:
+    r: 0.2
+    g: 0.5
+    b: 0.9
+    a: 0.9
+  edgeColor:
+    r: 0.4
+    g: 0.7
+    b: 1
+    a: 1
   densityThreshold: 0.3
   edgeWidth: 0.1
   fresnelPower: 1
   resolutionScale: 0.5
+  densityMaterial: {fileID: 0}
+  blurMaterial: {fileID: 0}
+  surfaceMaterial: {fileID: 0}
+  densityTexture: {fileID: 0}
+  blurTempTexture: {fileID: 0}
+  finalFluidTexture: {fileID: 0}
+  bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  renderCamera: {fileID: 0}
 --- !u!4 &1297503606 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5281227007351242407, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
