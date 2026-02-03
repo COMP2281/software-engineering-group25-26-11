@@ -5,8 +5,9 @@ Shader "Instanced/Particle2D" {
 	SubShader {
 
 		Tags { "RenderType"="Transparent" "Queue"="Transparent" }
-		// Standard alpha blend - stable colors
-		Blend SrcAlpha OneMinusSrcAlpha
+		// Use premultiplied alpha for order-independent color blending
+		// This prevents color jitter when particles overlap in different orders
+		Blend One OneMinusSrcAlpha
 		ZWrite Off
 
 		Pass {
@@ -95,8 +96,9 @@ Shader "Instanced/Particle2D" {
 				float t = 1.0 - r;
 				float alpha = t * t * (3.0 - 2.0 * t); // Smoothstep curve
 				
-				// Keep colors stable, just use alpha for blending
-				float3 colour = i.colour;
+				// Premultiplied alpha: multiply color by alpha
+				// This makes blending order-independent and prevents color jitter
+				float3 colour = i.colour * alpha;
 				return float4(colour, alpha);
 			}
 
