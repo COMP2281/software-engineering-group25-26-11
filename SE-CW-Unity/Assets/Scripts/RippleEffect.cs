@@ -1,11 +1,14 @@
 using Seb.Fluid2D.Rendering;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class RippleEffect : MonoBehaviour
 {
+    public static RippleEffect Instance;
+
     public float timeBetweenRipples = 0.2f;
     public Collider waterCollider;
     public ParticleSystem splashParticleSystem;
@@ -19,6 +22,11 @@ public class RippleEffect : MonoBehaviour
     private float lastRippleTime;
     private Camera _mainCam;
     // Start is called before the first frame update
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         // Ray casting camera
@@ -37,6 +45,12 @@ public class RippleEffect : MonoBehaviour
     }
 
     // Update is called once per frame
+    public void RippleAtPoint(Vector3 point)
+    {
+        //Move the particle system to the hit point and emit a splash.
+        splashParticleSystem.transform.position = point;    
+        splashParticleSystem.Emit(1);
+    }
     private void Update()
     {
         // GetMouseButton instead of GetMouseButtonDown for continuous drawing while dragging
@@ -45,12 +59,12 @@ public class RippleEffect : MonoBehaviour
             Ray ray = _mainCam.ScreenPointToRay(Input.mousePosition);
             if (waterCollider.Raycast(ray, out RaycastHit hit, float.MaxValue))
             {
-                splashParticleSystem.transform.position = hit.point;    
-                splashParticleSystem.Emit(1);
+                RippleAtPoint(hit.point);
                 lastRippleTime = Time.time;
             }
         }
     }
+
     IEnumerator ripples()
     {
         // compute object scale vector and pass to shaders

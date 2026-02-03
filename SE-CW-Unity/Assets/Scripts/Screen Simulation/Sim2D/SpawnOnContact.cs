@@ -95,6 +95,8 @@ public class SpawnOnContact : MonoBehaviour
         Vector2 localSpawn = currentSim.WorldToSimLocal(samplePoint);
         currentSim.SpawnParticles(currentSim.spawner2D.GetSpawnData(color), localSpawn);
         lastSpawnTime = Time.time;
+
+        RippleEffect.Instance.RippleAtPoint(samplePoint);
     }
 
     /// <summary>

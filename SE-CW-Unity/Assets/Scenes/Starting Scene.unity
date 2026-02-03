@@ -15042,6 +15042,7 @@ MonoBehaviour:
   targetTag: Water
   cooldown: 0.25
   defaultColor: {r: 0.14574452, g: 0.4245283, b: 0.14284441, a: 1}
+  waterRippleEffect: {fileID: 0}
 --- !u!1 &636883611
 GameObject:
   m_ObjectHideFlags: 0
@@ -50535,7 +50536,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 5
   field of view: 60
   orthographic: 1
   orthographic size: 1.7
@@ -52314,6 +52315,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 497888491}
     m_Modifications:
+    - target: {fileID: 179657620234111663, guid: 8bd8f7e1fcd76fd4b8b0cf337cef6984,
+        type: 3}
+      propertyPath: waterRippleEffect
+      value: 
+      objectReference: {fileID: 7619725254271212121}
     - target: {fileID: 5945366439062732766, guid: 8bd8f7e1fcd76fd4b8b0cf337cef6984,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -52521,8 +52527,8 @@ MonoBehaviour:
   timeBetweenRipples: 0.01
   waterCollider: {fileID: 1666421594}
   splashParticleSystem: {fileID: 476298645}
-  TextureWidth: 1024
-  TextureHeight: 400
+  TextureWidth: 512
+  TextureHeight: 200
   ObjectsRT: {fileID: 8400000, guid: f650063de21177c408058ff6fb306863, type: 2}
   RippleShader: {fileID: 4800000, guid: b62f7e69f75a6c742a6028d3e07f06ed, type: 3}
   AddShader: {fileID: 4800000, guid: 90b17fc6d7f5c66478bdd7ccea8f90bc, type: 3}
