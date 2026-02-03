@@ -5,6 +5,7 @@ Shader "Instanced/Particle2D" {
 	SubShader {
 
 		Tags { "RenderType"="Transparent" "Queue"="Transparent" }
+		// Standard alpha blend - stable colors
 		Blend SrcAlpha OneMinusSrcAlpha
 		ZWrite Off
 
@@ -57,8 +58,8 @@ Shader "Instanced/Particle2D" {
                 // sim X/Y -> local X/Y (2D plane)
                 float3 localCentre = float3(mapped.x, mapped.y, 0);
 
-				// add quad vertex offset in local space
-				float3 localVertPos = localCentre + v.vertex.xyz * scale;
+				// add quad vertex offset in local space - scale up for more overlap
+				float3 localVertPos = localCentre + v.vertex.xyz * scale * 5.0;
 
 				// local anchor space -> world
 				float4 worldPos = mul(_WorldAnchorMatrix, float4(localVertPos, 1));
@@ -84,9 +85,17 @@ Shader "Instanced/Particle2D" {
 			{
 				float2 centreOffset = (i.uv.xy - 0.5) * 2;
 				float sqrDst = dot(centreOffset, centreOffset);
-				float delta = fwidth(sqrt(sqrDst));
-				float alpha = 1 - smoothstep(1 - delta, 1 + delta, sqrDst);
-
+				
+				float r = sqrt(sqrDst);
+				
+				// Discard pixels outside the circle
+				if (r > 1.0) discard;
+				
+				// Smooth falloff - soft edges for blending
+				float t = 1.0 - r;
+				float alpha = t * t * (3.0 - 2.0 * t); // Smoothstep curve
+				
+				// Keep colors stable, just use alpha for blending
 				float3 colour = i.colour;
 				return float4(colour, alpha);
 			}
