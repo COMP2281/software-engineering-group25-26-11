@@ -8,6 +8,16 @@ public class Spawner2D : MonoBehaviour
 
 	public Vector2 initialVelocity;
 	public float jitterStr;
+	
+	[Header("Spawn Clump Settings")]
+	[Tooltip("Multiplier for spawn region size (smaller = tighter clump)")]
+	[Range(0.1f, 2f)]
+	public float clumpScale = 1f;
+	
+	[Tooltip("Velocity damping on spawn (0 = no velocity, 1 = full velocity)")]
+	[Range(0f, 1f)]
+	public float spawnVelocityScale = 0.2f;
+	
 	public SpawnRegion[] spawnRegions;
 	public bool showSpawnBoundsGizmos;
 
@@ -37,9 +47,10 @@ public class Spawner2D : MonoBehaviour
 			{
 				float angle = (float)rng.NextDouble() * 3.14f * 2;
 				float2 dir = new float2(Mathf.Cos(angle), Mathf.Sin(angle));
-				float2 jitter = dir * jitterStr * ((float)rng.NextDouble() - 0.5f);
+				float2 jitter = dir * jitterStr * ((float)rng.NextDouble() - 0.5f) * clumpScale;
 				allPoints.Add(points[i] + jitter);
-				allVelocities.Add(initialVelocity);
+				// Apply velocity scale to reduce initial momentum
+				allVelocities.Add(initialVelocity * spawnVelocityScale);
 				allIndices.Add(regionIndex);
 				allColors.Add(color);
 			}
@@ -60,7 +71,7 @@ public class Spawner2D : MonoBehaviour
 	{
 		// Centre is region offset (local space)
 		Vector2 centre = region.position;
-		Vector2 size = region.size;
+		Vector2 size = region.size * clumpScale; // Apply clump scale to make tighter spawn
 
 		int i = 0;
 		Vector2Int numPerAxis = CalculateSpawnCountPerAxisBox2D(region.size, spawnDensity);
@@ -70,8 +81,8 @@ public class Spawner2D : MonoBehaviour
 		{
 			for (int x = 0; x < numPerAxis.x; x++)
 			{
-				float tx = x / (numPerAxis.x - 1f);
-				float ty = y / (numPerAxis.y - 1f);
+				float tx = numPerAxis.x > 1 ? x / (numPerAxis.x - 1f) : 0.5f;
+				float ty = numPerAxis.y > 1 ? y / (numPerAxis.y - 1f) : 0.5f;
 				float px = (tx - 0.5f) * size.x + centre.x;
 				float py = (ty - 0.5f) * size.y + centre.y;
 				points[i] = new float2(px, py);

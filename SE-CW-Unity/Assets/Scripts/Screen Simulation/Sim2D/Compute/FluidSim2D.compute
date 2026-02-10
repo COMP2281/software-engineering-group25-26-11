@@ -213,6 +213,8 @@ void UpdateSpatialHash (uint3 id : SV_DispatchThreadID)
 RWStructuredBuffer<float2> SortTarget_Positions;
 RWStructuredBuffer<float2> SortTarget_PredictedPositions;
 RWStructuredBuffer<float2> SortTarget_Velocities;
+RWStructuredBuffer<float4> ParticleColors;
+RWStructuredBuffer<float4> SortTarget_Colors;
 
 [numthreads(NumThreads,1,1)]
 void Reorder (uint3 id : SV_DispatchThreadID)
@@ -223,6 +225,7 @@ void Reorder (uint3 id : SV_DispatchThreadID)
 	SortTarget_Positions[id.x] = Positions[sortedIndex];
 	SortTarget_PredictedPositions[id.x] = PredictedPositions[sortedIndex];
 	SortTarget_Velocities[id.x] = Velocities[sortedIndex];
+	SortTarget_Colors[id.x] = ParticleColors[sortedIndex];
 }
 
 
@@ -234,6 +237,7 @@ void ReorderCopyback (uint3 id : SV_DispatchThreadID)
 	Positions[id.x] = SortTarget_Positions[id.x];
 	PredictedPositions[id.x] = SortTarget_PredictedPositions[id.x];
 	Velocities[id.x] = SortTarget_Velocities[id.x];
+	ParticleColors[id.x] = SortTarget_Colors[id.x];
 }
 
 
