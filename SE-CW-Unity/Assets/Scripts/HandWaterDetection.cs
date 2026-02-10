@@ -68,6 +68,8 @@ public class HandWaterDetection : MonoBehaviour
         if (other.CompareTag(surfaceTag))
         {
             isInsideWater = true;
+            
+            RippleEffect.Instance.RippleAtPoint(transform.position);
 
             if (splashSound != null)
             {
@@ -85,6 +87,8 @@ public class HandWaterDetection : MonoBehaviour
         {
             isInsideWater = true;
             Rigidbody rb = other.attachedRigidbody;
+
+            RippleEffect.Instance.RippleAtPoint(transform.position);
 
             if (rb != null && currentHandSpeed > 0.1f)
             {

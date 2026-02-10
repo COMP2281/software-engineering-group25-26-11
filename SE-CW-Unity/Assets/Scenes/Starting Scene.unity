@@ -14773,6 +14773,76 @@ Transform:
   - {fileID: 2032018262}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &614947623 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
+    type: 3}
+  m_PrefabInstance: {fileID: 1508879666}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &614947628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 614947623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushStrength: 10
+  surfaceTag: Water
+  splashSound: {fileID: 8300000, guid: 88e5508c7d869c141b4ba331bf66f7de, type: 3}
+  moveSound: {fileID: 8300000, guid: e080f7589daaf26419fdddd1ad02f66e, type: 3}
+--- !u!135 &614947633
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 614947623}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &614947634
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 614947623}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &617912020
 GameObject:
   m_ObjectHideFlags: 0
@@ -15042,7 +15112,6 @@ MonoBehaviour:
   targetTag: Water
   cooldown: 0.25
   defaultColor: {r: 0.14574452, g: 0.4245283, b: 0.14284441, a: 1}
-  waterRippleEffect: {fileID: 0}
 --- !u!1 &636883611
 GameObject:
   m_ObjectHideFlags: 0
@@ -34566,6 +34635,30 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1257526114}
+    - targetCorrespondingSourceObject: {fileID: 2254594255153119949, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1921249345}
+    - targetCorrespondingSourceObject: {fileID: 2254594255153119949, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1921249346}
+    - targetCorrespondingSourceObject: {fileID: 2254594255153119949, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1921249351}
+    - targetCorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 614947628}
+    - targetCorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 614947634}
+    - targetCorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 614947633}
     - targetCorrespondingSourceObject: {fileID: 1912150408922505390, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
@@ -49012,6 +49105,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a79c4e23d4d4b64bfa5fa9e6671a460, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1921249340 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2254594255153119949, guid: fe72fd31c72aac74fa838329f11d5d03,
+    type: 3}
+  m_PrefabInstance: {fileID: 1508879666}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1921249345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1921249340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushStrength: 10
+  surfaceTag: Water
+  splashSound: {fileID: 8300000, guid: 88e5508c7d869c141b4ba331bf66f7de, type: 3}
+  moveSound: {fileID: 8300000, guid: e080f7589daaf26419fdddd1ad02f66e, type: 3}
+--- !u!135 &1921249346
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1921249340}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &1921249351
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1921249340}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!4 &1932214710 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4616165200164398447, guid: 76f3439a0ae796e4b81bee3f91f888ee,
@@ -52374,6 +52537,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Plain Ball
+      objectReference: {fileID: 0}
+    - target: {fileID: 6723416204439520288, guid: 8bd8f7e1fcd76fd4b8b0cf337cef6984,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
