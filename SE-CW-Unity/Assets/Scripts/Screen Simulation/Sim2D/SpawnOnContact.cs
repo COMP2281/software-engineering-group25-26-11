@@ -1,11 +1,15 @@
 using UnityEngine;
 using Seb.Fluid2D.Simulation;
 using Unity.Mathematics;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Collider))]
 public class SpawnOnContact : MonoBehaviour
 {
     FluidSim2D sim;
+    public GameObject paintballPrefab;
+    private Transform safeRespawnPoint;
+    public float minY = -20f; // if object falls below this, respawn
     [Tooltip("Tag on the collider that should trigger spawning")]
     public string targetTag = "Water";
     public float cooldown = 0.25f;
@@ -32,6 +36,32 @@ public class SpawnOnContact : MonoBehaviour
     void Start()
     {
         GetSim(); // Try to find it at start
+        GameObject respawnObj = GameObject.Find("PaintballRespawnPoint");
+        if (respawnObj != null)
+        {
+            safeRespawnPoint = respawnObj.transform;
+        }
+    }
+
+    void Update()
+    {
+        // Only do the check if we have a respawn point
+        if (safeRespawnPoint == null) return;
+
+        // If ball fell below the threshold, teleport it back
+        if (transform.position.y < minY)
+        {
+            transform.position = safeRespawnPoint.position;
+            transform.rotation = safeRespawnPoint.rotation;
+
+            // Reset physics so it doesn't keep falling
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+        }
     }
 
     void Reset()
@@ -45,7 +75,6 @@ public class SpawnOnContact : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"SpawnOnContact.OnTriggerEnter called on {gameObject.name} with {other.name} (tag: {other.tag})");
         TrySpawn(other);
     }
 
@@ -56,39 +85,22 @@ public class SpawnOnContact : MonoBehaviour
 
     void TrySpawn(Collider other)
     {
-        Debug.Log($"TrySpawn entered for {gameObject.name}");
-        
         FluidSim2D currentSim = GetSim();
         if (currentSim == null || currentSim.spawner2D == null)
-        {
-            Debug.LogWarning($"SpawnOnContact on {gameObject.name}: sim is null={currentSim == null}, spawner2D is null={currentSim?.spawner2D == null}");
             return;
-        }
 
         if (!string.IsNullOrEmpty(targetTag) && !other.CompareTag(targetTag))
-        {
-            Debug.Log($"SpawnOnContact on {gameObject.name}: Collided with {other.name} but tag '{other.tag}' doesn't match '{targetTag}'");
             return;
-        }
 
         if (Time.time - lastSpawnTime < cooldown)
-        {
-            Debug.Log($"SpawnOnContact on {gameObject.name}: Cooldown active ({Time.time - lastSpawnTime:F2}s ago)");
             return;
-        }
 
         Transform anchor = currentSim.particleDisplay != null ? currentSim.particleDisplay.worldAnchor : null;
         if (anchor == null)
-        {
-            Debug.LogWarning($"SpawnOnContact on {gameObject.name}: No worldAnchor found on particleDisplay");
             return;
-        }
-
-        Debug.Log($"SpawnOnContact on {gameObject.name}: Spawning particles!");
 
         // Get color from THIS object (the paintball), not the trigger
         Color spawnColor = GetColorFromObject(gameObject);
-        Debug.Log($"SpawnOnContact color: {spawnColor}");
         float4 color = new float4(spawnColor.r, spawnColor.g, spawnColor.b, spawnColor.a);
 
         Vector3 samplePoint = other.ClosestPoint(transform.position);
@@ -97,12 +109,44 @@ public class SpawnOnContact : MonoBehaviour
         lastSpawnTime = Time.time;
 
         RippleEffect.Instance.RippleAtPoint(samplePoint);
+
+        // Respawn paintball after spawning particles
+        RespawnPaintball(spawnColor);
     }
 
-    /// <summary>
+    void RespawnPaintball(Color paintColor)
+    {
+        if (paintballPrefab == null)
+            return;
+
+        Quaternion rot = transform.rotation;
+        Vector3 spawnPos = Vector3.zero;
+        bool hasSpawnPos = false;
+
+        Color32 colorKey = (Color32)paintColor;
+
+        if (ColorSelectionManager.colorToSpawnQueue.TryGetValue(colorKey, out Queue<Vector3> queue) && queue.Count > 0)
+        {
+            spawnPos = queue.Peek();
+            hasSpawnPos = true;
+        }
+
+        if (hasSpawnPos)
+        {
+            GameObject newBall = Instantiate(paintballPrefab, spawnPos, rot);
+
+            Renderer newRend = newBall.GetComponent<Renderer>();
+            if (newRend != null)
+            {
+                newRend.material.color = paintColor;
+            }
+        }
+
+        Destroy(gameObject);
+    }
+
     /// Attempts to get the color from the object's Renderer material.
     /// Falls back to defaultColor if no color can be found.
-    /// </summary>
     Color GetColorFromObject(GameObject obj)
     {
         // Try to get color from Renderer

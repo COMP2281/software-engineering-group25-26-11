@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.7359975, g: 0.55490863, b: 0.14811663, a: 1}
+  m_IndirectSpecularColor: {r: 0.73607254, g: 0.5549378, b: 0.1481374, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -14975,6 +14975,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51816339563c441459a9de884c5903e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  paintballPrefab: {fileID: 0}
+  minY: -20
   targetTag: Water
   cooldown: 0.25
   defaultColor: {r: 0.14574452, g: 0.4245283, b: 0.14284441, a: 1}
@@ -27831,7 +27833,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!154 &1374920846
 TerrainCollider:
   m_ObjectHideFlags: 0
