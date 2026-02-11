@@ -21471,10 +21471,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f61f65e585d18fd4dbad7afdadd7b36e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurIterations: 3
-  blurSpread: 1.5
-  blurStrength: 0.8
-  blurMaterial: {fileID: 0}
 --- !u!1 &1267829206
 GameObject:
   m_ObjectHideFlags: 0
@@ -22178,39 +22174,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57086b5c8aa2f0a448e1dc81eac4ee49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sim: {fileID: 865727574}
-  particleMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
-  densityShader: {fileID: 4800000, guid: 2b3f295b66b93c64b81070b4eccbe93a, type: 3}
-  blurShader: {fileID: 4800000, guid: 106a22616be72bd489901ffca17ce2fe, type: 3}
-  fluidSurfaceShader: {fileID: 4800000, guid: 8a10998c92a5f2f468ea1ed02b45a775, type: 3}
-  worldAnchor: {fileID: 7397822}
-  particleRadius: 2
-  blurIterations: 4
-  blurRadius: 2
-  fluidColor:
-    r: 0.2
-    g: 0.5
-    b: 0.9
-    a: 0.9
-  edgeColor:
-    r: 0.4
-    g: 0.7
-    b: 1
-    a: 1
-  densityThreshold: 0.3
-  edgeWidth: 0.1
-  fresnelPower: 1
-  resolutionScale: 0.5
-  densityMaterial: {fileID: 0}
-  blurMaterial: {fileID: 0}
-  surfaceMaterial: {fileID: 0}
-  densityTexture: {fileID: 0}
-  blurTempTexture: {fileID: 0}
-  finalFluidTexture: {fileID: 0}
-  bounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
-  renderCamera: {fileID: 0}
 --- !u!4 &1297503606 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5281227007351242407, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
@@ -22970,7 +22933,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!154 &1374920846
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -47722,7 +47685,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d103dec7ac8e8f4dbc85a8520f943f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TextureSize: 512
+  timeBetweenRipples: 0.2
+  waterCollider: {fileID: 0}
+  splashParticleSystem: {fileID: 0}
+  TextureWidth: 1024
+  TextureHeight: 400
   ObjectsRT: {fileID: 8400000, guid: f650063de21177c408058ff6fb306863, type: 2}
   RippleShader: {fileID: 4800000, guid: b62f7e69f75a6c742a6028d3e07f06ed, type: 3}
   AddShader: {fileID: 4800000, guid: 90b17fc6d7f5c66478bdd7ccea8f90bc, type: 3}
