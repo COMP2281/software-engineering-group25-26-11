@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.73607254, g: 0.5549378, b: 0.1481374, a: 1}
+  m_IndirectSpecularColor: {r: 0.73628634, g: 0.55551946, b: 0.14788294, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2058,10 +2058,18 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 96454957}
+    - targetCorrespondingSourceObject: {fileID: 3412649390972202448, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 96454959}
     - targetCorrespondingSourceObject: {fileID: 9014170783705847997, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 413993304}
+    - targetCorrespondingSourceObject: {fileID: 6733349667411237925, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 96454958}
   m_SourcePrefab: {fileID: 100100000, guid: 895f6f3c2d334633b5800312285058d2, type: 3}
 --- !u!1 &96454952 stripped
 GameObject:
@@ -2119,6 +2127,18 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
+--- !u!1 &96454955 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6733349667411237925, guid: 895f6f3c2d334633b5800312285058d2,
+    type: 3}
+  m_PrefabInstance: {fileID: 96454951}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &96454956 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3412649390972202448, guid: 895f6f3c2d334633b5800312285058d2,
+    type: 3}
+  m_PrefabInstance: {fileID: 96454951}
+  m_PrefabAsset: {fileID: 0}
 --- !u!54 &96454957
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2146,6 +2166,38 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &96454958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 96454955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushStrength: 10
+  surfaceTag: Surface
+  splashSound: {fileID: 8300000, guid: 88e5508c7d869c141b4ba331bf66f7de, type: 3}
+  moveSound: {fileID: 8300000, guid: e080f7589daaf26419fdddd1ad02f66e, type: 3}
+--- !u!114 &96454959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 96454956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushStrength: 10
+  surfaceTag: Surface
+  splashSound: {fileID: 8300000, guid: 88e5508c7d869c141b4ba331bf66f7de, type: 3}
+  moveSound: {fileID: 8300000, guid: e080f7589daaf26419fdddd1ad02f66e, type: 3}
 --- !u!114 &101562196 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3725960711131333484, guid: fe72fd31c72aac74fa838329f11d5d03,
