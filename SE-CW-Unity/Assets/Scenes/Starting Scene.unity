@@ -22103,7 +22103,7 @@ MonoBehaviour:
   targetDensity: 45
   pressureMultiplier: 350
   nearPressureMultiplier: 5
-  viscosityStrength: 0.03
+  viscosityStrength: 0
   boundsSize: {x: 8.6, y: 3.4}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}
@@ -22144,7 +22144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 024960bcbeed13247826e73be42aead6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sim: {fileID: 0}
+  sim: {fileID: 865727574}
   worldAnchor: {fileID: 0}
   maxEdgeLength: 4
   autoMaxEdgeLength: 1
