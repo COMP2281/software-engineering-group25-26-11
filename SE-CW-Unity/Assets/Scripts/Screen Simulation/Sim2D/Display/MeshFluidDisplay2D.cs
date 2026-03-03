@@ -70,13 +70,47 @@ namespace Seb.Fluid2D.Rendering
             meshFilter   = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
             meshFilter.mesh = fluidMesh;
+
+            // Auto-find FluidSim2D if not assigned in Inspector
+            if (sim == null)
+            {
+                // Try by tag first (same approach as SpawnOnContact)
+                GameObject fluidSimObj = GameObject.FindWithTag("FLUIDSIM");
+                if (fluidSimObj != null)
+                    sim = fluidSimObj.GetComponent<FluidSim2D>();
+            }
+            if (sim == null)
+            {
+                // Fallback: search scene for any FluidSim2D
+                sim = FindObjectOfType<FluidSim2D>();
+            }
+            if (sim == null)
+            {
+                Debug.LogError("[MeshFluidDisplay2D] Could not find a FluidSim2D in the scene! " +
+                               "Assign it manually or ensure a GameObject tagged 'FLUIDSIM' exists.");
+            }
+            else
+            {
+                Debug.Log($"[MeshFluidDisplay2D] Auto-found FluidSim2D on '{sim.gameObject.name}'");
+
+                // Also auto-resolve world anchor
+                if (worldAnchor == null && sim.particleDisplay != null)
+                    worldAnchor = sim.particleDisplay.worldAnchor;
+                
+                // Auto-disable ParticleDisplay2D so the old balls disappear
+                if (sim.particleDisplay != null && sim.particleDisplay.enabled)
+                {
+                    sim.particleDisplay.enabled = false;
+                    Debug.Log("[MeshFluidDisplay2D] Auto-disabled ParticleDisplay2D (ball rendering).");
+                }
+            }
         }
 
         void LateUpdate()
         {
             if (sim == null || sim.numParticles < 3)
             {
-                fluidMesh.Clear();
+                if (fluidMesh != null) fluidMesh.Clear();
                 return;
             }
 
