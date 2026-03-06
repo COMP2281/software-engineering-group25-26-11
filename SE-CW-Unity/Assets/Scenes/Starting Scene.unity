@@ -22149,6 +22149,9 @@ MonoBehaviour:
   maxEdgeLength: 4
   autoMaxEdgeLength: 1
   edgeLengthFactor: 1.8
+  smoothingIterations: 2
+  smoothingStrength: 0.5
+  subdivideEdges: 1
   baseAlpha: 0.85
 --- !u!23 &875859733
 MeshRenderer:
@@ -27935,7 +27938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!154 &1374920846
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -52672,7 +52675,7 @@ PrefabInstance:
     - target: {fileID: 5198983642965732885, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
         type: 3}
       propertyPath: m_Size.x
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5198983642965732885, guid: c4b7e2cdb6c181d4f96b70eaefe698fa,
         type: 3}

@@ -8,6 +8,8 @@ Shader "Fluid/FluidMesh2D"
         _FresnelPow     ("Fresnel Power",       Range(0.5, 5))  = 2.0
         _FresnelStr     ("Fresnel Intensity",   Range(0, 1))    = 0.3
         _AmbientMin     ("Ambient Minimum",     Range(0, 1))    = 0.35
+        _Smoothness     ("Surface Smoothness",  Range(0, 1))    = 0.8
+        _EdgeSoftness   ("Edge Softness",       Range(0, 0.1))  = 0.02
     }
 
     SubShader
@@ -31,7 +33,8 @@ Shader "Fluid/FluidMesh2D"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma target 3.0
+            #pragma target 3.5
+            #pragma multi_compile_fog
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -58,6 +61,8 @@ Shader "Fluid/FluidMesh2D"
                 float  _FresnelPow;
                 float  _FresnelStr;
                 float  _AmbientMin;
+                float  _Smoothness;
+                float  _EdgeSoftness;
             CBUFFER_END
 
             v2f vert(appdata v)
@@ -84,21 +89,37 @@ Shader "Fluid/FluidMesh2D"
                 Light mainLight = GetMainLight();
                 float3 lightDir = mainLight.direction;
 
-                // Wrapped diffuse (soft, never fully dark)
-                float NdotL = dot(n, lightDir) * 0.5 + 0.5;
-                float diffuse = lerp(_AmbientMin, 1.0, NdotL);
+                // Smooth wrapped diffuse for soft, liquid appearance
+                float NdotL = dot(n, lightDir);
+                float wrappedNdotL = (NdotL + 1.0) * 0.5; // Wrap lighting
+                wrappedNdotL = smoothstep(_AmbientMin, 1.0, wrappedNdotL); // Smooth transition
+                float diffuse = lerp(_AmbientMin, 1.0, wrappedNdotL);
 
-                // Blinn-Phong specular
+                // Enhanced Blinn-Phong specular with smoothness control
                 float3 halfDir = normalize(lightDir + viewDir);
                 float  NdotH   = max(0, dot(n, halfDir));
-                float  spec    = pow(NdotH, _SpecPower) * _SpecIntensity;
+                float  specPower = lerp(_SpecPower, _SpecPower * 2.0, _Smoothness);
+                float  spec    = pow(NdotH, specPower) * _SpecIntensity * _Smoothness;
 
-                // Fresnel rim (bright edges for a wet look)
+                // Enhanced Fresnel rim for wet, liquid edges
                 float NdotV   = max(0, dot(n, viewDir));
-                float fresnel = pow(1.0 - NdotV, _FresnelPow) * _FresnelStr;
+                float fresnelBase = 1.0 - NdotV;
+                float fresnel = smoothstep(0, 1, pow(fresnelBase, _FresnelPow)) * _FresnelStr;
 
-                float3 color = i.col.rgb * diffuse + spec + fresnel * half3(0.6, 0.7, 0.8);
-                return half4(color, i.col.a);
+                // Smooth color interpolation with edge softness
+                float3 baseColor = i.col.rgb;
+                
+                // Add subtle color variation for liquid depth illusion
+                float depthFactor = saturate(i.col.a);
+                baseColor = lerp(baseColor * 0.8, baseColor, depthFactor);
+                
+                // Final color composition with smooth blending
+                float3 color = baseColor * diffuse + spec + fresnel * half3(0.6, 0.8, 1.0);
+                
+                // Smooth alpha for seamless blending
+                float alpha = smoothstep(0, _EdgeSoftness + 0.01, i.col.a);
+                
+                return half4(color, alpha);
             }
             ENDHLSL
         }

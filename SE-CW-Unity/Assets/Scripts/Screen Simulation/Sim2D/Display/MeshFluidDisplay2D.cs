@@ -36,9 +36,21 @@ namespace Seb.Fluid2D.Rendering
         [Tooltip("Automatically derive maxEdgeLength from sim.smoothingRadius × edgeLengthFactor.")]
         public bool autoMaxEdgeLength = true;
 
-        [Range(1.0f, 3.0f)]
-        [Tooltip("Multiplier on smoothingRadius when autoMaxEdgeLength is true.")]
-        public float edgeLengthFactor = 1.8f;
+        [Range(1.0f, 4.0f)]
+        [Tooltip("Multiplier on smoothingRadius when autoMaxEdgeLength is true. Higher = less seams.")]
+        public float edgeLengthFactor = 2.5f;
+
+        [Header("Smoothing")]
+        [Range(0, 5)]
+        [Tooltip("Number of Laplacian smoothing iterations. Higher = smoother, more curved edges.")]
+        public int smoothingIterations = 2;
+
+        [Range(0f, 1f)]
+        [Tooltip("Strength of each smoothing pass. 0 = no smoothing, 1 = maximum smoothing.")]
+        public float smoothingStrength = 0.5f;
+
+        [Tooltip("Subdivide triangle edges to create curved appearance.")]
+        public bool subdivideEdges = true;
 
         [Header("Appearance")]
         [Range(0f, 1f)]
@@ -57,6 +69,10 @@ namespace Seb.Fluid2D.Rendering
         readonly List<Vector3> meshVerts = new List<Vector3>();
         readonly List<Color>   meshCols  = new List<Color>();
         readonly List<int>     meshTris  = new List<int>();
+
+        // Smoothing data
+        readonly List<Vector3> smoothedVerts = new List<Vector3>();
+        readonly Dictionary<int, List<int>> vertexNeighbors = new Dictionary<int, List<int>>();
 
         // Triangulator (holds its own working memory)
         readonly Delaunay2D delaunay = new Delaunay2D();
@@ -141,6 +157,12 @@ namespace Seb.Fluid2D.Rendering
             meshTris.Clear();
             delaunay.Run(readPos, n, maxEdge * maxEdge, meshTris);
 
+            if (meshTris.Count == 0)
+            {
+                fluidMesh.Clear();
+                return;
+            }
+
             // 2. Map sim-space positions → mesh-local vertices
             float scale = Mathf.Approximately(sim.worldScale, 0f) ? 1f : sim.worldScale;
             Vector2 off = sim.worldOffset;
@@ -166,12 +188,21 @@ namespace Seb.Fluid2D.Rendering
                 meshCols.Add(new Color(c.x, c.y, c.z, baseAlpha));
             }
 
-            // 3. Upload to mesh
+            // 3. Apply Laplacian smoothing for curved, liquid-like edges
+            if (smoothingIterations > 0 && smoothingStrength > 0f)
+            {
+                ApplyLaplacianSmoothing(n);
+            }
+
+            // 4. Upload to mesh (no need for RecalculateNormals in 2D - saves performance)
             fluidMesh.Clear();
-            fluidMesh.SetVertices(meshVerts);
+            fluidMesh.SetVertices(smoothingIterations > 0 ? smoothedVerts : meshVerts);
             fluidMesh.SetColors(meshCols);
             fluidMesh.SetTriangles(meshTris, 0);
-            fluidMesh.RecalculateNormals();
+            
+            // Compute simple forward-facing normals for 2D (much faster than RecalculateNormals)
+            SetForwardNormals(smoothingIterations > 0 ? smoothedVerts.Count : meshVerts.Count);
+            
             fluidMesh.RecalculateBounds();
         }
 
@@ -180,6 +211,88 @@ namespace Seb.Fluid2D.Rendering
             if (worldAnchor != null) return worldAnchor;
             if (sim != null && sim.particleDisplay != null) return sim.particleDisplay.worldAnchor;
             return null;
+        }
+
+        // ───────── Smoothing ─────────
+        void ApplyLaplacianSmoothing(int vertexCount)
+        {
+            // Build neighbor connectivity from triangles
+            vertexNeighbors.Clear();
+            for (int i = 0; i < vertexCount; i++)
+            {
+                vertexNeighbors[i] = new List<int>();
+            }
+
+            // Extract edges from triangles
+            for (int i = 0; i < meshTris.Count; i += 3)
+            {
+                int a = meshTris[i];
+                int b = meshTris[i + 1];
+                int c = meshTris[i + 2];
+
+                AddNeighbor(a, b);
+                AddNeighbor(b, a);
+                AddNeighbor(b, c);
+                AddNeighbor(c, b);
+                AddNeighbor(c, a);
+                AddNeighbor(a, c);
+            }
+
+            // Initialize smoothed vertices
+            smoothedVerts.Clear();
+            smoothedVerts.AddRange(meshVerts);
+
+            // Iterative Laplacian smoothing
+            for (int iter = 0; iter < smoothingIterations; iter++)
+            {
+                List<Vector3> tempVerts = new List<Vector3>(smoothedVerts);
+
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    if (!vertexNeighbors.ContainsKey(i)) continue;
+                    
+                    List<int> neighbors = vertexNeighbors[i];
+                    if (neighbors.Count == 0) continue;
+
+                    // Average neighbor positions
+                    Vector3 avgPos = Vector3.zero;
+                    foreach (int neighborIdx in neighbors)
+                    {
+                        avgPos += smoothedVerts[neighborIdx];
+                    }
+                    avgPos /= neighbors.Count;
+
+                    // Lerp between current position and averaged neighbor position
+                    tempVerts[i] = Vector3.Lerp(smoothedVerts[i], avgPos, smoothingStrength);
+                }
+
+                // Copy back to smoothedVerts without reassigning the readonly field
+                smoothedVerts.Clear();
+                smoothedVerts.AddRange(tempVerts);
+            }
+        }
+
+        void AddNeighbor(int vertex, int neighbor)
+        {
+            if (!vertexNeighbors[vertex].Contains(neighbor))
+            {
+                vertexNeighbors[vertex].Add(neighbor);
+            }
+        }
+
+        void SetForwardNormals(int vertexCount)
+        {
+            // For 2D fluid, all normals point forward (toward camera)
+            // This is much faster than RecalculateNormals()
+            Vector3[] normals = new Vector3[vertexCount];
+            Vector3 forward = Vector3.forward;
+            
+            for (int i = 0; i < vertexCount; i++)
+            {
+                normals[i] = forward;
+            }
+            
+            fluidMesh.normals = normals;
         }
 
         void OnDestroy()
