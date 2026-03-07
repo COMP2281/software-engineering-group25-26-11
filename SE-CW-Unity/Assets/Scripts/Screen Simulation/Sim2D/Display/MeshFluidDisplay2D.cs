@@ -41,16 +41,24 @@ namespace Seb.Fluid2D.Rendering
         public float edgeLengthFactor = 2.5f;
 
         [Header("Smoothing")]
-        [Range(0, 5)]
-        [Tooltip("Number of Laplacian smoothing iterations. Higher = smoother, more curved edges.")]
-        public int smoothingIterations = 2;
+        [Range(0, 8)]
+        [Tooltip("Number of Taubin smoothing iterations (shrink+inflate pair). Higher = smoother edges.")]
+        public int smoothingIterations = 3;
 
         [Range(0f, 1f)]
         [Tooltip("Strength of each smoothing pass. 0 = no smoothing, 1 = maximum smoothing.")]
-        public float smoothingStrength = 0.5f;
+        public float smoothingStrength = 0.6f;
 
-        [Tooltip("Subdivide triangle edges to create curved appearance.")]
+        [Tooltip("Subdivide boundary edges to create smoother silhouettes.")]
         public bool subdivideEdges = true;
+
+        [Header("Boundary Normals")]
+        [Tooltip("Tilt normals outward at boundary vertices for Fresnel rim highlights.")]
+        public bool boundaryNormalTilt = true;
+
+        [Range(0f, 60f)]
+        [Tooltip("Angle in degrees to tilt boundary normals outward. Creates a rounded, glossy edge.")]
+        public float normalTiltAngle = 35f;
 
         [Header("Appearance")]
         [Range(0f, 1f)]
@@ -73,6 +81,12 @@ namespace Seb.Fluid2D.Rendering
         // Smoothing data
         readonly List<Vector3> smoothedVerts = new List<Vector3>();
         readonly Dictionary<int, List<int>> vertexNeighbors = new Dictionary<int, List<int>>();
+
+        // Boundary detection (reused across frames)
+        readonly HashSet<int> boundaryVertSet = new HashSet<int>();
+        readonly Dictionary<long, int> edgeFaceCount = new Dictionary<long, int>();
+        readonly List<int> boundaryEdgeA = new List<int>();
+        readonly List<int> boundaryEdgeB = new List<int>();
 
         // Triangulator (holds its own working memory)
         readonly Delaunay2D delaunay = new Delaunay2D();
@@ -163,7 +177,17 @@ namespace Seb.Fluid2D.Rendering
                 return;
             }
 
-            // 2. Map sim-space positions → mesh-local vertices
+            // 2. Detect boundary edges for subdivision and normal tilting
+            DetectBoundaryEdges(n);
+
+            // 3. Subdivide boundary edges for smoother silhouettes
+            int vertCount = n;
+            if (subdivideEdges && boundaryEdgeA.Count > 0)
+            {
+                vertCount = SubdivideBoundaryEdges(n);
+            }
+
+            // 4. Map sim-space positions → mesh-local vertices
             float scale = Mathf.Approximately(sim.worldScale, 0f) ? 1f : sim.worldScale;
             Vector2 off = sim.worldOffset;
 
@@ -175,7 +199,7 @@ namespace Seb.Fluid2D.Rendering
             meshVerts.Clear();
             meshCols.Clear();
 
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < vertCount; i++)
             {
                 float2 p = readPos[i];
                 Vector3 anchorLocal = new Vector3(
@@ -188,21 +212,25 @@ namespace Seb.Fluid2D.Rendering
                 meshCols.Add(new Color(c.x, c.y, c.z, baseAlpha));
             }
 
-            // 3. Apply Laplacian smoothing for curved, liquid-like edges
+            // 5. Apply Taubin smoothing (volume-preserving) for curved, liquid-like edges
             if (smoothingIterations > 0 && smoothingStrength > 0f)
             {
-                ApplyLaplacianSmoothing(n);
+                ApplyTaubinSmoothing(vertCount);
             }
 
-            // 4. Upload to mesh (no need for RecalculateNormals in 2D - saves performance)
+            // 6. Upload to mesh
             fluidMesh.Clear();
-            fluidMesh.SetVertices(smoothingIterations > 0 ? smoothedVerts : meshVerts);
+            List<Vector3> finalVerts = smoothingIterations > 0 ? smoothedVerts : meshVerts;
+            fluidMesh.SetVertices(finalVerts);
             fluidMesh.SetColors(meshCols);
             fluidMesh.SetTriangles(meshTris, 0);
-            
-            // Compute simple forward-facing normals for 2D (much faster than RecalculateNormals)
-            SetForwardNormals(smoothingIterations > 0 ? smoothedVerts.Count : meshVerts.Count);
-            
+
+            // 7. Compute normals with optional boundary tilt for Fresnel rim highlights
+            if (boundaryNormalTilt && boundaryVertSet.Count > 0)
+                ComputeNormalsWithBoundaryTilt(finalVerts);
+            else
+                SetForwardNormals(finalVerts.Count);
+
             fluidMesh.RecalculateBounds();
         }
 
@@ -213,85 +241,255 @@ namespace Seb.Fluid2D.Rendering
             return null;
         }
 
-        // ───────── Smoothing ─────────
-        void ApplyLaplacianSmoothing(int vertexCount)
+        // ───────── Boundary detection ─────────
+        void DetectBoundaryEdges(int vertexCount)
         {
-            // Build neighbor connectivity from triangles
-            vertexNeighbors.Clear();
-            for (int i = 0; i < vertexCount; i++)
-            {
-                vertexNeighbors[i] = new List<int>();
-            }
+            boundaryVertSet.Clear();
+            edgeFaceCount.Clear();
+            boundaryEdgeA.Clear();
+            boundaryEdgeB.Clear();
 
-            // Extract edges from triangles
+            // Count how many triangles each edge belongs to
             for (int i = 0; i < meshTris.Count; i += 3)
             {
-                int a = meshTris[i];
-                int b = meshTris[i + 1];
-                int c = meshTris[i + 2];
-
-                AddNeighbor(a, b);
-                AddNeighbor(b, a);
-                AddNeighbor(b, c);
-                AddNeighbor(c, b);
-                AddNeighbor(c, a);
-                AddNeighbor(a, c);
+                IncrementEdge(meshTris[i],     meshTris[i + 1]);
+                IncrementEdge(meshTris[i + 1], meshTris[i + 2]);
+                IncrementEdge(meshTris[i + 2], meshTris[i]);
             }
 
-            // Initialize smoothed vertices
+            // Boundary edges belong to exactly 1 triangle
+            foreach (var kvp in edgeFaceCount)
+            {
+                if (kvp.Value == 1)
+                {
+                    long key = kvp.Key;
+                    int a = (int)(key >> 32);
+                    int b = (int)(key & 0xFFFFFFFFL);
+                    boundaryEdgeA.Add(a);
+                    boundaryEdgeB.Add(b);
+                    boundaryVertSet.Add(a);
+                    boundaryVertSet.Add(b);
+                }
+            }
+        }
+
+        void IncrementEdge(int a, int b)
+        {
+            long key = EdgeKey(a, b);
+            edgeFaceCount.TryGetValue(key, out int count);
+            edgeFaceCount[key] = count + 1;
+        }
+
+        static long EdgeKey(int a, int b)
+        {
+            int lo = a < b ? a : b;
+            int hi = a < b ? b : a;
+            return ((long)lo << 32) | (uint)hi;
+        }
+
+        // ───────── Boundary subdivision ─────────
+        /// <summary>
+        /// Inserts midpoint vertices on boundary edges and splits affected triangles.
+        /// This doubles silhouette resolution so smoothing produces curved outlines.
+        /// </summary>
+        int SubdivideBoundaryEdges(int origCount)
+        {
+            int numEdges = boundaryEdgeA.Count;
+            int totalVerts = origCount + numEdges;
+
+            // Ensure read-back arrays have room for the new midpoint vertices
+            if (readPos.Length < totalVerts)
+            {
+                var newPos = new float2[totalVerts];
+                var newCol = new float4[totalVerts];
+                System.Array.Copy(readPos, newPos, origCount);
+                System.Array.Copy(readCol, newCol, origCount);
+                readPos = newPos;
+                readCol = newCol;
+            }
+
+            // Create midpoint vertices and map each boundary edge to its midpoint index
+            var edgeMidpoint = new Dictionary<long, int>(numEdges);
+            for (int i = 0; i < numEdges; i++)
+            {
+                int a = boundaryEdgeA[i], b = boundaryEdgeB[i];
+                int mid = origCount + i;
+                readPos[mid] = (readPos[a] + readPos[b]) * 0.5f;
+                readCol[mid] = (readCol[a] + readCol[b]) * 0.5f;
+                edgeMidpoint[EdgeKey(a, b)] = mid;
+                boundaryVertSet.Add(mid); // midpoints are also boundary vertices
+            }
+
+            // Rebuild triangle list, splitting triangles that contain boundary edges
+            int triCount = meshTris.Count;
+            var newTris = new List<int>(triCount * 2);
+
+            for (int i = 0; i < triCount; i += 3)
+            {
+                int a = meshTris[i], b = meshTris[i + 1], c = meshTris[i + 2];
+
+                bool hasAB = edgeMidpoint.TryGetValue(EdgeKey(a, b), out int mAB);
+                bool hasBC = edgeMidpoint.TryGetValue(EdgeKey(b, c), out int mBC);
+                bool hasCA = edgeMidpoint.TryGetValue(EdgeKey(c, a), out int mCA);
+
+                int splits = (hasAB ? 1 : 0) + (hasBC ? 1 : 0) + (hasCA ? 1 : 0);
+
+                if (splits == 0)
+                {
+                    newTris.Add(a); newTris.Add(b); newTris.Add(c);
+                }
+                else if (splits == 1)
+                {
+                    if (hasAB)      { newTris.Add(a); newTris.Add(mAB); newTris.Add(c);   newTris.Add(mAB); newTris.Add(b);   newTris.Add(c);  }
+                    else if (hasBC) { newTris.Add(a); newTris.Add(b);   newTris.Add(mBC);  newTris.Add(a);   newTris.Add(mBC); newTris.Add(c);  }
+                    else            { newTris.Add(a); newTris.Add(b);   newTris.Add(mCA);  newTris.Add(mCA); newTris.Add(b);   newTris.Add(c);  }
+                }
+                else if (splits == 2)
+                {
+                    if (!hasAB)      { newTris.Add(a); newTris.Add(b);   newTris.Add(mBC);  newTris.Add(a); newTris.Add(mBC); newTris.Add(mCA); newTris.Add(mCA); newTris.Add(mBC); newTris.Add(c); }
+                    else if (!hasBC) { newTris.Add(mAB); newTris.Add(b); newTris.Add(c);    newTris.Add(a); newTris.Add(mAB); newTris.Add(mCA); newTris.Add(mCA); newTris.Add(mAB); newTris.Add(c); }
+                    else             { newTris.Add(a); newTris.Add(mAB); newTris.Add(c);    newTris.Add(mAB); newTris.Add(b); newTris.Add(mBC); newTris.Add(mAB); newTris.Add(mBC); newTris.Add(c); }
+                }
+                else // splits == 3: standard 1-to-4 subdivision
+                {
+                    newTris.Add(a);   newTris.Add(mAB); newTris.Add(mCA);
+                    newTris.Add(mAB); newTris.Add(b);   newTris.Add(mBC);
+                    newTris.Add(mCA); newTris.Add(mBC); newTris.Add(c);
+                    newTris.Add(mAB); newTris.Add(mBC); newTris.Add(mCA);
+                }
+            }
+
+            meshTris.Clear();
+            meshTris.AddRange(newTris);
+            return totalVerts;
+        }
+
+        // ───────── Smoothing (Taubin λ|μ — volume-preserving) ─────────
+        /// <summary>
+        /// Taubin smoothing alternates a shrinking pass (λ) with an inflating pass (μ).
+        /// This prevents the volume loss that plain Laplacian smoothing causes,
+        /// keeping the fluid body from visibly shrinking over many iterations.
+        /// Boundary vertices receive slightly stronger smoothing for cleaner silhouettes.
+        /// </summary>
+        void ApplyTaubinSmoothing(int vertexCount)
+        {
+            BuildNeighborConnectivity(vertexCount);
+
             smoothedVerts.Clear();
             smoothedVerts.AddRange(meshVerts);
 
-            // Iterative Laplacian smoothing
+            float lambda = Mathf.Clamp(smoothingStrength, 0.01f, 0.99f);
+            float mu = -(lambda + 0.02f); // |μ| > λ ensures no net shrinkage
+
             for (int iter = 0; iter < smoothingIterations; iter++)
             {
-                List<Vector3> tempVerts = new List<Vector3>(smoothedVerts);
-
-                for (int i = 0; i < vertexCount; i++)
-                {
-                    if (!vertexNeighbors.ContainsKey(i)) continue;
-                    
-                    List<int> neighbors = vertexNeighbors[i];
-                    if (neighbors.Count == 0) continue;
-
-                    // Average neighbor positions
-                    Vector3 avgPos = Vector3.zero;
-                    foreach (int neighborIdx in neighbors)
-                    {
-                        avgPos += smoothedVerts[neighborIdx];
-                    }
-                    avgPos /= neighbors.Count;
-
-                    // Lerp between current position and averaged neighbor position
-                    tempVerts[i] = Vector3.Lerp(smoothedVerts[i], avgPos, smoothingStrength);
-                }
-
-                // Copy back to smoothedVerts without reassigning the readonly field
-                smoothedVerts.Clear();
-                smoothedVerts.AddRange(tempVerts);
+                ApplySmoothPass(vertexCount, lambda); // shrink
+                ApplySmoothPass(vertexCount, mu);      // inflate
             }
+        }
+
+        void BuildNeighborConnectivity(int vertexCount)
+        {
+            vertexNeighbors.Clear();
+            for (int i = 0; i < vertexCount; i++)
+                vertexNeighbors[i] = new List<int>();
+
+            for (int i = 0; i < meshTris.Count; i += 3)
+            {
+                int a = meshTris[i], b = meshTris[i + 1], c = meshTris[i + 2];
+                AddNeighbor(a, b); AddNeighbor(b, a);
+                AddNeighbor(b, c); AddNeighbor(c, b);
+                AddNeighbor(c, a); AddNeighbor(a, c);
+            }
+        }
+
+        void ApplySmoothPass(int vertexCount, float factor)
+        {
+            List<Vector3> tempVerts = new List<Vector3>(smoothedVerts);
+
+            for (int i = 0; i < vertexCount; i++)
+            {
+                if (!vertexNeighbors.ContainsKey(i)) continue;
+                List<int> neighbors = vertexNeighbors[i];
+                if (neighbors.Count == 0) continue;
+
+                Vector3 avgPos = Vector3.zero;
+                foreach (int ni in neighbors)
+                    avgPos += smoothedVerts[ni];
+                avgPos /= neighbors.Count;
+
+                Vector3 laplacian = avgPos - smoothedVerts[i];
+
+                // Boundary vertices get stronger smoothing for cleaner silhouettes
+                float f = boundaryVertSet.Contains(i) ? factor * 1.3f : factor;
+                tempVerts[i] = smoothedVerts[i] + laplacian * f;
+            }
+
+            smoothedVerts.Clear();
+            smoothedVerts.AddRange(tempVerts);
         }
 
         void AddNeighbor(int vertex, int neighbor)
         {
             if (!vertexNeighbors[vertex].Contains(neighbor))
-            {
                 vertexNeighbors[vertex].Add(neighbor);
+        }
+
+        // ───────── Normals ─────────
+        /// <summary>
+        /// Tilts normals outward at boundary vertices so the shader's Fresnel and specular
+        /// terms create glossy rim highlights, giving the flat 2D mesh a rounded, liquid look.
+        /// Interior vertices keep forward-facing normals.
+        /// </summary>
+        void ComputeNormalsWithBoundaryTilt(List<Vector3> verts)
+        {
+            int vertexCount = verts.Count;
+            Vector3[] normals = new Vector3[vertexCount];
+
+            float tiltRad = normalTiltAngle * Mathf.Deg2Rad;
+            float sinTilt = Mathf.Sin(tiltRad);
+            float cosTilt = Mathf.Cos(tiltRad);
+
+            // Compute centre of mass for outward direction reference
+            Vector3 center = Vector3.zero;
+            for (int i = 0; i < vertexCount; i++)
+                center += verts[i];
+            center /= vertexCount;
+
+            for (int i = 0; i < vertexCount; i++)
+            {
+                if (boundaryVertSet.Contains(i))
+                {
+                    Vector3 outward = verts[i] - center;
+                    outward.z = 0f;
+                    float mag = outward.magnitude;
+                    if (mag > 0.001f)
+                    {
+                        outward /= mag;
+                        normals[i] = new Vector3(
+                            outward.x * sinTilt,
+                            outward.y * sinTilt,
+                            cosTilt).normalized;
+                    }
+                    else
+                    {
+                        normals[i] = Vector3.forward;
+                    }
+                }
+                else
+                {
+                    normals[i] = Vector3.forward;
+                }
             }
+
+            fluidMesh.normals = normals;
         }
 
         void SetForwardNormals(int vertexCount)
         {
-            // For 2D fluid, all normals point forward (toward camera)
-            // This is much faster than RecalculateNormals()
             Vector3[] normals = new Vector3[vertexCount];
-            Vector3 forward = Vector3.forward;
-            
             for (int i = 0; i < vertexCount; i++)
-            {
-                normals[i] = forward;
-            }
-            
+                normals[i] = Vector3.forward;
             fluidMesh.normals = normals;
         }
 
