@@ -52,6 +52,15 @@ namespace Seb.Fluid2D.Rendering
         [Tooltip("Subdivide triangle edges to create curved appearance.")]
         public bool subdivideEdges = true;
 
+        [Header("Color Blending")]
+        [Range(0, 3)]
+        [Tooltip("Number of color blending passes. Higher = smoother color transitions between different colors.")]
+        public int colorBlendingPasses = 2;
+
+        [Range(0f, 1f)]
+        [Tooltip("Strength of color blending. 0 = sharp color boundaries, 1 = fully blended colors.")]
+        public float colorBlendingStrength = 0.6f;
+
         [Header("Appearance")]
         [Range(0f, 1f)]
         public float baseAlpha = 0.85f;
@@ -72,6 +81,7 @@ namespace Seb.Fluid2D.Rendering
 
         // Smoothing data
         readonly List<Vector3> smoothedVerts = new List<Vector3>();
+        readonly List<Color> blendedColors = new List<Color>();
         readonly Dictionary<int, List<int>> vertexNeighbors = new Dictionary<int, List<int>>();
 
         // Triangulator (holds its own working memory)
@@ -194,10 +204,16 @@ namespace Seb.Fluid2D.Rendering
                 ApplyLaplacianSmoothing(n);
             }
 
-            // 4. Upload to mesh (no need for RecalculateNormals in 2D - saves performance)
+            // 4. Apply color blending for smooth color transitions
+            if (colorBlendingPasses > 0 && colorBlendingStrength > 0f)
+            {
+                ApplyColorBlending(n);
+            }
+
+            // 5. Upload to mesh (no need for RecalculateNormals in 2D - saves performance)
             fluidMesh.Clear();
             fluidMesh.SetVertices(smoothingIterations > 0 ? smoothedVerts : meshVerts);
-            fluidMesh.SetColors(meshCols);
+            fluidMesh.SetColors(colorBlendingPasses > 0 ? blendedColors : meshCols);
             fluidMesh.SetTriangles(meshTris, 0);
             
             // Compute simple forward-facing normals for 2D (much faster than RecalculateNormals)
@@ -217,26 +233,7 @@ namespace Seb.Fluid2D.Rendering
         void ApplyLaplacianSmoothing(int vertexCount)
         {
             // Build neighbor connectivity from triangles
-            vertexNeighbors.Clear();
-            for (int i = 0; i < vertexCount; i++)
-            {
-                vertexNeighbors[i] = new List<int>();
-            }
-
-            // Extract edges from triangles
-            for (int i = 0; i < meshTris.Count; i += 3)
-            {
-                int a = meshTris[i];
-                int b = meshTris[i + 1];
-                int c = meshTris[i + 2];
-
-                AddNeighbor(a, b);
-                AddNeighbor(b, a);
-                AddNeighbor(b, c);
-                AddNeighbor(c, b);
-                AddNeighbor(c, a);
-                AddNeighbor(a, c);
-            }
+            BuildNeighborConnectivity(vertexCount);
 
             // Initialize smoothed vertices
             smoothedVerts.Clear();
@@ -277,6 +274,76 @@ namespace Seb.Fluid2D.Rendering
             if (!vertexNeighbors[vertex].Contains(neighbor))
             {
                 vertexNeighbors[vertex].Add(neighbor);
+            }
+        }
+
+        void ApplyColorBlending(int vertexCount)
+        {
+            // Use the neighbor connectivity already built by ApplyLaplacianSmoothing
+            // If smoothing wasn't run, build it now
+            if (vertexNeighbors.Count == 0)
+            {
+                BuildNeighborConnectivity(vertexCount);
+            }
+
+            // Initialize blended colors
+            blendedColors.Clear();
+            blendedColors.AddRange(meshCols);
+
+            // Iterative color blending
+            for (int iter = 0; iter < colorBlendingPasses; iter++)
+            {
+                List<Color> tempColors = new List<Color>(blendedColors);
+
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    if (!vertexNeighbors.ContainsKey(i)) continue;
+                    
+                    List<int> neighbors = vertexNeighbors[i];
+                    if (neighbors.Count == 0) continue;
+
+                    // Average neighbor colors (in RGB space)
+                    Vector4 avgColor = Vector4.zero;
+                    foreach (int neighborIdx in neighbors)
+                    {
+                        Color neighborCol = blendedColors[neighborIdx];
+                        avgColor += new Vector4(neighborCol.r, neighborCol.g, neighborCol.b, neighborCol.a);
+                    }
+                    avgColor /= neighbors.Count;
+
+                    // Lerp between current color and averaged neighbor color
+                    Color currentColor = blendedColors[i];
+                    Color targetColor = new Color(avgColor.x, avgColor.y, avgColor.z, avgColor.w);
+                    tempColors[i] = Color.Lerp(currentColor, targetColor, colorBlendingStrength);
+                }
+
+                // Copy back to blendedColors
+                blendedColors.Clear();
+                blendedColors.AddRange(tempColors);
+            }
+        }
+
+        void BuildNeighborConnectivity(int vertexCount)
+        {
+            vertexNeighbors.Clear();
+            for (int i = 0; i < vertexCount; i++)
+            {
+                vertexNeighbors[i] = new List<int>();
+            }
+
+            // Extract edges from triangles
+            for (int i = 0; i < meshTris.Count; i += 3)
+            {
+                int a = meshTris[i];
+                int b = meshTris[i + 1];
+                int c = meshTris[i + 2];
+
+                AddNeighbor(a, b);
+                AddNeighbor(b, a);
+                AddNeighbor(b, c);
+                AddNeighbor(c, b);
+                AddNeighbor(c, a);
+                AddNeighbor(a, c);
             }
         }
 

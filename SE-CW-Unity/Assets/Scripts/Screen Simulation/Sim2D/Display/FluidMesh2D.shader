@@ -93,7 +93,7 @@ Shader "Fluid/FluidMesh2D"
                 float NdotL = dot(n, lightDir);
                 float wrappedNdotL = (NdotL + 1.0) * 0.5; // Wrap lighting
                 wrappedNdotL = smoothstep(_AmbientMin, 1.0, wrappedNdotL); // Smooth transition
-                float diffuse = lerp(_AmbientMin, 1.0, wrappedNdotL);
+                float diffuse = lerp(0.8, 1.0, wrappedNdotL); // Keep colors brighter
 
                 // Enhanced Blinn-Phong specular with smoothness control
                 float3 halfDir = normalize(lightDir + viewDir);
@@ -109,12 +109,12 @@ Shader "Fluid/FluidMesh2D"
                 // Smooth color interpolation with edge softness
                 float3 baseColor = i.col.rgb;
                 
-                // Add subtle color variation for liquid depth illusion
-                float depthFactor = saturate(i.col.a);
-                baseColor = lerp(baseColor * 0.8, baseColor, depthFactor);
+                // Keep original color without darkening
+                // Removed depth-based darkening to preserve paintball colors
                 
                 // Final color composition with smooth blending
-                float3 color = baseColor * diffuse + spec + fresnel * half3(0.6, 0.8, 1.0);
+                // Use baseColor directly to preserve paintball color, add subtle lighting effects
+                float3 color = baseColor * diffuse + spec * 0.5 + fresnel * baseColor * 0.3;
                 
                 // Smooth alpha for seamless blending
                 float alpha = smoothstep(0, _EdgeSoftness + 0.01, i.col.a);

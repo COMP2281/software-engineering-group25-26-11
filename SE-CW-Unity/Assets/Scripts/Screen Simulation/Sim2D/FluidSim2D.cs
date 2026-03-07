@@ -78,7 +78,7 @@ namespace Seb.Fluid2D.Simulation
 
 		void Start()
 		{
-			Debug.Log("Controls: Space = Play/Pause, R = Reset, LMB = Attract, RMB = Repel");
+			Debug.Log("Controls: Space = Play/Pause, R = Reset, C = Clear Paint, LMB = Attract, RMB = Repel");
 
 			Init();
 		}
@@ -308,6 +308,11 @@ namespace Seb.Fluid2D.Simulation
 			{
 				SpawnParticles(spawner2D.GetSpawnData(), Vector2.zero);
 			}
+
+			if (Input.GetKeyDown(KeyCode.C))
+			{
+				ClearAllParticles();
+			}
 		}
 
 		public void SpawnParticles(Spawner2D.ParticleSpawnData spawnData, Vector2 spawnOffsetLocal)
@@ -393,6 +398,20 @@ namespace Seb.Fluid2D.Simulation
 			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderKernel, copybackKernel);
 
 			compute.SetInt("numParticles", numParticles);
+		}
+
+		/// <summary>
+		/// Clears all particles from the simulation (resets the paint screen)
+		/// </summary>
+		public void ClearAllParticles()
+		{
+			if (numParticles == 0) return;
+
+			// Store empty data
+			numParticles = 0;
+			compute.SetInt("numParticles", numParticles);
+
+			Debug.Log("[FluidSim2D] All particles cleared.");
 		}
 
 		public Vector2 WorldToSimLocal(Vector3 worldPos)
