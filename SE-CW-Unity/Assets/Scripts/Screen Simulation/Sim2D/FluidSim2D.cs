@@ -10,7 +10,7 @@ namespace Seb.Fluid2D.Simulation
 	{
 		public event System.Action SimulationStepCompleted;
 		[Header("World Mapping")]
-		public Vector2 worldOffset;   // X/Y origin of the 2D sim in world space
+		public Vector3 worldOffset;   // X/Y/Z origin of the 2D sim in world space
 		public float worldScale = 1f; // Optional: scale sim units to world units
 		[Tooltip("Spawn initial particles at startup")]
 		public bool spawnOnStart = true;
@@ -223,7 +223,7 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetVector("obstacleSize", obstacleSize);
 			compute.SetVector("obstacleCentre", obstacleCentre);
 
-			compute.SetVector("worldOffset", new Vector4(worldOffset.x, worldOffset.y, 0f, 0f));
+			compute.SetVector("worldOffset", new Vector4(worldOffset.x, worldOffset.y, worldOffset.z, 0f));
         	compute.SetFloat("worldScale", worldScale);
 
 			compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(smoothingRadius, 8)));
@@ -419,7 +419,7 @@ namespace Seb.Fluid2D.Simulation
 			Transform anchor = particleDisplay != null ? particleDisplay.worldAnchor : null;
 			Vector3 local = anchor != null ? anchor.InverseTransformPoint(worldPos) : worldPos;
 			float scale = Mathf.Approximately(worldScale, 0f) ? 1f : worldScale;
-			return ((Vector2)local - worldOffset) / scale;
+			return ((Vector2)local - (Vector2)worldOffset) / scale;
 		}
 
 
@@ -438,7 +438,7 @@ namespace Seb.Fluid2D.Simulation
 			{
 				gizmoCentre = particleDisplay.worldAnchor.position;
 			}
-			gizmoCentre += (Vector3)worldOffset;
+			gizmoCentre += worldOffset;
 
 
 			Gizmos.color = new Color(0, 1, 0, 0.4f);

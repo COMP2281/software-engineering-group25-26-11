@@ -175,7 +175,7 @@ namespace Seb.Fluid2D.Rendering
 
             // 2. Map sim-space positions → mesh-local vertices
             float scale = Mathf.Approximately(sim.worldScale, 0f) ? 1f : sim.worldScale;
-            Vector2 off = sim.worldOffset;
+            Vector3 off = sim.worldOffset;
 
             Transform anchor = ResolveAnchor();
             Matrix4x4 anchorToWorld = anchor != null ? anchor.localToWorldMatrix : Matrix4x4.identity;
@@ -191,7 +191,7 @@ namespace Seb.Fluid2D.Rendering
                 Vector3 anchorLocal = new Vector3(
                     p.x * scale + off.x,
                     p.y * scale + off.y,
-                    0f);
+                    off.z);
                 meshVerts.Add(simToMesh.MultiplyPoint3x4(anchorLocal));
 
                 float4 c = readCol[i];
