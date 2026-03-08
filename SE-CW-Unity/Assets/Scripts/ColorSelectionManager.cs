@@ -45,6 +45,9 @@ public class ColorSelectionManager : MonoBehaviour
     // Track which paintball GameObject belongs to which button
     private Dictionary<int, GameObject> buttonToPaintball = new Dictionary<int, GameObject>();
 
+    // Track the confirmed color for each button (for respawning with correct color)
+    private Dictionary<int, Color> buttonConfirmedColor = new Dictionary<int, Color>();
+
     // Track used colors
     private HashSet<Color32> usedColors = new HashSet<Color32>();
 
@@ -85,8 +88,6 @@ public class ColorSelectionManager : MonoBehaviour
             return;
         }
 
-        Color whiteColor = Color.white;
-
         for (int buttonIndex = 1; buttonIndex <= 5; buttonIndex++)
         {
             Transform spawnPoint = GetSpawnPointForButton(buttonIndex);
@@ -96,45 +97,8 @@ public class ColorSelectionManager : MonoBehaviour
                 continue;
             }
 
-            Vector3 spawnPosition = spawnPoint.position;
-
-            // Create white paintball
-            GameObject newBall = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
-            newBall.name = $"Paintball_White_Button{buttonIndex}_Initial";
-
-            // Set color to white
-            Renderer ballRenderer = newBall.GetComponent<Renderer>();
-            if (ballRenderer != null)
-            {
-                ballRenderer.material.color = whiteColor;
-            }
-
-            // Make it kinematic (anchored)
-            Rigidbody ballRb = newBall.GetComponent<Rigidbody>();
-            if (ballRb != null)
-            {
-                ballRb.isKinematic = true;
-                ballRb.useGravity = true;
-            }
-
-            // Inject WaterCube reference
-            var collision = newBall.GetComponent<PaintballCollision>();
-            if (collision != null)
-            {
-                collision.waterSurface = waterSurface;
-            }
-
-            var spawnOnContact = newBall.GetComponent<SpawnOnContact>();
-            if (spawnOnContact != null)
-            {
-                // SpawnOnContact doesn't need waterSurface, but we can set paintballPrefab
-                spawnOnContact.paintballPrefab = ballPrefab;
-            }
-
-            // Track this paintball
-            buttonToPaintball[buttonIndex] = newBall;
-
-            Debug.Log($"Spawned initial white paintball at Button {buttonIndex} spawn point: {spawnPosition}");
+            // Use the unified SpawnPlaceholder method with white color
+            SpawnPlaceholder(buttonIndex, Color.white);
         }
 
         Debug.Log("Initial white paintballs spawned at all 5 positions");
@@ -190,22 +154,25 @@ public class ColorSelectionManager : MonoBehaviour
     /// </summary>
     private void OpenColorPanel(int buttonIndex)
     {
-        // Check if this button already has a paintball - if so, destroy it before opening panel
+        // Use the confirmed color for this button (or white if never confirmed)
+        Color placeholderColor = buttonConfirmedColor.GetValueOrDefault(buttonIndex, Color.white);
+
+        // Check if this button already has a paintball - if so, destroy it
         if (buttonToPaintball.ContainsKey(buttonIndex) && buttonToPaintball[buttonIndex] != null)
         {
             GameObject oldBall = buttonToPaintball[buttonIndex];
             
-            // Get the old color and remove it from used colors
+            // Get the old color for cleanup
             Renderer oldRenderer = oldBall.GetComponent<Renderer>();
             if (oldRenderer != null)
             {
-                Color32 oldColorKey = (Color32)oldRenderer.material.color;
-                usedColors.Remove(oldColorKey);
+                Color oldColor = oldRenderer.material.color;
+                Color32 oldColorKey = (Color32)oldColor;
                 
-                // Remove from colorToSpawnQueue if it exists
-                if (colorToSpawnQueue.ContainsKey(oldColorKey))
+                // Remove from used colors only if not white
+                if (oldColor != Color.white)
                 {
-                    colorToSpawnQueue.Remove(oldColorKey);
+                    usedColors.Remove(oldColorKey);
                 }
             }
             
@@ -218,14 +185,14 @@ public class ColorSelectionManager : MonoBehaviour
                 totalBallCount--;
             }
             
-            Debug.Log($"Destroyed old paintball at Button {buttonIndex} (button clicked)");
+            Debug.Log($"Destroyed old paintball at Button {buttonIndex} (button clicked), will use confirmed color {placeholderColor} for placeholder");
         }
 
-        // Spawn a white placeholder ball at this position
-        SpawnWhitePlaceholder(buttonIndex);
+        // Spawn a placeholder ball at this position with the confirmed color
+        SpawnPlaceholder(buttonIndex, placeholderColor);
         
-        // Reset button color to white
-        UpdateButtonColor(buttonIndex, Color.white);
+        // Reset button color to match the confirmed color
+        UpdateButtonColor(buttonIndex, placeholderColor);
 
         if (!CanSpawn())
         {
@@ -247,34 +214,34 @@ public class ColorSelectionManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns a white placeholder paintball at the specified button's spawn point
+    /// Spawns a placeholder paintball at the specified button's spawn point with the given color
     /// </summary>
-    private void SpawnWhitePlaceholder(int buttonIndex)
+    private void SpawnPlaceholder(int buttonIndex, Color color)
     {
         if (ballPrefab == null)
         {
-            Debug.LogWarning("Cannot spawn white placeholder - ballPrefab is not assigned");
+            Debug.LogWarning("Cannot spawn placeholder - ballPrefab is not assigned");
             return;
         }
 
         Transform spawnPoint = GetSpawnPointForButton(buttonIndex);
         if (spawnPoint == null)
         {
-            Debug.LogWarning($"Cannot spawn white placeholder for Button {buttonIndex} - spawn point not assigned");
+            Debug.LogWarning($"Cannot spawn placeholder for Button {buttonIndex} - spawn point not assigned");
             return;
         }
 
         Vector3 spawnPosition = spawnPoint.position;
 
-        // Create white paintball
+        // Create paintball with specified color
         GameObject newBall = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
-        newBall.name = $"Paintball_White_Button{buttonIndex}_Placeholder";
+        newBall.name = $"Paintball_Placeholder_Button{buttonIndex}";
 
-        // Set color to white
+        // Set color
         Renderer ballRenderer = newBall.GetComponent<Renderer>();
         if (ballRenderer != null)
         {
-            ballRenderer.material.color = Color.white;
+            ballRenderer.material.color = color;
         }
 
         // Make it kinematic (anchored)
@@ -301,7 +268,7 @@ public class ColorSelectionManager : MonoBehaviour
         // Track this paintball
         buttonToPaintball[buttonIndex] = newBall;
 
-        Debug.Log($"Spawned white placeholder at Button {buttonIndex} spawn point: {spawnPosition}");
+        Debug.Log($"Spawned placeholder ({color}) at Button {buttonIndex} spawn point: {spawnPosition}");
     }
 
     /// <summary>
@@ -458,7 +425,10 @@ public class ColorSelectionManager : MonoBehaviour
         // Update the button's visual color to match the paintball
         UpdateButtonColor(buttonIndex, color);
 
-        Debug.Log($"Spawned paintball ({colorKey}) at Button {buttonIndex} spawn point: {spawnPosition}");
+        // Store this as the confirmed color for this button (for respawning)
+        buttonConfirmedColor[buttonIndex] = color;
+
+        Debug.Log($"Spawned paintball ({colorKey}) at Button {buttonIndex} spawn point: {spawnPosition}, confirmed color saved");
     }
 
     /// <summary>
@@ -579,6 +549,7 @@ public class ColorSelectionManager : MonoBehaviour
         usedColors.Clear();
         colorToSpawnQueue.Clear();
         buttonToPaintball.Clear();
+        buttonConfirmedColor.Clear(); // Clear confirmed colors so buttons reset to white
 
         // Reset all button colors to white (or default)
         for (int i = 1; i <= 5; i++)
