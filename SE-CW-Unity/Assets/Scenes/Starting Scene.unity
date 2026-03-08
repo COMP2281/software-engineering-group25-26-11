@@ -18900,7 +18900,7 @@ Transform:
   m_GameObject: {fileID: 666708447}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.135, y: 0.8, z: 0}
+  m_LocalPosition: {x: 0.191, y: 0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -25160,7 +25160,7 @@ Transform:
   m_GameObject: {fileID: 1228653797}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.36, y: 0.8, z: 0}
+  m_LocalPosition: {x: -0.3452, y: 0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -47939,7 +47939,7 @@ Transform:
   m_GameObject: {fileID: 1893281354}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.201, y: 0.8, z: 0}
+  m_LocalPosition: {x: -0.1877, y: 0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -48232,7 +48232,7 @@ GameObject:
   - component: {fileID: 1943402215}
   - component: {fileID: 1943402214}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Tray
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49713,7 +49713,7 @@ Transform:
   m_GameObject: {fileID: 2040710330}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.066, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
