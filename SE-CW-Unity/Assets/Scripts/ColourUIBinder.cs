@@ -17,6 +17,10 @@ public class ColorUIBinder : MonoBehaviour
     public Image preview;
     public Renderer targetRenderer;       // e.g. the ball preview renderer (optional)
 
+    [Header("Color Selection Integration")]
+    [Tooltip("Reference to ColorSelectionManager to update pending color")]
+    public ColorSelectionManager selectionManager;
+
     bool _isUpdatingUI;
 
     public Image sliderPreview;
@@ -81,6 +85,12 @@ public class ColorUIBinder : MonoBehaviour
 
             if (hexInput != null)
                 hexInput.SetHexExternal(hex);
+        }
+
+        // Notify ColorSelectionManager of the pending color
+        if (selectionManager != null)
+        {
+            selectionManager.OnColorPicked(c);
         }
 
         _isUpdatingUI = false;

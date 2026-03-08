@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class PaintballCollision : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class PaintballCollision : MonoBehaviour
 
     public float minY = -20f;   // if ball falls below this, respawn
 
-    
+    private Rigidbody rb;
+    private XRGrabInteractable grabInteractable;
+    private bool hasBeenGrabbed = false; // Track if paintball has ever been grabbed
 
     void Start()
     {
@@ -27,6 +30,52 @@ public class PaintballCollision : MonoBehaviour
         else
         {
             Debug.LogError("PaintballRespawnPoint not found in the scene.");
+        }
+
+        // Get components
+        rb = GetComponent<Rigidbody>();
+        grabInteractable = GetComponent<XRGrabInteractable>();
+
+        // Make paintball kinematic (anchored) until grabbed
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+        }
+
+        // Listen for grab events
+        if (grabInteractable != null)
+        {
+            grabInteractable.selectEntered.AddListener(OnGrabbed);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Clean up listeners
+        if (grabInteractable != null)
+        {
+            grabInteractable.selectEntered.RemoveListener(OnGrabbed);
+        }
+    }
+
+    private void OnGrabbed(SelectEnterEventArgs args)
+    {
+        // When grabbed, enable physics permanently (for this instance's lifetime)
+        if (rb != null && !hasBeenGrabbed)
+        {
+            rb.isKinematic = false;
+            hasBeenGrabbed = true;
+            Debug.Log("Paintball grabbed - physics enabled");
+        }
+    }
+
+    void LateUpdate()
+    {
+        // Ensure rigidbody stays non-kinematic after being grabbed
+        // This prevents XR Interaction Toolkit from setting it back to kinematic
+        if (hasBeenGrabbed && rb != null && rb.isKinematic)
+        {
+            rb.isKinematic = false;
         }
     }
 
@@ -271,6 +320,13 @@ public class PaintballCollision : MonoBehaviour
             if (newRend != null)
             {
                 newRend.material.color = paintColor;
+            }
+
+            // Make the respawned paintball kinematic (anchored) until grabbed
+            Rigidbody newRb = newBall.GetComponent<Rigidbody>();
+            if (newRb != null)
+            {
+                newRb.isKinematic = true;
             }
 
             Debug.Log($"New paintball respawned at {spawnPos} for color {colorKey}");

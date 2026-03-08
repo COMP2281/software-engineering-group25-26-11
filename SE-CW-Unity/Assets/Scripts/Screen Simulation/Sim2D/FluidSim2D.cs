@@ -12,6 +12,8 @@ namespace Seb.Fluid2D.Simulation
 		[Header("World Mapping")]
 		public Vector3 worldOffset;   // X/Y/Z origin of the 2D sim in world space
 		public float worldScale = 1f; // Optional: scale sim units to world units
+		[Tooltip("Automatically scale bounds by parent's transform scale")]
+		public bool scaleByParent = true;
 		[Tooltip("Spawn initial particles at startup")]
 		public bool spawnOnStart = true;
 
@@ -219,7 +221,16 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetFloat("pressureMultiplier", pressureMultiplier);
 			compute.SetFloat("nearPressureMultiplier", nearPressureMultiplier);
 			compute.SetFloat("viscosityStrength", viscosityStrength);
-			compute.SetVector("boundsSize", boundsSize);
+			
+			// Apply parent scale to bounds if enabled
+			Vector2 scaledBoundsSize = boundsSize;
+			if (scaleByParent && transform.parent != null)
+			{
+				Vector3 parentScale = transform.parent.lossyScale;
+				scaledBoundsSize = new Vector2(boundsSize.x * parentScale.x, boundsSize.y * parentScale.y);
+			}
+			
+			compute.SetVector("boundsSize", scaledBoundsSize);
 			compute.SetVector("obstacleSize", obstacleSize);
 			compute.SetVector("obstacleCentre", obstacleCentre);
 
@@ -440,9 +451,16 @@ namespace Seb.Fluid2D.Simulation
 			}
 			gizmoCentre += worldOffset;
 
+			// Calculate scaled bounds size for display
+			Vector2 displayBoundsSize = boundsSize;
+			if (scaleByParent && transform.parent != null)
+			{
+				Vector3 parentScale = transform.parent.lossyScale;
+				displayBoundsSize = new Vector2(boundsSize.x * parentScale.x, boundsSize.y * parentScale.y);
+			}
 
 			Gizmos.color = new Color(0, 1, 0, 0.4f);
-			Gizmos.DrawWireCube(gizmoCentre, boundsSize * worldScale);
+			Gizmos.DrawWireCube(gizmoCentre, displayBoundsSize * worldScale);
 			Gizmos.DrawWireCube(gizmoCentre + (Vector3)obstacleCentre, obstacleSize * worldScale);
 
 			if (Application.isPlaying)
