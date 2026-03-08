@@ -19,6 +19,18 @@ public class ColorSelectionManager : MonoBehaviour
     [Tooltip("Spawn point for Button 5")]
     public Transform spawnPoint5;
 
+    [Header("Button UI References")]
+    [Tooltip("Button 1 GameObject (to change its color)")]
+    public GameObject button1;
+    [Tooltip("Button 2 GameObject (to change its color)")]
+    public GameObject button2;
+    [Tooltip("Button 3 GameObject (to change its color)")]
+    public GameObject button3;
+    [Tooltip("Button 4 GameObject (to change its color)")]
+    public GameObject button4;
+    [Tooltip("Button 5 GameObject (to change its color)")]
+    public GameObject button5;
+
     [Header("UI References")]
     [Tooltip("The color selection panel that opens when a button is clicked")]
     public GameObject colorSelectionPanel;
@@ -49,9 +61,83 @@ public class ColorSelectionManager : MonoBehaviour
         Debug.Log($"Spawn Point 3: {(spawnPoint3 != null ? spawnPoint3.name : "NOT ASSIGNED")}");
         Debug.Log($"Spawn Point 4: {(spawnPoint4 != null ? spawnPoint4.name : "NOT ASSIGNED")}");
         Debug.Log($"Spawn Point 5: {(spawnPoint5 != null ? spawnPoint5.name : "NOT ASSIGNED")}");
+        Debug.Log($"Button 1: {(button1 != null ? button1.name : "NOT ASSIGNED")}");
+        Debug.Log($"Button 2: {(button2 != null ? button2.name : "NOT ASSIGNED")}");
+        Debug.Log($"Button 3: {(button3 != null ? button3.name : "NOT ASSIGNED")}");
+        Debug.Log($"Button 4: {(button4 != null ? button4.name : "NOT ASSIGNED")}");
+        Debug.Log($"Button 5: {(button5 != null ? button5.name : "NOT ASSIGNED")}");
         Debug.Log($"Color Panel: {(colorSelectionPanel != null ? colorSelectionPanel.name : "NOT ASSIGNED")}");
         Debug.Log($"Ball Prefab: {(ballPrefab != null ? ballPrefab.name : "NOT ASSIGNED")}");
         Debug.Log("===================================");
+
+        // Spawn initial white paintballs at all 5 positions
+        SpawnInitialWhiteBalls();
+    }
+
+    /// <summary>
+    /// Spawns white placeholder paintballs at all 5 spawn points at game start
+    /// </summary>
+    private void SpawnInitialWhiteBalls()
+    {
+        if (ballPrefab == null)
+        {
+            Debug.LogWarning("Cannot spawn initial white balls - ballPrefab is not assigned");
+            return;
+        }
+
+        Color whiteColor = Color.white;
+
+        for (int buttonIndex = 1; buttonIndex <= 5; buttonIndex++)
+        {
+            Transform spawnPoint = GetSpawnPointForButton(buttonIndex);
+            if (spawnPoint == null)
+            {
+                Debug.LogWarning($"Cannot spawn initial ball for Button {buttonIndex} - spawn point not assigned");
+                continue;
+            }
+
+            Vector3 spawnPosition = spawnPoint.position;
+
+            // Create white paintball
+            GameObject newBall = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
+            newBall.name = $"Paintball_White_Button{buttonIndex}_Initial";
+
+            // Set color to white
+            Renderer ballRenderer = newBall.GetComponent<Renderer>();
+            if (ballRenderer != null)
+            {
+                ballRenderer.material.color = whiteColor;
+            }
+
+            // Make it kinematic (anchored)
+            Rigidbody ballRb = newBall.GetComponent<Rigidbody>();
+            if (ballRb != null)
+            {
+                ballRb.isKinematic = true;
+                ballRb.useGravity = true;
+            }
+
+            // Inject WaterCube reference
+            var collision = newBall.GetComponent<PaintballCollision>();
+            if (collision != null)
+            {
+                collision.waterSurface = waterSurface;
+            }
+
+            var spawnOnContact = newBall.GetComponent<SpawnOnContact>();
+            if (spawnOnContact != null)
+            {
+                // SpawnOnContact doesn't need waterSurface, but we can set paintballPrefab
+                spawnOnContact.paintballPrefab = ballPrefab;
+            }
+
+            // Track this paintball
+            buttonToPaintball[buttonIndex] = newBall;
+
+            Debug.Log($"Spawned initial white paintball at Button {buttonIndex} spawn point: {spawnPosition}");
+        }
+
+        Debug.Log("Initial white paintballs spawned at all 5 positions");
     }
 
     public bool CanSpawn()
@@ -104,6 +190,43 @@ public class ColorSelectionManager : MonoBehaviour
     /// </summary>
     private void OpenColorPanel(int buttonIndex)
     {
+        // Check if this button already has a paintball - if so, destroy it before opening panel
+        if (buttonToPaintball.ContainsKey(buttonIndex) && buttonToPaintball[buttonIndex] != null)
+        {
+            GameObject oldBall = buttonToPaintball[buttonIndex];
+            
+            // Get the old color and remove it from used colors
+            Renderer oldRenderer = oldBall.GetComponent<Renderer>();
+            if (oldRenderer != null)
+            {
+                Color32 oldColorKey = (Color32)oldRenderer.material.color;
+                usedColors.Remove(oldColorKey);
+                
+                // Remove from colorToSpawnQueue if it exists
+                if (colorToSpawnQueue.ContainsKey(oldColorKey))
+                {
+                    colorToSpawnQueue.Remove(oldColorKey);
+                }
+            }
+            
+            Destroy(oldBall);
+            buttonToPaintball.Remove(buttonIndex);
+            
+            // Only decrement if we're actually tracking colored balls (not initial white placeholders)
+            if (totalBallCount > 0)
+            {
+                totalBallCount--;
+            }
+            
+            Debug.Log($"Destroyed old paintball at Button {buttonIndex} (button clicked)");
+        }
+
+        // Spawn a white placeholder ball at this position
+        SpawnWhitePlaceholder(buttonIndex);
+        
+        // Reset button color to white
+        UpdateButtonColor(buttonIndex, Color.white);
+
         if (!CanSpawn())
         {
             Debug.Log("Max colors selected. Cannot spawn more paintballs.");
@@ -121,6 +244,64 @@ public class ColorSelectionManager : MonoBehaviour
         {
             Debug.LogError("Color selection panel is not assigned in the Inspector!");
         }
+    }
+
+    /// <summary>
+    /// Spawns a white placeholder paintball at the specified button's spawn point
+    /// </summary>
+    private void SpawnWhitePlaceholder(int buttonIndex)
+    {
+        if (ballPrefab == null)
+        {
+            Debug.LogWarning("Cannot spawn white placeholder - ballPrefab is not assigned");
+            return;
+        }
+
+        Transform spawnPoint = GetSpawnPointForButton(buttonIndex);
+        if (spawnPoint == null)
+        {
+            Debug.LogWarning($"Cannot spawn white placeholder for Button {buttonIndex} - spawn point not assigned");
+            return;
+        }
+
+        Vector3 spawnPosition = spawnPoint.position;
+
+        // Create white paintball
+        GameObject newBall = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
+        newBall.name = $"Paintball_White_Button{buttonIndex}_Placeholder";
+
+        // Set color to white
+        Renderer ballRenderer = newBall.GetComponent<Renderer>();
+        if (ballRenderer != null)
+        {
+            ballRenderer.material.color = Color.white;
+        }
+
+        // Make it kinematic (anchored)
+        Rigidbody ballRb = newBall.GetComponent<Rigidbody>();
+        if (ballRb != null)
+        {
+            ballRb.isKinematic = true;
+            ballRb.useGravity = true;
+        }
+
+        // Inject WaterCube reference
+        var collision = newBall.GetComponent<PaintballCollision>();
+        if (collision != null)
+        {
+            collision.waterSurface = waterSurface;
+        }
+
+        var spawnOnContact = newBall.GetComponent<SpawnOnContact>();
+        if (spawnOnContact != null)
+        {
+            spawnOnContact.paintballPrefab = ballPrefab;
+        }
+
+        // Track this paintball
+        buttonToPaintball[buttonIndex] = newBall;
+
+        Debug.Log($"Spawned white placeholder at Button {buttonIndex} spawn point: {spawnPosition}");
     }
 
     /// <summary>
@@ -177,28 +358,12 @@ public class ColorSelectionManager : MonoBehaviour
         
         Color32 colorKey = (Color32)color;
 
-        // Check if this button already has a paintball - if so, destroy it
+        // Destroy the white placeholder if it exists
         if (buttonToPaintball.ContainsKey(buttonIndex) && buttonToPaintball[buttonIndex] != null)
         {
-            GameObject oldBall = buttonToPaintball[buttonIndex];
-            
-            // Get the old color and remove it from used colors
-            Renderer oldRenderer = oldBall.GetComponent<Renderer>();
-            if (oldRenderer != null)
-            {
-                Color32 oldColorKey = (Color32)oldRenderer.material.color;
-                usedColors.Remove(oldColorKey);
-                
-                // Remove from colorToSpawnQueue if it exists
-                if (colorToSpawnQueue.ContainsKey(oldColorKey))
-                {
-                    colorToSpawnQueue.Remove(oldColorKey);
-                }
-            }
-            
-            Destroy(oldBall);
-            totalBallCount--;
-            Debug.Log($"Destroyed old paintball at Button {buttonIndex}");
+            Destroy(buttonToPaintball[buttonIndex]);
+            buttonToPaintball.Remove(buttonIndex);
+            Debug.Log($"Destroyed white placeholder at Button {buttonIndex} before spawning colored ball");
         }
 
         // Check for duplicates with other buttons
@@ -246,6 +411,23 @@ public class ColorSelectionManager : MonoBehaviour
         if (ballRb != null)
         {
             ballRb.isKinematic = true;
+            ballRb.useGravity = true;
+            Debug.Log($"ColorSelectionManager: Set {newBall.name} Rigidbody to kinematic. isKinematic={ballRb.isKinematic}");
+        }
+        else
+        {
+            Debug.LogError($"ColorSelectionManager: {newBall.name} is missing Rigidbody component!");
+        }
+
+        // Check for XRGrabInteractable
+        var grabInteractable = newBall.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>();
+        if (grabInteractable == null)
+        {
+            Debug.LogError($"ColorSelectionManager: {newBall.name} is missing XRGrabInteractable component! Add it to the prefab.");
+        }
+        else
+        {
+            Debug.Log($"ColorSelectionManager: {newBall.name} has XRGrabInteractable component");
         }
 
         // Inject WaterCube into the new ball
@@ -273,6 +455,9 @@ public class ColorSelectionManager : MonoBehaviour
         usedColors.Add(colorKey);
         totalBallCount++;
 
+        // Update the button's visual color to match the paintball
+        UpdateButtonColor(buttonIndex, color);
+
         Debug.Log($"Spawned paintball ({colorKey}) at Button {buttonIndex} spawn point: {spawnPosition}");
     }
 
@@ -292,6 +477,57 @@ public class ColorSelectionManager : MonoBehaviour
                 Debug.LogError($"Invalid button index: {buttonIndex}");
                 return null;
         }
+    }
+
+    /// <summary>
+    /// Returns the button GameObject for the specified button index
+    /// </summary>
+    private GameObject GetButtonForIndex(int buttonIndex)
+    {
+        switch (buttonIndex)
+        {
+            case 1: return button1;
+            case 2: return button2;
+            case 3: return button3;
+            case 4: return button4;
+            case 5: return button5;
+            default:
+                Debug.LogError($"Invalid button index: {buttonIndex}");
+                return null;
+        }
+    }
+
+    /// <summary>
+    /// Updates the button's visual color to match the paintball
+    /// </summary>
+    private void UpdateButtonColor(int buttonIndex, Color color)
+    {
+        GameObject button = GetButtonForIndex(buttonIndex);
+        if (button == null)
+        {
+            Debug.LogWarning($"Button {buttonIndex} not assigned, cannot update color");
+            return;
+        }
+
+        // Try to find Image component (UI)
+        UnityEngine.UI.Image imageComponent = button.GetComponent<UnityEngine.UI.Image>();
+        if (imageComponent != null)
+        {
+            imageComponent.color = color;
+            Debug.Log($"Updated Button {buttonIndex} UI Image color to {color}");
+            return;
+        }
+
+        // Try to find Renderer component (3D objects)
+        Renderer renderer = button.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.material.color = color;
+            Debug.Log($"Updated Button {buttonIndex} Renderer color to {color}");
+            return;
+        }
+
+        Debug.LogWarning($"Button {buttonIndex} has no Image or Renderer component to color");
     }
 
     /// <summary>
@@ -344,6 +580,15 @@ public class ColorSelectionManager : MonoBehaviour
         colorToSpawnQueue.Clear();
         buttonToPaintball.Clear();
 
+        // Reset all button colors to white (or default)
+        for (int i = 1; i <= 5; i++)
+        {
+            UpdateButtonColor(i, Color.white);
+        }
+
         Debug.Log("All paintballs reset.");
+
+        // Respawn initial white paintballs
+        SpawnInitialWhiteBalls();
     }
 }

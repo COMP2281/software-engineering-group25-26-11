@@ -36,16 +36,41 @@ public class PaintballCollision : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         grabInteractable = GetComponent<XRGrabInteractable>();
 
+        if (grabInteractable == null)
+        {
+            Debug.LogError($"PaintballCollision on {gameObject.name}: XRGrabInteractable component is MISSING! Add it to the prefab.");
+        }
+        else
+        {
+            Debug.Log($"PaintballCollision on {gameObject.name}: XRGrabInteractable found");
+        }
+
         // Make paintball kinematic (anchored) until grabbed
         if (rb != null)
         {
             rb.isKinematic = true;
+            rb.useGravity = true; // Ensure gravity is enabled for when it becomes non-kinematic
+            Debug.Log($"PaintballCollision: Initial state - isKinematic: {rb.isKinematic}, useGravity: {rb.useGravity}");
+        }
+        else
+        {
+            Debug.LogError($"PaintballCollision on {gameObject.name}: Rigidbody component is MISSING!");
         }
 
-        // Listen for grab events
+        // Listen for grab and release events
         if (grabInteractable != null)
         {
             grabInteractable.selectEntered.AddListener(OnGrabbed);
+            grabInteractable.selectExited.AddListener(OnReleased);
+            
+            // Use Instantaneous movement (most stable for VR)
+            // This handles the object position while held, but releases control when detached
+            grabInteractable.movementType = XRBaseInteractable.MovementType.Instantaneous;
+            grabInteractable.throwOnDetach = true;
+            grabInteractable.throwSmoothingDuration = 0.25f;
+            grabInteractable.throwVelocityScale = 1.5f;
+            
+            Debug.Log("PaintballCollision: XRGrabInteractable configured - Movement: Instantaneous, ThrowOnDetach: true");
         }
     }
 
@@ -55,27 +80,60 @@ public class PaintballCollision : MonoBehaviour
         if (grabInteractable != null)
         {
             grabInteractable.selectEntered.RemoveListener(OnGrabbed);
+            grabInteractable.selectExited.RemoveListener(OnReleased);
         }
     }
 
     private void OnGrabbed(SelectEnterEventArgs args)
     {
-        // When grabbed, enable physics permanently (for this instance's lifetime)
-        if (rb != null && !hasBeenGrabbed)
+        // When grabbed, enable physics immediately
+        Debug.Log($"OnGrabbed EVENT FIRED for {gameObject.name}!");
+        if (rb != null)
         {
             rb.isKinematic = false;
+            rb.useGravity = true;
             hasBeenGrabbed = true;
-            Debug.Log("Paintball grabbed - physics enabled");
+            Debug.Log($"OnGrabbed: Set {gameObject.name} to non-kinematic. isKinematic={rb.isKinematic}, hasBeenGrabbed={hasBeenGrabbed}");
+        }
+        else
+        {
+            Debug.LogError($"OnGrabbed: Rigidbody is NULL on {gameObject.name}!");
         }
     }
 
-    void LateUpdate()
+    private void OnReleased(SelectExitEventArgs args)
     {
-        // Ensure rigidbody stays non-kinematic after being grabbed
-        // This prevents XR Interaction Toolkit from setting it back to kinematic
-        if (hasBeenGrabbed && rb != null && rb.isKinematic)
+        // Ensure it's non-kinematic for throwing
+        Debug.Log($"OnReleased EVENT FIRED for {gameObject.name}!");
+        if (rb != null)
         {
             rb.isKinematic = false;
+            rb.useGravity = true;
+            Debug.Log($"OnReleased: Keeping {gameObject.name} non-kinematic for throw. isKinematic={rb.isKinematic}");
+        }
+    }
+
+    void FixedUpdate()
+    {
+        // Force non-kinematic if currently being held OR if has been grabbed before
+        if (rb != null && grabInteractable != null)
+        {
+            // Check if currently selected/held
+            if (grabInteractable.isSelected)
+            {
+                if (rb.isKinematic)
+                {
+                    rb.isKinematic = false;
+                    hasBeenGrabbed = true;
+                    Debug.LogWarning($"FixedUpdate: Forced {gameObject.name} to non-kinematic (is being held)");
+                }
+            }
+            // Also keep non-kinematic if it has been grabbed before
+            else if (hasBeenGrabbed && rb.isKinematic)
+            {
+                rb.isKinematic = false;
+                Debug.LogWarning($"FixedUpdate: Forced {gameObject.name} to non-kinematic (was grabbed before)");
+            }
         }
     }
 

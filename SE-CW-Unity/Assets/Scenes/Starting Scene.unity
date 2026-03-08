@@ -23323,6 +23323,11 @@ MonoBehaviour:
   spawnPoint3: {fileID: 1769127690}
   spawnPoint4: {fileID: 666708448}
   spawnPoint5: {fileID: 48719756}
+  button1: {fileID: 873728624}
+  button2: {fileID: 939796179}
+  button3: {fileID: 909277625}
+  button4: {fileID: 1767632444}
+  button5: {fileID: 932502152}
   colorSelectionPanel: {fileID: 1252506720}
   waterSurface: {fileID: 1297503606}
 --- !u!4 &963904579
