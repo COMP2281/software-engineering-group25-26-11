@@ -37,8 +37,19 @@ public class PausePlayButton : MonoBehaviour
             Debug.LogError("PausePlayButton: Button Image reference not assigned!");
         }
         
+        if (pauseSprite == null)
+        {
+            Debug.LogError("PausePlayButton: Pause Sprite not assigned!");
+        }
+        
+        if (playSprite == null)
+        {
+            Debug.LogError("PausePlayButton: Play Sprite not assigned!");
+        }
+        
         // Set initial sprite based on current state
         UpdateButtonSprite();
+        Debug.Log($"PausePlayButton initialized. Current sprite: {(buttonImage != null ? buttonImage.sprite?.name : "null")}");
     }
 
     /// <summary>
@@ -48,9 +59,15 @@ public class PausePlayButton : MonoBehaviour
     {
         if (fluidSimulation != null)
         {
+            Debug.Log($"PausePlayButton clicked. Before toggle: IsPaused={fluidSimulation.IsPaused}");
             fluidSimulation.TogglePause();
+            Debug.Log($"After toggle: IsPaused={fluidSimulation.IsPaused}");
             UpdateButtonSprite();
             UpdateRippleEffects();
+        }
+        else
+        {
+            Debug.LogError("PausePlayButton: Cannot toggle - fluidSimulation is null!");
         }
     }
 
@@ -59,14 +76,20 @@ public class PausePlayButton : MonoBehaviour
     /// </summary>
     void UpdateButtonSprite()
     {
-        if (buttonImage == null || pauseSprite == null || playSprite == null)
+        if (buttonImage == null || pauseSprite == null || playSprite == null || fluidSimulation == null)
         {
             return;
         }
 
         // If simulation is paused, show play icon (to resume)
         // If simulation is playing, show pause icon (to pause)
-        buttonImage.sprite = fluidSimulation.IsPaused ? playSprite : pauseSprite;
+        Sprite newSprite = fluidSimulation.IsPaused ? playSprite : pauseSprite;
+        
+        if (buttonImage.sprite != newSprite)
+        {
+            buttonImage.sprite = newSprite;
+            Debug.Log($"PausePlayButton: Sprite changed to {newSprite.name} (IsPaused={fluidSimulation.IsPaused})");
+        }
     }
 
     /// <summary>
