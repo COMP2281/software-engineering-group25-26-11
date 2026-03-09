@@ -10,8 +10,10 @@ namespace Seb.Fluid2D.Simulation
 	{
 		public event System.Action SimulationStepCompleted;
 		[Header("World Mapping")]
-		public Vector2 worldOffset;   // X/Y origin of the 2D sim in world space
+		public Vector3 worldOffset;   // X/Y/Z origin of the 2D sim in world space
 		public float worldScale = 1f; // Optional: scale sim units to world units
+		[Tooltip("Automatically scale bounds by parent's transform scale")]
+		public bool scaleByParent = true;
 		[Tooltip("Spawn initial particles at startup")]
 		public bool spawnOnStart = true;
 
@@ -74,11 +76,12 @@ namespace Seb.Fluid2D.Simulation
 		bool pauseNextFrame;
 
 		public int numParticles { get; private set; }
+		public bool IsPaused => isPaused;
 
 
 		void Start()
 		{
-			Debug.Log("Controls: Space = Play/Pause, R = Reset, LMB = Attract, RMB = Repel");
+			Debug.Log("Controls: Space = Play/Pause, R = Reset, C = Clear Paint, LMB = Attract, RMB = Repel");
 
 			Init();
 		}
@@ -219,11 +222,20 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetFloat("pressureMultiplier", pressureMultiplier);
 			compute.SetFloat("nearPressureMultiplier", nearPressureMultiplier);
 			compute.SetFloat("viscosityStrength", viscosityStrength);
-			compute.SetVector("boundsSize", boundsSize);
+			
+			// Apply parent scale to bounds if enabled
+			Vector2 scaledBoundsSize = boundsSize;
+			if (scaleByParent && transform.parent != null)
+			{
+				Vector3 parentScale = transform.parent.lossyScale;
+				scaledBoundsSize = new Vector2(boundsSize.x * parentScale.x, boundsSize.y * parentScale.y);
+			}
+			
+			compute.SetVector("boundsSize", scaledBoundsSize);
 			compute.SetVector("obstacleSize", obstacleSize);
 			compute.SetVector("obstacleCentre", obstacleCentre);
 
-			compute.SetVector("worldOffset", new Vector4(worldOffset.x, worldOffset.y, 0f, 0f));
+			compute.SetVector("worldOffset", new Vector4(worldOffset.x, worldOffset.y, worldOffset.z, 0f));
         	compute.SetFloat("worldScale", worldScale);
 
 			compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(smoothingRadius, 8)));
@@ -307,6 +319,11 @@ namespace Seb.Fluid2D.Simulation
 			if (Input.GetKeyDown(KeyCode.P))
 			{
 				SpawnParticles(spawner2D.GetSpawnData(), Vector2.zero);
+			}
+
+			if (Input.GetKeyDown(KeyCode.C))
+			{
+				ClearAllParticles();
 			}
 		}
 
@@ -395,12 +412,44 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetInt("numParticles", numParticles);
 		}
 
+		/// <summary>
+		/// Clears all particles from the simulation (resets the paint screen)
+		/// </summary>
+		public void ClearAllParticles()
+		{
+			if (numParticles == 0) return;
+
+			// Store empty data
+			numParticles = 0;
+			compute.SetInt("numParticles", numParticles);
+
+			Debug.Log("[FluidSim2D] All particles cleared.");
+		}
+
+		/// <summary>
+		/// Toggles the simulation between paused and playing state.
+		/// Call this from UI button OnClick event.
+		/// </summary>
+		public void TogglePause()
+		{
+			isPaused = !isPaused;
+			Debug.Log($"[FluidSim2D] Simulation {(isPaused ? "Paused" : "Playing")}");
+		}
+
+		/// <summary>
+		/// Sets the pause state explicitly
+		/// </summary>
+		public void SetPaused(bool paused)
+		{
+			isPaused = paused;
+		}
+
 		public Vector2 WorldToSimLocal(Vector3 worldPos)
 		{
 			Transform anchor = particleDisplay != null ? particleDisplay.worldAnchor : null;
 			Vector3 local = anchor != null ? anchor.InverseTransformPoint(worldPos) : worldPos;
 			float scale = Mathf.Approximately(worldScale, 0f) ? 1f : worldScale;
-			return ((Vector2)local - worldOffset) / scale;
+			return ((Vector2)local - (Vector2)worldOffset) / scale;
 		}
 
 
@@ -419,11 +468,18 @@ namespace Seb.Fluid2D.Simulation
 			{
 				gizmoCentre = particleDisplay.worldAnchor.position;
 			}
-			gizmoCentre += (Vector3)worldOffset;
+			gizmoCentre += worldOffset;
 
+			// Calculate scaled bounds size for display
+			Vector2 displayBoundsSize = boundsSize;
+			if (scaleByParent && transform.parent != null)
+			{
+				Vector3 parentScale = transform.parent.lossyScale;
+				displayBoundsSize = new Vector2(boundsSize.x * parentScale.x, boundsSize.y * parentScale.y);
+			}
 
 			Gizmos.color = new Color(0, 1, 0, 0.4f);
-			Gizmos.DrawWireCube(gizmoCentre, boundsSize * worldScale);
+			Gizmos.DrawWireCube(gizmoCentre, displayBoundsSize * worldScale);
 			Gizmos.DrawWireCube(gizmoCentre + (Vector3)obstacleCentre, obstacleSize * worldScale);
 
 			if (Application.isPlaying)

@@ -2,6 +2,7 @@ using UnityEngine;
 using Seb.Fluid2D.Simulation;
 using Unity.Mathematics;
 using System.Collections.Generic;
+using UnityEngine.XR.Interaction.Toolkit;
 
 [RequireComponent(typeof(Collider))]
 public class SpawnOnContact : MonoBehaviour
@@ -19,6 +20,11 @@ public class SpawnOnContact : MonoBehaviour
     public Color defaultColor = Color.white;
 
     float lastSpawnTime = -999f;
+
+    // XR Grab handling
+    private Rigidbody rb;
+    private XRGrabInteractable grabInteractable;
+    private bool hasBeenGrabbed = false;
 
     FluidSim2D GetSim()
     {
@@ -41,6 +47,83 @@ public class SpawnOnContact : MonoBehaviour
         {
             safeRespawnPoint = respawnObj.transform;
         }
+
+        // Get components for XR grab handling
+        rb = GetComponent<Rigidbody>();
+        grabInteractable = GetComponent<XRGrabInteractable>();
+
+        if (grabInteractable == null)
+        {
+            Debug.LogError($"SpawnOnContact on {gameObject.name}: XRGrabInteractable component is MISSING! Add it to the prefab.");
+        }
+        else
+        {
+            Debug.Log($"SpawnOnContact on {gameObject.name}: XRGrabInteractable found");
+        }
+
+        // Make paintball kinematic (anchored) until grabbed
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = true;
+            Debug.Log($"SpawnOnContact: Initial state - {gameObject.name} isKinematic: {rb.isKinematic}, useGravity: {rb.useGravity}");
+        }
+        else
+        {
+            Debug.LogError($"SpawnOnContact on {gameObject.name}: Rigidbody component is MISSING!");
+        }
+
+        // Listen for grab and release events
+        if (grabInteractable != null)
+        {
+            grabInteractable.selectEntered.AddListener(OnGrabbed);
+            grabInteractable.selectExited.AddListener(OnReleased);
+            
+            // Configure for throwing
+            grabInteractable.movementType = XRBaseInteractable.MovementType.Instantaneous;
+            grabInteractable.throwOnDetach = true;
+            grabInteractable.throwSmoothingDuration = 0.25f;
+            grabInteractable.throwVelocityScale = 1.5f;
+            
+            Debug.Log($"SpawnOnContact: XRGrabInteractable configured on {gameObject.name}");
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Clean up listeners
+        if (grabInteractable != null)
+        {
+            grabInteractable.selectEntered.RemoveListener(OnGrabbed);
+            grabInteractable.selectExited.RemoveListener(OnReleased);
+        }
+    }
+
+    private void OnGrabbed(SelectEnterEventArgs args)
+    {
+        Debug.Log($"OnGrabbed EVENT FIRED for {gameObject.name}!");
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            hasBeenGrabbed = true;
+            Debug.Log($"OnGrabbed: Set {gameObject.name} to non-kinematic. isKinematic={rb.isKinematic}");
+        }
+        else
+        {
+            Debug.LogError($"OnGrabbed: Rigidbody is NULL on {gameObject.name}!");
+        }
+    }
+
+    private void OnReleased(SelectExitEventArgs args)
+    {
+        Debug.Log($"OnReleased EVENT FIRED for {gameObject.name}!");
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            Debug.Log($"OnReleased: Keeping {gameObject.name} non-kinematic for throw. isKinematic={rb.isKinematic}");
+        }
     }
 
     void Update()
@@ -60,6 +143,30 @@ public class SpawnOnContact : MonoBehaviour
             {
                 rb.velocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
+            }
+        }
+    }
+
+    void FixedUpdate()
+    {
+        // Force non-kinematic if currently being held OR if has been grabbed before
+        if (rb != null && grabInteractable != null)
+        {
+            // Check if currently selected/held
+            if (grabInteractable.isSelected)
+            {
+                if (rb.isKinematic)
+                {
+                    rb.isKinematic = false;
+                    hasBeenGrabbed = true;
+                    Debug.LogWarning($"FixedUpdate: Forced {gameObject.name} to non-kinematic (is being held)");
+                }
+            }
+            // Also keep non-kinematic if it has been grabbed before
+            else if (hasBeenGrabbed && rb.isKinematic)
+            {
+                rb.isKinematic = false;
+                Debug.LogWarning($"FixedUpdate: Forced {gameObject.name} to non-kinematic (was grabbed before)");
             }
         }
     }
@@ -140,6 +247,74 @@ public class SpawnOnContact : MonoBehaviour
             {
                 newRend.material.color = paintColor;
             }
+
+            // Make the respawned paintball kinematic (anchored) until grabbed
+            Rigidbody newRb = newBall.GetComponent<Rigidbody>();
+            if (newRb != null)
+            {
+                newRb.isKinematic = true;
+                Debug.Log("SpawnOnContact: Set respawned paintball to kinematic");
+            }
+
+            // Extract button index from the original ball's name (e.g., "Paintball_RGBA(...)_Button3")
+            int buttonIndex = -1;
+            if (gameObject.name.Contains("Button"))
+            {
+                string nameStr = gameObject.name;
+                int buttonStartIndex = nameStr.LastIndexOf("Button") + 6; // "Button" is 6 chars
+                if (buttonStartIndex < nameStr.Length)
+                {
+                    // Extract just the digit(s) after "Button"
+                    string buttonNumberStr = "";
+                    for (int i = buttonStartIndex; i < nameStr.Length; i++)
+                    {
+                        if (char.IsDigit(nameStr[i]))
+                        {
+                            buttonNumberStr += nameStr[i];
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(buttonNumberStr))
+                    {
+                        buttonIndex = int.Parse(buttonNumberStr);
+                    }
+                }
+            }
+
+            // Set the new ball's name to match the pattern
+            if (buttonIndex != -1)
+            {
+                newBall.name = $"Paintball_{colorKey}_Button{buttonIndex}";
+                
+                // Update the ColorSelectionManager's tracking dictionary
+                if (ColorSelectionManager.buttonToPaintball.ContainsKey(buttonIndex))
+                {
+                    // Destroy the old tracked ball if it still exists
+                    GameObject oldTrackedBall = ColorSelectionManager.buttonToPaintball[buttonIndex];
+                    if (oldTrackedBall != null && oldTrackedBall != gameObject)
+                    {
+                        Destroy(oldTrackedBall);
+                    }
+                }
+                ColorSelectionManager.buttonToPaintball[buttonIndex] = newBall;
+                Debug.Log($"SpawnOnContact: Updated buttonToPaintball[{buttonIndex}] with respawned ball");
+            }
+            else
+            {
+                newBall.name = $"Paintball_{colorKey}";
+            }
+
+            // Re-add the spawn position to the queue for future respawns
+            if (!ColorSelectionManager.colorToSpawnQueue.ContainsKey(colorKey))
+            {
+                ColorSelectionManager.colorToSpawnQueue[colorKey] = new Queue<Vector3>();
+            }
+            ColorSelectionManager.colorToSpawnQueue[colorKey].Enqueue(spawnPos);
+
+            Debug.Log($"SpawnOnContact: New paintball respawned at {spawnPos} for color {colorKey}");
         }
 
         Destroy(gameObject);

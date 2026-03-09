@@ -12,6 +12,8 @@
         [Header(Ripple)]
         _RippleTex      ("Ripple RT",           2D)             = "gray" {}
         _RippleStr      ("Ripple Strength",     Range(0, 2))    = 0.4
+        _Smoothness     ("Surface Smoothness",  Range(0, 1))    = 0.8
+        _EdgeSoftness   ("Edge Softness",       Range(0, 0.1))  = 0.02
     }
 
     SubShader
@@ -35,7 +37,8 @@
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma target 3.0
+            #pragma target 3.5
+            #pragma multi_compile_fog
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -70,6 +73,8 @@
                 float4 _RippleTex_ST;
                 float  _RippleStr;
                 float4x4 _RippleCamVP;
+                float  _Smoothness;
+                float  _EdgeSoftness;
             CBUFFER_END
 
             v2f vert(appdata v)
@@ -136,15 +141,21 @@
                 Light mainLight = GetMainLight();
                 float3 lightDir = mainLight.direction;
 
-                float NdotL   = dot(n, lightDir) * 0.5 + 0.5;
-                float diffuse = lerp(_AmbientMin, 1.0, NdotL);
+                // Smooth wrapped diffuse for soft, liquid appearance
+                float NdotL = dot(n, lightDir);
+                float wrappedNdotL = (NdotL + 1.0) * 0.5; // Wrap lighting
+                wrappedNdotL = smoothstep(_AmbientMin, 1.0, wrappedNdotL); // Smooth transition
+                float diffuse = lerp(0.8, 1.0, wrappedNdotL); // Keep colors brighter
 
                 float3 halfDir = normalize(lightDir + viewDir);
                 float  NdotH   = max(0, dot(n, halfDir));
-                float  spec    = pow(NdotH, _SpecPower) * _SpecIntensity;
+                float  specPower = lerp(_SpecPower, _SpecPower * 2.0, _Smoothness);
+                float  spec    = pow(NdotH, specPower) * _SpecIntensity * _Smoothness;
 
+                // Enhanced Fresnel rim for wet, liquid edges
                 float NdotV   = max(0, dot(n, viewDir));
-                float fresnel = pow(1.0 - NdotV, _FresnelPow) * _FresnelStr;
+                float fresnelBase = 1.0 - NdotV;
+                float fresnel = smoothstep(0, 1, pow(fresnelBase, _FresnelPow)) * _FresnelStr;
 
                 float3 color = i.col.rgb * diffuse + spec + fresnel * half3(0.6, 0.7, 0.8);
 
@@ -152,7 +163,7 @@
                 color += ripplePulse * half3(0.5, 0.7, 1.0);
 
                 return half4(color, i.col.a);
-            }
+           }
             ENDHLSL
         }
 

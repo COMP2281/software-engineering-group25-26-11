@@ -28,7 +28,7 @@ public class StartModeController : MonoBehaviour
         // Simulate spawning balls from color buttons
         foreach (var button in defaultColorButtons)
         {
-            button.SpawnBall();
+            button.OnColorButtonClicked();
         }
 
         // Pretend like you pressed the submit button

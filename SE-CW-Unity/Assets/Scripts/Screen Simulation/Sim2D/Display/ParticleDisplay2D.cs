@@ -60,7 +60,7 @@ namespace Seb.Fluid2D.Rendering
 			// Pass transform info to shader (use identity if no anchor)
 			Matrix4x4 anchorMatrix = worldAnchor != null ? worldAnchor.localToWorldMatrix : Matrix4x4.identity;
 			material.SetMatrix("_WorldAnchorMatrix", anchorMatrix);
-			material.SetVector("_SimWorldOffset", new Vector4(sim.worldOffset.x, sim.worldOffset.y, 0f, 0f));
+			material.SetVector("_SimWorldOffset", new Vector4(sim.worldOffset.x, sim.worldOffset.y, sim.worldOffset.z, 0f));
 			material.SetFloat("_SimWorldScale", sim.worldScale);
 		}
 
