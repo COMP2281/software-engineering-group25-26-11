@@ -65,6 +65,12 @@ namespace Seb.Fluid2D.Rendering
         [Range(0f, 1f)]
         public float baseAlpha = 0.85f;
 
+        [Header("Ripple")]
+        [Tooltip("Leave empty to auto-resolve from RippleEffect.Instance at runtime.")]
+        public RippleEffect rippleEffect;
+        [Tooltip("The camera that renders into ObjectsRT (RenderCam). Drag it here.")]
+        public Camera rippleCamera;
+
         // ───────── Private state ─────────
         Mesh fluidMesh;
         MeshFilter meshFilter;
@@ -76,8 +82,8 @@ namespace Seb.Fluid2D.Rendering
 
         // Mesh data (reused)
         readonly List<Vector3> meshVerts = new List<Vector3>();
-        readonly List<Color>   meshCols  = new List<Color>();
-        readonly List<int>     meshTris  = new List<int>();
+        readonly List<Color> meshCols = new List<Color>();
+        readonly List<int> meshTris = new List<int>();
 
         // Smoothing data
         readonly List<Vector3> smoothedVerts = new List<Vector3>();
@@ -93,7 +99,7 @@ namespace Seb.Fluid2D.Rendering
             fluidMesh = new Mesh { name = "FluidMesh2D" };
             fluidMesh.MarkDynamic(); // optimise for frequent updates
 
-            meshFilter   = GetComponent<MeshFilter>();
+            meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
             meshFilter.mesh = fluidMesh;
 
@@ -122,7 +128,7 @@ namespace Seb.Fluid2D.Rendering
                 // Also auto-resolve world anchor
                 if (worldAnchor == null && sim.particleDisplay != null)
                     worldAnchor = sim.particleDisplay.worldAnchor;
-                
+
                 // Auto-disable ParticleDisplay2D so the old balls disappear
                 if (sim.particleDisplay != null && sim.particleDisplay.enabled)
                 {
@@ -130,6 +136,10 @@ namespace Seb.Fluid2D.Rendering
                     Debug.Log("[MeshFluidDisplay2D] Auto-disabled ParticleDisplay2D (ball rendering).");
                 }
             }
+
+            // Auto-resolve RippleEffect
+            if (rippleEffect == null)
+                rippleEffect = RippleEffect.Instance;
         }
 
         void LateUpdate()
@@ -158,6 +168,22 @@ namespace Seb.Fluid2D.Rendering
                 : maxEdgeLength;
 
             RebuildMesh(n, maxE);
+
+            // Push ripple RT + RenderCam VP matrix so shader UV matches the RT exactly
+            if (rippleEffect != null && rippleEffect.RippleRT != null)
+            {
+                meshRenderer.material.SetTexture("_RippleTex", rippleEffect.RippleRT);
+
+                if (rippleCamera != null)
+                {
+                    // Match the aspect ratio of the RT so projection is correct
+                    rippleCamera.aspect = (float)rippleEffect.TextureWidth / rippleEffect.TextureHeight;
+
+                    Matrix4x4 V = rippleCamera.worldToCameraMatrix;
+                    Matrix4x4 P = GL.GetGPUProjectionMatrix(rippleCamera.projectionMatrix, true);
+                    meshRenderer.material.SetMatrix("_RippleCamVP", P * V);
+                }
+            }
         }
 
         // ───────── Mesh construction ─────────
@@ -179,8 +205,8 @@ namespace Seb.Fluid2D.Rendering
 
             Transform anchor = ResolveAnchor();
             Matrix4x4 anchorToWorld = anchor != null ? anchor.localToWorldMatrix : Matrix4x4.identity;
-            Matrix4x4 worldToMesh  = transform.worldToLocalMatrix;
-            Matrix4x4 simToMesh    = worldToMesh * anchorToWorld;
+            Matrix4x4 worldToMesh = transform.worldToLocalMatrix;
+            Matrix4x4 simToMesh = worldToMesh * anchorToWorld;
 
             meshVerts.Clear();
             meshCols.Clear();
@@ -377,11 +403,11 @@ namespace Seb.Fluid2D.Rendering
         sealed class Delaunay2D
         {
             // SoA triangle storage (cache-friendly)
-            int   triCap;
-            int   triCount;
+            int triCap;
+            int triCount;
             int[] va, vb, vc;             // vertex indices
             float[] cxArr, cyArr, crSqArr; // circumcentre x, y  &  circumradius²
-            bool[]  alive;
+            bool[] alive;
 
             // Point buffer  (n real points + 3 super-triangle vertices)
             float2[] pts;
@@ -390,7 +416,7 @@ namespace Seb.Fluid2D.Rendering
             int sA, sB, sC;
 
             // Scratch lists (reused every insertion)
-            readonly List<int> bad   = new List<int>(64);
+            readonly List<int> bad = new List<int>(64);
             readonly List<int> polyA = new List<int>(64);
             readonly List<int> polyB = new List<int>(64);
 
@@ -417,14 +443,14 @@ namespace Seb.Fluid2D.Rendering
                     mn = math.min(mn, positions[i]);
                     mx = math.max(mx, positions[i]);
                 }
-                float2 ctr  = (mn + mx) * 0.5f;
-                float  span = math.max(mx.x - mn.x, mx.y - mn.y) + 1f;
-                float  d    = span * 10f; // well outside all data
+                float2 ctr = (mn + mx) * 0.5f;
+                float span = math.max(mx.x - mn.x, mx.y - mn.y) + 1f;
+                float d = span * 10f; // well outside all data
 
                 sA = n; sB = n + 1; sC = n + 2;
-                pts[sA] = ctr + new float2(-d,       -d * 0.5f);
-                pts[sB] = ctr + new float2( d * 2f,  -d * 0.5f);
-                pts[sC] = ctr + new float2( 0,        d * 2f);
+                pts[sA] = ctr + new float2(-d, -d * 0.5f);
+                pts[sB] = ctr + new float2(d * 2f, -d * 0.5f);
+                pts[sC] = ctr + new float2(0, d * 2f);
 
                 // --- allocate / reset triangle storage ---
                 int initCap = Mathf.Max(n * 10 + 10, 128);
@@ -541,8 +567,8 @@ namespace Seb.Fluid2D.Rendering
                 float D = 2f * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
                 if (math.abs(D) < 1e-10f)
                 {
-                    cxArr[idx]   = (a.x + b.x + c.x) / 3f;
-                    cyArr[idx]   = (a.y + b.y + c.y) / 3f;
+                    cxArr[idx] = (a.x + b.x + c.x) / 3f;
+                    cyArr[idx] = (a.y + b.y + c.y) / 3f;
                     crSqArr[idx] = float.MaxValue;
                     return;
                 }
@@ -563,14 +589,14 @@ namespace Seb.Fluid2D.Rendering
             void EnsureTriArrays(int cap)
             {
                 if (triCap >= cap) return;
-                triCap   = cap;
-                va       = new int[cap];
-                vb       = new int[cap];
-                vc       = new int[cap];
-                cxArr    = new float[cap];
-                cyArr    = new float[cap];
-                crSqArr  = new float[cap];
-                alive    = new bool[cap];
+                triCap = cap;
+                va = new int[cap];
+                vb = new int[cap];
+                vc = new int[cap];
+                cxArr = new float[cap];
+                cyArr = new float[cap];
+                crSqArr = new float[cap];
+                alive = new bool[cap];
             }
 
             void GrowTriArrays()
