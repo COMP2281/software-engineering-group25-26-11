@@ -9,9 +9,12 @@
         _FresnelStr     ("Fresnel Intensity",   Range(0, 1))    = 0.3
         _AmbientMin     ("Ambient Minimum",     Range(0, 1))    = 0.35
 
-        [Header(Ripple)]
-        _RippleTex      ("Ripple RT",           2D)             = "gray" {}
-        _RippleStr      ("Ripple Strength",     Range(0, 2))    = 0.4
+        // Ripple inputs
+        _RippleTex      ("Ripple Texture",      2D)             = "white" {}
+        _RippleUVScale  ("Ripple UV Scale",     Vector)         = (1, 1, 0, 0)
+        _RippleUVOffset ("Ripple UV Offset",    Vector)         = (0, 0, 0, 0)
+        _RippleStrength ("Ripple Strength",     Range(0,1))     = 0.6
+        _RippleSampleDelta ("Ripple Sample Delta", Float)       = 0.004
     }
 
     SubShader
@@ -40,7 +43,6 @@
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-            // ── Ripple texture (URP-style explicit declaration) ──────────
             TEXTURE2D(_RippleTex);
             SAMPLER(sampler_RippleTex);
 
@@ -53,11 +55,10 @@
 
             struct v2f
             {
-                float4 pos      : SV_POSITION;
-                float4 col      : COLOR;
-                float3 wNorm    : TEXCOORD0;
-                float3 wPos     : TEXCOORD1;
-                float2 rippleUV : TEXCOORD2;   // world-space XY → ripple RT
+                float4 pos   : SV_POSITION;
+                float4 col   : COLOR;
+                float3 wNorm : TEXCOORD0;
+                float3 wPos  : TEXCOORD1;
             };
 
             CBUFFER_START(UnityPerMaterial)
@@ -67,49 +68,22 @@
                 float  _FresnelPow;
                 float  _FresnelStr;
                 float  _AmbientMin;
-                float4 _RippleTex_ST;
-                float  _RippleStr;
-                float4x4 _RippleCamVP;
+
+                float4 _RippleUVScale;   // xy used
+                float4 _RippleUVOffset;  // xy used
+                float  _RippleStrength;
+                float  _RippleSampleDelta;
             CBUFFER_END
 
             v2f vert(appdata v)
             {
                 v2f o;
                 VertexPositionInputs posInputs = GetVertexPositionInputs(v.vertex.xyz);
-                o.pos      = posInputs.positionCS;
-                o.wPos     = posInputs.positionWS;
-                o.col      = v.color * _Color;
-                o.wNorm    = TransformObjectToWorldNormal(v.normal);
-
-                // Project world position through RenderCam's VP matrix.
-                // This gives the same clip-space position the RT camera used,
-                // so UV aligns perfectly with what was rendered into ObjectsRT.
-                float4 rippleClip = mul(_RippleCamVP, float4(posInputs.positionWS, 1.0));
-                // Perspective divide → NDC [-1,1], then remap to UV [0,1]
-                float2 ndc    = rippleClip.xy / rippleClip.w;
-                o.rippleUV    = ndc * 0.5 + 0.5;
-                o.rippleUV.y  = 1.0 - o.rippleUV.y;
-
+                o.pos   = posInputs.positionCS;
+                o.wPos  = posInputs.positionWS;
+                o.col   = v.color * _Color;
+                o.wNorm = TransformObjectToWorldNormal(v.normal);
                 return o;
-            }
-
-            // ── Finite-difference normal from a greyscale height map ─────
-            // Returns a tangent-space-like perturbation in world space.
-            float3 RippleNormal(float2 uv, float strength)
-            {
-                // Step size — one texel in UV space at the chosen scale.
-                // Using a fixed step keeps cost predictable regardless of RT size.
-                float2 e = float2(0.005, 0.0);
-
-                float hC  = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, uv          ).r;
-                float hPX = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, uv + e.xy   ).r;
-                float hPY = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, uv + e.yx   ).r;
-
-                // Gradient → surface normal (right-hand, Z-up for XY-plane fluid)
-                float3 n = float3((hC - hPX) * strength,
-                                  (hC - hPY) * strength,
-                                  1.0);
-                return normalize(n);
             }
 
             half4 frag(v2f i) : SV_Target
@@ -117,40 +91,55 @@
                 float3 n = normalize(i.wNorm);
                 float3 viewDir = normalize(GetWorldSpaceViewDir(i.wPos));
 
-                // ── Sample ripple height ─────────────────────────────────
-                float rippleH     = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, i.rippleUV).r;
-                float ripplePulse = saturate(abs(rippleH) * _RippleStr * 4.0);
-
-                // ── Ripple normal perturbation ───────────────────────────
-                float3 rippleN = RippleNormal(i.rippleUV, _RippleStr);
-
-                float3 up    = abs(n.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
-                float3 tangX = normalize(cross(up, n));
-                float3 tangY = cross(n, tangX);
-                n = normalize(tangX * rippleN.x + tangY * rippleN.y + n * rippleN.z);
-
+                // Flip normal toward the camera so both sides shade correctly
                 if (dot(n, viewDir) < 0)
                     n = -n;
 
-                // ── Lighting ─────────────────────────────────────────────
+                // Sample ripple texture (map world position → ripple UV)
+                float2 uv = i.wPos.xz * _RippleUVScale.xy + _RippleUVOffset.xy;
+
+                // small finite-difference to get surface gradient from ripple height
+                float delta = max(_RippleSampleDelta, 1e-6);
+                float h = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, uv).r;
+                float hx = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, uv + float2(delta, 0)).r;
+                float hy = SAMPLE_TEXTURE2D(_RippleTex, sampler_RippleTex, uv + float2(0, delta)).r;
+
+                float dhdx = (hx - h) / delta;
+                float dhdy = (hy - h) / delta;
+
+                // Build a local bump normal where y is "up"
+                float3 bumpLocal = normalize(float3(-dhdx, 1.0, -dhdy));
+
+                // Convert bumpLocal into world-space perturbation by constructing a tangent basis from the world normal
+                float3 upRef = float3(0, 1, 0);
+                float3 t = normalize(cross(upRef, n));
+                if (any(isnan(t))) t = float3(1, 0, 0);
+                float3 b = cross(n, t);
+
+                // Compose the perturbed normal in world space
+                float3 worldPerturbed = normalize(n * bumpLocal.y + t * bumpLocal.x + b * bumpLocal.z);
+
+                // Blend between original and perturbed normal by strength
+                n = normalize(lerp(n, worldPerturbed, _RippleStrength));
+
+                // Use the main URP light direction if available, fallback to fixed
                 Light mainLight = GetMainLight();
                 float3 lightDir = mainLight.direction;
 
-                float NdotL   = dot(n, lightDir) * 0.5 + 0.5;
+                // Wrapped diffuse (soft, never fully dark)
+                float NdotL = dot(n, lightDir) * 0.5 + 0.5;
                 float diffuse = lerp(_AmbientMin, 1.0, NdotL);
 
+                // Blinn-Phong specular
                 float3 halfDir = normalize(lightDir + viewDir);
                 float  NdotH   = max(0, dot(n, halfDir));
                 float  spec    = pow(NdotH, _SpecPower) * _SpecIntensity;
 
+                // Fresnel rim (bright edges for a wet look)
                 float NdotV   = max(0, dot(n, viewDir));
                 float fresnel = pow(1.0 - NdotV, _FresnelPow) * _FresnelStr;
 
                 float3 color = i.col.rgb * diffuse + spec + fresnel * half3(0.6, 0.7, 0.8);
-
-                // ── Direct ripple brightness — visible regardless of lighting angle ──
-                color += ripplePulse * half3(0.5, 0.7, 1.0);
-
                 return half4(color, i.col.a);
             }
             ENDHLSL

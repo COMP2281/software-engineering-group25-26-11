@@ -17,6 +17,7 @@ public class RippleEffect : MonoBehaviour
     public int TextureHeight = 400;
     public RenderTexture ObjectsRT;
     private RenderTexture CurrRT, PrevRT, TempRT;
+    public RenderTexture RippleRT => CurrRT;
     public Shader RippleShader, AddShader;
     private Material RippleMat, AddMat;
     private float lastRippleTime;
