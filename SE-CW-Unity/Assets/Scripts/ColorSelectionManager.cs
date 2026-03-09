@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Seb.Fluid2D.Simulation;
 
 public class ColorSelectionManager : MonoBehaviour
 {
@@ -38,9 +39,16 @@ public class ColorSelectionManager : MonoBehaviour
     [Header("Water")]
     public Transform waterSurface;   // assign WaterCube from the scene in Inspector
 
+    [Header("Simulation Control")]
+    [Tooltip("The FluidSim2D to pause when selecting colors")]
+    public FluidSim2D fluidSimulation;
+    [Tooltip("Parent GameObject containing ripple effects (disabled when selecting colors)")]
+    public GameObject rippleEffectsParent;
+
     private int totalBallCount = 0;
     private int pendingButtonIndex = -1; // Tracks which button was clicked
     private Color pendingColor;
+    private bool wasSimulationPausedBefore = false;
 
     // Track which paintball GameObject belongs to which button
     public static Dictionary<int, GameObject> buttonToPaintball = new Dictionary<int, GameObject>();
@@ -200,6 +208,18 @@ public class ColorSelectionManager : MonoBehaviour
 
         pendingButtonIndex = buttonIndex;
         
+        // Pause simulation and disable ripple effects when opening color panel
+        if (fluidSimulation != null)
+        {
+            wasSimulationPausedBefore = fluidSimulation.IsPaused;
+            fluidSimulation.SetPaused(true);
+        }
+        
+        if (rippleEffectsParent != null)
+        {
+            rippleEffectsParent.SetActive(false);
+        }
+        
         if (colorSelectionPanel != null)
         {
             colorSelectionPanel.SetActive(true);
@@ -306,6 +326,17 @@ public class ColorSelectionManager : MonoBehaviour
             colorSelectionPanel.SetActive(false);
         }
 
+        // Resume simulation and ripple effects if they weren't paused before
+        if (fluidSimulation != null && !wasSimulationPausedBefore)
+        {
+            fluidSimulation.SetPaused(false);
+        }
+        
+        if (rippleEffectsParent != null && !wasSimulationPausedBefore)
+        {
+            rippleEffectsParent.SetActive(true);
+        }
+
         // Reset pending state
         pendingButtonIndex = -1;
     }
@@ -318,6 +349,17 @@ public class ColorSelectionManager : MonoBehaviour
         if (colorSelectionPanel != null)
         {
             colorSelectionPanel.SetActive(false);
+        }
+        
+        // Resume simulation and ripple effects if they weren't paused before
+        if (fluidSimulation != null && !wasSimulationPausedBefore)
+        {
+            fluidSimulation.SetPaused(false);
+        }
+        
+        if (rippleEffectsParent != null && !wasSimulationPausedBefore)
+        {
+            rippleEffectsParent.SetActive(true);
         }
         
         pendingButtonIndex = -1;

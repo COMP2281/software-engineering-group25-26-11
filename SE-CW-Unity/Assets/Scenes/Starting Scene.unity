@@ -26154,6 +26154,7 @@ GameObject:
   - component: {fileID: 1117470619}
   - component: {fileID: 1117470618}
   - component: {fileID: 1117470617}
+  - component: {fileID: 1117470620}
   m_Layer: 0
   m_Name: Pause/Play
   m_TagString: Untagged
@@ -26224,7 +26225,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1117470618}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1117470620}
+        m_TargetAssemblyTypeName: PausePlayButton, Assembly-CSharp
+        m_MethodName: OnButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1117470618
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26245,7 +26258,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 934c6c3c1605ecf4285fac9899316e56, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 194073c001d1abd4e821ab8781a6636d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -26263,6 +26276,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1117470615}
   m_CullTransparentMesh: 1
+--- !u!114 &1117470620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1117470615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d64f4999f835b2488fa372b9220f750, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fluidSimulation: {fileID: 865727574}
+  buttonImage: {fileID: 0}
+  pauseSprite: {fileID: 21300000, guid: 194073c001d1abd4e821ab8781a6636d, type: 3}
+  playSprite: {fileID: 21300000, guid: 934c6c3c1605ecf4285fac9899316e56, type: 3}
 --- !u!1 &1123928905
 GameObject:
   m_ObjectHideFlags: 0
@@ -29271,7 +29300,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!154 &1374920846
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -44886,6 +44915,7 @@ GameObject:
   - component: {fileID: 1780233793}
   - component: {fileID: 1780233792}
   - component: {fileID: 1780233791}
+  - component: {fileID: 1780233794}
   m_Layer: 0
   m_Name: Clear
   m_TagString: Untagged
@@ -44995,6 +45025,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1780233789}
   m_CullTransparentMesh: 1
+--- !u!114 &1780233794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1780233789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f590eaec85cfb0e44bb42efaa28c6386, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fluidSimulation: {fileID: 865727574}
 --- !u!1 &1783639053
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,6 +14,9 @@ public class PausePlayButton : MonoBehaviour
     [Tooltip("The Image component on the button (will swap sprites)")]
     public Image buttonImage;
     
+    [Tooltip("Parent GameObject containing render camera (disabled when paused to hide ripple effects)")]
+    public GameObject rippleEffectsParent;
+    
     [Header("Sprites")]
     [Tooltip("Sprite to show when simulation is playing (shows pause icon)")]
     public Sprite pauseSprite;
@@ -47,6 +50,7 @@ public class PausePlayButton : MonoBehaviour
         {
             fluidSimulation.TogglePause();
             UpdateButtonSprite();
+            UpdateRippleEffects();
         }
     }
 
@@ -65,9 +69,22 @@ public class PausePlayButton : MonoBehaviour
         buttonImage.sprite = fluidSimulation.IsPaused ? playSprite : pauseSprite;
     }
 
+    /// <summary>
+    /// Toggles the ripple effects parent based on pause state
+    /// </summary>
+    void UpdateRippleEffects()
+    {
+        if (rippleEffectsParent != null && fluidSimulation != null)
+        {
+            // Disable ripple effects when paused, enable when playing
+            rippleEffectsParent.SetActive(!fluidSimulation.IsPaused);
+        }
+    }
+
     void Update()
     {
         // Update sprite every frame in case pause state changes from keyboard input
         UpdateButtonSprite();
+        UpdateRippleEffects();
     }
 }
