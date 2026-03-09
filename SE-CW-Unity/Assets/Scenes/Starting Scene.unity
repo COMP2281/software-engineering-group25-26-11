@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.73607254, g: 0.5549378, b: 0.1481374, a: 1}
+  m_IndirectSpecularColor: {r: 0.7359975, g: 0.55490863, b: 0.14811663, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -22321,6 +22321,8 @@ MonoBehaviour:
   colorBlendingPasses: 2
   colorBlendingStrength: 0.6
   baseAlpha: 0.85
+  rippleEffect: {fileID: 0}
+  rippleCamera: {fileID: 2043186475}
 --- !u!23 &875859733
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -53160,8 +53162,8 @@ Transform:
   m_GameObject: {fileID: 2043186472}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 1, w: 0}
-  m_LocalPosition: {x: -158.00002, y: 499.00003, z: 246}
-  m_LocalScale: {x: 232.50812, y: 232.50812, z: 232.50809}
+  m_LocalPosition: {x: -187, y: 410, z: 246}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1958468602}
@@ -53245,7 +53247,7 @@ Camera:
   far clip plane: 5
   field of view: 60
   orthographic: 1
-  orthographic size: 1.7
+  orthographic size: 1.6
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
