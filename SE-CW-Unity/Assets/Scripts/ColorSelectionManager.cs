@@ -43,7 +43,7 @@ public class ColorSelectionManager : MonoBehaviour
     private Color pendingColor;
 
     // Track which paintball GameObject belongs to which button
-    private Dictionary<int, GameObject> buttonToPaintball = new Dictionary<int, GameObject>();
+    public static Dictionary<int, GameObject> buttonToPaintball = new Dictionary<int, GameObject>();
 
     // Track the confirmed color for each button (for respawning with correct color)
     private Dictionary<int, Color> buttonConfirmedColor = new Dictionary<int, Color>();
@@ -157,7 +157,7 @@ public class ColorSelectionManager : MonoBehaviour
         // Use the confirmed color for this button (or white if never confirmed)
         Color placeholderColor = buttonConfirmedColor.GetValueOrDefault(buttonIndex, Color.white);
 
-        // Check if this button already has a paintball - if so, destroy it
+        // Check if this button already has a paintball tracked - if so, destroy it
         if (buttonToPaintball.ContainsKey(buttonIndex) && buttonToPaintball[buttonIndex] != null)
         {
             GameObject oldBall = buttonToPaintball[buttonIndex];
@@ -173,19 +173,17 @@ public class ColorSelectionManager : MonoBehaviour
                 if (oldColor != Color.white)
                 {
                     usedColors.Remove(oldColorKey);
+                    
+                    // Only decrement for colored balls
+                    if (totalBallCount > 0)
+                    {
+                        totalBallCount--;
+                    }
                 }
             }
             
-            Destroy(oldBall);
+            DestroyImmediate(oldBall);
             buttonToPaintball.Remove(buttonIndex);
-            
-            // Only decrement if we're actually tracking colored balls (not initial white placeholders)
-            if (totalBallCount > 0)
-            {
-                totalBallCount--;
-            }
-            
-            Debug.Log($"Destroyed old paintball at Button {buttonIndex} (button clicked), will use confirmed color {placeholderColor} for placeholder");
         }
 
         // Spawn a placeholder ball at this position with the confirmed color
@@ -205,7 +203,6 @@ public class ColorSelectionManager : MonoBehaviour
         if (colorSelectionPanel != null)
         {
             colorSelectionPanel.SetActive(true);
-            Debug.Log($"Color panel opened for Button {buttonIndex}");
         }
         else
         {
@@ -265,6 +262,14 @@ public class ColorSelectionManager : MonoBehaviour
             spawnOnContact.paintballPrefab = ballPrefab;
         }
 
+        // Add spawn position to respawn queue (so placeholder can respawn after water contact)
+        Color32 colorKey = (Color32)color;
+        if (!colorToSpawnQueue.ContainsKey(colorKey))
+        {
+            colorToSpawnQueue[colorKey] = new Queue<Vector3>();
+        }
+        colorToSpawnQueue[colorKey].Enqueue(spawnPosition);
+
         // Track this paintball
         buttonToPaintball[buttonIndex] = newBall;
 
@@ -321,16 +326,13 @@ public class ColorSelectionManager : MonoBehaviour
 
     private void HandleColorSelection(Color color, int buttonIndex)
     {
-        Debug.Log($"HandleColorSelection called with buttonIndex: {buttonIndex}, color: {color}");
-        
         Color32 colorKey = (Color32)color;
 
-        // Destroy the white placeholder if it exists
+        // Destroy the placeholder if it exists in tracking
         if (buttonToPaintball.ContainsKey(buttonIndex) && buttonToPaintball[buttonIndex] != null)
         {
-            Destroy(buttonToPaintball[buttonIndex]);
+            DestroyImmediate(buttonToPaintball[buttonIndex]);
             buttonToPaintball.Remove(buttonIndex);
-            Debug.Log($"Destroyed white placeholder at Button {buttonIndex} before spawning colored ball");
         }
 
         // Check for duplicates with other buttons

@@ -256,6 +256,64 @@ public class SpawnOnContact : MonoBehaviour
                 Debug.Log("SpawnOnContact: Set respawned paintball to kinematic");
             }
 
+            // Extract button index from the original ball's name (e.g., "Paintball_RGBA(...)_Button3")
+            int buttonIndex = -1;
+            if (gameObject.name.Contains("Button"))
+            {
+                string nameStr = gameObject.name;
+                int buttonStartIndex = nameStr.LastIndexOf("Button") + 6; // "Button" is 6 chars
+                if (buttonStartIndex < nameStr.Length)
+                {
+                    // Extract just the digit(s) after "Button"
+                    string buttonNumberStr = "";
+                    for (int i = buttonStartIndex; i < nameStr.Length; i++)
+                    {
+                        if (char.IsDigit(nameStr[i]))
+                        {
+                            buttonNumberStr += nameStr[i];
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(buttonNumberStr))
+                    {
+                        buttonIndex = int.Parse(buttonNumberStr);
+                    }
+                }
+            }
+
+            // Set the new ball's name to match the pattern
+            if (buttonIndex != -1)
+            {
+                newBall.name = $"Paintball_{colorKey}_Button{buttonIndex}";
+                
+                // Update the ColorSelectionManager's tracking dictionary
+                if (ColorSelectionManager.buttonToPaintball.ContainsKey(buttonIndex))
+                {
+                    // Destroy the old tracked ball if it still exists
+                    GameObject oldTrackedBall = ColorSelectionManager.buttonToPaintball[buttonIndex];
+                    if (oldTrackedBall != null && oldTrackedBall != gameObject)
+                    {
+                        Destroy(oldTrackedBall);
+                    }
+                }
+                ColorSelectionManager.buttonToPaintball[buttonIndex] = newBall;
+                Debug.Log($"SpawnOnContact: Updated buttonToPaintball[{buttonIndex}] with respawned ball");
+            }
+            else
+            {
+                newBall.name = $"Paintball_{colorKey}";
+            }
+
+            // Re-add the spawn position to the queue for future respawns
+            if (!ColorSelectionManager.colorToSpawnQueue.ContainsKey(colorKey))
+            {
+                ColorSelectionManager.colorToSpawnQueue[colorKey] = new Queue<Vector3>();
+            }
+            ColorSelectionManager.colorToSpawnQueue[colorKey].Enqueue(spawnPos);
+
             Debug.Log($"SpawnOnContact: New paintball respawned at {spawnPos} for color {colorKey}");
         }
 

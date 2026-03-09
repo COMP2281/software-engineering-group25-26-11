@@ -76,6 +76,7 @@ namespace Seb.Fluid2D.Simulation
 		bool pauseNextFrame;
 
 		public int numParticles { get; private set; }
+		public bool IsPaused => isPaused;
 
 
 		void Start()
@@ -423,6 +424,24 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetInt("numParticles", numParticles);
 
 			Debug.Log("[FluidSim2D] All particles cleared.");
+		}
+
+		/// <summary>
+		/// Toggles the simulation between paused and playing state.
+		/// Call this from UI button OnClick event.
+		/// </summary>
+		public void TogglePause()
+		{
+			isPaused = !isPaused;
+			Debug.Log($"[FluidSim2D] Simulation {(isPaused ? "Paused" : "Playing")}");
+		}
+
+		/// <summary>
+		/// Sets the pause state explicitly
+		/// </summary>
+		public void SetPaused(bool paused)
+		{
+			isPaused = paused;
 		}
 
 		public Vector2 WorldToSimLocal(Vector3 worldPos)
