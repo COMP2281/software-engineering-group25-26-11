@@ -9,10 +9,7 @@ public class BarrierVisibilityController : MonoBehaviour
 
     bool isOpaque = false;
 
-    void Start()
-    {
-        ToggleBarrierOpacity(); // This runs once at the start to set everything to transparent
-    }
+    // Start() removed - EnvironmentSelector now controls initial state
 
     public void ToggleBarrierOpacity()
     {

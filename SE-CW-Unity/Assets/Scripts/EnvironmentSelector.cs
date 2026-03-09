@@ -29,8 +29,14 @@ public class EnvironmentSelector : MonoBehaviour
         // Deactivate all terrains at start
         DeactivateAllTerrains();
 
-        // Set to "None" option by default
+        // Ensure cube starts as transparent (overrides any other initialization)
+        EnsureCubeTransparent();
+
+        // Set to "None" option by default (index 0 = None)
+        currentIndex = 0;
         UpdateEnvironment();
+        
+        Debug.Log("EnvironmentSelector initialized to 'None' - transparent cube, no terrain");
     }
 
     /// <summary>
