@@ -46,15 +46,15 @@ public class InteractionRadiusSlider : MonoBehaviour
     /// Updates the interaction radius based on slider value
     /// Slider range: 1-100
     /// Slider 100 = radius 5
-    /// Slider 1 = radius 0.5 (adjusted to be more noticeable)
-    /// Formula: radius = (sliderValue * 0.0454545) + 0.4545
+    /// Slider 1 = radius 0.05
+    /// Formula: radius = (sliderValue * 0.05) + 0.00005
     /// This ensures all values have a visible effect
     /// </summary>
     private void UpdateInteractionRadius(float sliderValue)
     {
-        // Convert slider value (1-100) to interaction radius (0.5-5)
-        // Using linear interpolation: min=0.5 at slider=1, max=5 at slider=100
-        float radius = Mathf.Lerp(0.5f, 5f, (sliderValue - 1f) / 99f);
+        // Convert slider value (1-100) to interaction radius (0.05-5)
+        // Using linear interpolation: min=0.05 at slider=1, max=5 at slider=100
+        float radius = Mathf.Lerp(0.05f, 5f, (sliderValue - 1f) / 99f);
 
         // Update FluidSim2D interaction radius
         if (fluidSimulation != null)

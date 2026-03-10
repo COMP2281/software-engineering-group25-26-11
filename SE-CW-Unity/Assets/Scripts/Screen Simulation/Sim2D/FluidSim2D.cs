@@ -329,6 +329,12 @@ namespace Seb.Fluid2D.Simulation
 
 		public void SpawnParticles(Spawner2D.ParticleSpawnData spawnData, Vector2 spawnOffsetLocal)
 		{
+			// Don't spawn particles when simulation is paused
+			if (isPaused)
+			{
+				return;
+			}
+
 			float2 offset = new float2(spawnOffsetLocal.x, spawnOffsetLocal.y);
 			int additionalCount = spawnData.positions.Length;
 			float2[] offsetPositions = new float2[additionalCount];
