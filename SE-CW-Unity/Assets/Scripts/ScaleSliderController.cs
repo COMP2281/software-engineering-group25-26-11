@@ -26,6 +26,25 @@ public class ScaleSliderController : MonoBehaviour
     [Tooltip("Initial slider value for height (default: 30 = scale 3)")]
     public float initialHeightValue = 30f;
 
+    [Header("Ripple System")]
+    [Tooltip("RippleEffect component on the WaterCube. Uses RippleEffect.Instance if not assigned.")]
+    public RippleEffect rippleEffect;
+
+    void Awake()
+    {
+        // Apply the initial scale to the transform RIGHT NOW, before any Start()
+        // runs anywhere in the scene.  Unity guarantees all Awake() calls finish
+        // before the first Start() call, so RippleEffect.Start() will read the
+        // correct lossyScale when it creates its RenderTextures.
+        if (parentTransform != null)
+        {
+            float initW = initialWidthValue / 10f;
+            float initH = initialHeightValue / 10f;
+            Vector3 s = parentTransform.localScale;
+            parentTransform.localScale = new Vector3(initW, initH, s.z);
+        }
+    }
+
     void Start()
     {
         // Configure sliders
@@ -45,7 +64,7 @@ public class ScaleSliderController : MonoBehaviour
             heightSlider.onValueChanged.AddListener(OnHeightSliderChanged);
         }
 
-        // Initialize values
+        // Sync text displays and notify ripple effect with the now-confirmed scale.
         UpdateWidthScale(initialWidthValue);
         UpdateHeightScale(initialHeightValue);
     }
@@ -90,11 +109,14 @@ public class ScaleSliderController : MonoBehaviour
             widthText.text = sliderValue.ToString("F0");
         }
 
+        NotifyRippleEffect();
         Debug.Log($"Width scale updated to {newScale} (slider value: {sliderValue})");
     }
 
     /// <summary>
-    /// Updates the Y scale based on slider value (1-100 maps to 0.1-10)
+    /// Updates the Y scale based on slider value (1-100 maps to 0.1-10).
+    /// The water surface is vertical (X-Y plane), so visual height is localScale.y.
+    /// UV V now derives from world-space bounds (b.size.y), so Y must drive height.
     /// </summary>
     private void UpdateHeightScale(float sliderValue)
     {
@@ -107,7 +129,7 @@ public class ScaleSliderController : MonoBehaviour
         // Convert slider value (1-100) to scale (0.1-10)
         float newScale = sliderValue / 10f;
 
-        // Update parent's Y scale
+        // Update parent's Y scale (visual height of the vertical surface)
         Vector3 currentScale = parentTransform.localScale;
         parentTransform.localScale = new Vector3(currentScale.x, newScale, currentScale.z);
 
@@ -117,7 +139,23 @@ public class ScaleSliderController : MonoBehaviour
             heightText.text = sliderValue.ToString("F0");
         }
 
+        NotifyRippleEffect();
         Debug.Log($"Height scale updated to {newScale} (slider value: {sliderValue})");
+    }
+
+    /// <summary>
+    /// Tells the RippleEffect about the current world-space X/Z dimensions of the
+    /// WaterCube so it can rebuild its RenderTextures at the correct aspect ratio.
+    /// </summary>
+    private void NotifyRippleEffect()
+    {
+        RippleEffect effect = rippleEffect != null ? rippleEffect : RippleEffect.Instance;
+        if (effect == null) return;
+
+        // UpdateWaterScale reads directly from the collider bounds — no need to
+        // pass dimensions here, removing any mismatch between parentTransform and
+        // the RippleEffect's own transform.
+        effect.UpdateWaterScale();
     }
 
     /// <summary>
