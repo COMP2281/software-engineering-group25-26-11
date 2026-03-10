@@ -8,6 +8,12 @@ Shader "Unlit/RippleStamp"
     // Distance is computed in WORLD SPACE so the stamp is always a circle on the
     // physical surface regardless of the UV aspect ratio (e.g. an 8x3 surface
     // would produce a UV ellipse with the old UV-space distance).
+
+    // Previous Solution used a Rendercam to generate bumps by rendering
+    // particle effect onto water surface and then propagating the waves
+
+
+ 
     Properties
     {
         _CurrentRT   ("Current RT",   2D)     = "black" {}
