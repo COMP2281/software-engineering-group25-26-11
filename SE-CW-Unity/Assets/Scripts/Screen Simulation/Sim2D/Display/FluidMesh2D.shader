@@ -14,6 +14,10 @@
         _RippleStr      ("Ripple Strength",     Range(0, 2))    = 0.4
         _Smoothness     ("Surface Smoothness",  Range(0, 1))    = 0.8
         _EdgeSoftness   ("Edge Softness",       Range(0, 0.1))  = 0.02
+        // Bounds of the WaterCube renderer in world space — set from MeshFluidDisplay2D.
+        // xy = bounds.min.x / bounds.min.y   zw = bounds.size.x / bounds.size.y
+        _RippleBoundsMin  ("Ripple Bounds Min XY",  Vector) = (0, 0, 0, 0)
+        _RippleBoundsSize ("Ripple Bounds Size XY", Vector) = (1, 1, 0, 0)
     }
 
     SubShader
@@ -72,9 +76,12 @@
                 float  _AmbientMin;
                 float4 _RippleTex_ST;
                 float  _RippleStr;
-                float4x4 _RippleCamVP;
                 float  _Smoothness;
                 float  _EdgeSoftness;
+                // Bounds of the WaterCube renderer — set every frame by MeshFluidDisplay2D.
+                // xy = bounds.min.x/y   zw = bounds.size.x/y
+                float4 _RippleBoundsMin;
+                float4 _RippleBoundsSize;
             CBUFFER_END
 
             v2f vert(appdata v)
@@ -86,14 +93,13 @@
                 o.col      = v.color * _Color;
                 o.wNorm    = TransformObjectToWorldNormal(v.normal);
 
-                // Project world position through RenderCam's VP matrix.
-                // This gives the same clip-space position the RT camera used,
-                // so UV aligns perfectly with what was rendered into ObjectsRT.
-                float4 rippleClip = mul(_RippleCamVP, float4(posInputs.positionWS, 1.0));
-                // Perspective divide → NDC [-1,1], then remap to UV [0,1]
-                float2 ndc    = rippleClip.xy / rippleClip.w;
-                o.rippleUV    = ndc * 0.5 + 0.5;
-                o.rippleUV.y  = 1.0 - o.rippleUV.y;
+                // Mirror RippleEffect.RippleAtPoint exactly:
+                //   u = 1 - (worldX - boundsMin.x) / boundsSize.x
+                //   v = 1 - (worldY - boundsMin.y) / boundsSize.y
+                // This is a linear world-space mapping — identical to how the stamp UV
+                // is computed — so ripples land at the same texel on both surfaces.
+                o.rippleUV.x = 1.0 - (posInputs.positionWS.x - _RippleBoundsMin.x) / _RippleBoundsSize.x;
+                o.rippleUV.y = 1.0 - (posInputs.positionWS.y - _RippleBoundsMin.y) / _RippleBoundsSize.y;
 
                 return o;
             }
