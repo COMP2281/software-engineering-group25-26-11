@@ -478,7 +478,7 @@ public class ColorSelectionManager : MonoBehaviour
     /// <summary>
     /// Returns the spawn point Transform for the specified button index
     /// </summary>
-    private Transform GetSpawnPointForButton(int buttonIndex)
+    public Transform GetSpawnPointForButton(int buttonIndex)
     {
         switch (buttonIndex)
         {
@@ -491,6 +491,19 @@ public class ColorSelectionManager : MonoBehaviour
                 Debug.LogError($"Invalid button index: {buttonIndex}");
                 return null;
         }
+    }
+
+    /// <summary>
+    /// Returns the spawn position for the specified button index
+    /// </summary>
+    public Vector3 GetSpawnPositionForButton(int buttonIndex)
+    {
+        Transform spawnPoint = GetSpawnPointForButton(buttonIndex);
+        if (spawnPoint != null)
+        {
+            return spawnPoint.position;
+        }
+        return Vector3.zero;
     }
 
     /// <summary>

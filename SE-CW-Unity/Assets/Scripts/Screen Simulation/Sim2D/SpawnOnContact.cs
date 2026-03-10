@@ -128,22 +128,11 @@ public class SpawnOnContact : MonoBehaviour
 
     void Update()
     {
-        // Only do the check if we have a respawn point
-        if (safeRespawnPoint == null) return;
-
-        // If ball fell below the threshold, teleport it back
+        // If ball fell below the threshold, respawn it
         if (transform.position.y < minY)
         {
-            transform.position = safeRespawnPoint.position;
-            transform.rotation = safeRespawnPoint.rotation;
-
-            // Reset physics so it doesn't keep falling
-            Rigidbody rb = GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.velocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
+            Color ballColor = GetColorFromObject(gameObject);
+            RespawnPaintball(ballColor);
         }
     }
 
@@ -190,6 +179,16 @@ public class SpawnOnContact : MonoBehaviour
         TrySpawn(other);
     }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        // Check if collided with a barrier
+        if (collision.gameObject.CompareTag("Barrier"))
+        {
+            Color ballColor = GetColorFromObject(gameObject);
+            RespawnPaintball(ballColor);
+        }
+    }
+
     void TrySpawn(Collider other)
     {
         FluidSim2D currentSim = GetSim();
@@ -232,7 +231,50 @@ public class SpawnOnContact : MonoBehaviour
 
         Color32 colorKey = (Color32)paintColor;
 
-        if (ColorSelectionManager.colorToSpawnQueue.TryGetValue(colorKey, out Queue<Vector3> queue) && queue.Count > 0)
+        // Extract button index from the current ball's name FIRST
+        int buttonIndex = -1;
+        if (gameObject.name.Contains("Button"))
+        {
+            string nameStr = gameObject.name;
+            int buttonStartIndex = nameStr.LastIndexOf("Button") + 6; // "Button" is 6 chars
+            if (buttonStartIndex < nameStr.Length)
+            {
+                // Extract just the digit(s) after "Button"
+                string buttonNumberStr = "";
+                for (int i = buttonStartIndex; i < nameStr.Length; i++)
+                {
+                    if (char.IsDigit(nameStr[i]))
+                    {
+                        buttonNumberStr += nameStr[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (!string.IsNullOrEmpty(buttonNumberStr))
+                {
+                    buttonIndex = int.Parse(buttonNumberStr);
+                }
+            }
+        }
+
+        // If we have a button index, get the correct spawn position from ColorSelectionManager
+        if (buttonIndex != -1)
+        {
+            ColorSelectionManager manager = FindObjectOfType<ColorSelectionManager>();
+            if (manager != null)
+            {
+                spawnPos = manager.GetSpawnPositionForButton(buttonIndex);
+                if (spawnPos != Vector3.zero)
+                {
+                    hasSpawnPos = true;
+                }
+            }
+        }
+
+        // Fallback to queue system if button index method didn't work
+        if (!hasSpawnPos && ColorSelectionManager.colorToSpawnQueue.TryGetValue(colorKey, out Queue<Vector3> queue) && queue.Count > 0)
         {
             spawnPos = queue.Peek();
             hasSpawnPos = true;
@@ -254,34 +296,6 @@ public class SpawnOnContact : MonoBehaviour
             {
                 newRb.isKinematic = true;
                 Debug.Log("SpawnOnContact: Set respawned paintball to kinematic");
-            }
-
-            // Extract button index from the original ball's name (e.g., "Paintball_RGBA(...)_Button3")
-            int buttonIndex = -1;
-            if (gameObject.name.Contains("Button"))
-            {
-                string nameStr = gameObject.name;
-                int buttonStartIndex = nameStr.LastIndexOf("Button") + 6; // "Button" is 6 chars
-                if (buttonStartIndex < nameStr.Length)
-                {
-                    // Extract just the digit(s) after "Button"
-                    string buttonNumberStr = "";
-                    for (int i = buttonStartIndex; i < nameStr.Length; i++)
-                    {
-                        if (char.IsDigit(nameStr[i]))
-                        {
-                            buttonNumberStr += nameStr[i];
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    if (!string.IsNullOrEmpty(buttonNumberStr))
-                    {
-                        buttonIndex = int.Parse(buttonNumberStr);
-                    }
-                }
             }
 
             // Set the new ball's name to match the pattern
