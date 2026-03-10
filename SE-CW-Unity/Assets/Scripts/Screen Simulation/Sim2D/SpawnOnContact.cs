@@ -113,6 +113,12 @@ public class SpawnOnContact : MonoBehaviour
         {
             Debug.LogError($"OnGrabbed: Rigidbody is NULL on {gameObject.name}!");
         }
+        
+        // Reset inactivity timer when paintball is picked up
+        if (InactivityWarning.Instance != null)
+        {
+            InactivityWarning.Instance.RegisterActivity();
+        }
     }
 
     private void OnReleased(SelectExitEventArgs args)
@@ -131,6 +137,12 @@ public class SpawnOnContact : MonoBehaviour
         // If ball fell below the threshold, respawn it
         if (transform.position.y < minY)
         {
+            // Register as a miss - ball fell out of bounds (only if it was grabbed)
+            if (hasBeenGrabbed && Accuracy.Instance != null)
+            {
+                Accuracy.Instance.RegisterMiss();
+            }
+            
             Color ballColor = GetColorFromObject(gameObject);
             RespawnPaintball(ballColor);
         }
@@ -184,6 +196,12 @@ public class SpawnOnContact : MonoBehaviour
         // Check if collided with a barrier
         if (collision.gameObject.CompareTag("Barrier"))
         {
+            // Register as a miss - ball hit barrier instead of water (only if it was grabbed)
+            if (hasBeenGrabbed && Accuracy.Instance != null)
+            {
+                Accuracy.Instance.RegisterMiss();
+            }
+            
             Color ballColor = GetColorFromObject(gameObject);
             RespawnPaintball(ballColor);
         }
@@ -215,6 +233,18 @@ public class SpawnOnContact : MonoBehaviour
         lastSpawnTime = Time.time;
 
         RippleEffect.Instance.RippleAtPoint(samplePoint);
+
+        // Register activity for inactivity warning system
+        if (InactivityWarning.Instance != null)
+        {
+            InactivityWarning.Instance.RegisterActivity();
+        }
+
+        // Register as a hit - ball successfully hit the water surface (only if it was grabbed)
+        if (hasBeenGrabbed && Accuracy.Instance != null)
+        {
+            Accuracy.Instance.RegisterHit();
+        }
 
         // Respawn paintball after spawning particles
         RespawnPaintball(spawnColor);

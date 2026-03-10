@@ -6,7 +6,10 @@ using TMPro;
 public class Accuracy : MonoBehaviour
 {
     public static Accuracy Instance;
-    public TextMeshPro accuracyText;
+    
+    [Header("UI Reference")]
+    [Tooltip("Drag the TextMeshProUGUI component here from your Canvas")]
+    public TextMeshProUGUI accuracyText;
 
     private int totalShots = 0;
     private int hits = 0;
@@ -35,9 +38,18 @@ public class Accuracy : MonoBehaviour
         UpdateDisplay();
     }
 
+    public void ResetAccuracy()
+    {
+        hits = 0;
+        totalShots = 0;
+        UpdateDisplay();
+    }
+
     private void UpdateDisplay()
     {
-        float accuracy = totalShots == 0 ? 0 : (float)hits / totalShots * 100f;
-        accuracyText.text = $"Accuracy: {accuracy:F1}%";
+        if (accuracyText == null) return;
+        
+        float accuracy = totalShots == 0 ? 100f : (float)hits / totalShots * 100f;
+        accuracyText.text = $"{accuracy:F0}%";
     }
 }

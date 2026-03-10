@@ -608,6 +608,18 @@ public class ColorSelectionManager : MonoBehaviour
         buttonToPaintball.Clear();
         buttonConfirmedColor.Clear(); // Clear confirmed colors so buttons reset to white
 
+        // Reset accuracy tracking
+        if (Accuracy.Instance != null)
+        {
+            Accuracy.Instance.ResetAccuracy();
+        }
+        
+        // Reset inactivity timer
+        if (InactivityWarning.Instance != null)
+        {
+            InactivityWarning.Instance.ResetActivityTimer();
+        }
+
         // Reset all button colors to white (or default)
         for (int i = 1; i <= 5; i++)
         {

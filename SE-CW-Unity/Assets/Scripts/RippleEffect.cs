@@ -121,6 +121,46 @@ public class RippleEffect : MonoBehaviour
     public void SetPaused(bool paused)
     {
         isPaused = paused;
+        
+        // Pause or resume the splash particle system
+        if (splashParticleSystem != null)
+        {
+            if (paused)
+            {
+                splashParticleSystem.Pause();
+            }
+            else
+            {
+                splashParticleSystem.Play();
+            }
+        }
+        
+        // Pause or resume all Animator components in the scene
+        Animator[] animators = FindObjectsOfType<Animator>();
+        foreach (Animator animator in animators)
+        {
+            if (animator != null)
+            {
+                animator.enabled = !paused;
+            }
+        }
+        
+        // Pause or resume all ParticleSystem components in the scene
+        ParticleSystem[] particleSystems = FindObjectsOfType<ParticleSystem>();
+        foreach (ParticleSystem ps in particleSystems)
+        {
+            if (ps != null)
+            {
+                if (paused)
+                {
+                    ps.Pause();
+                }
+                else
+                {
+                    ps.Play();
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -231,6 +271,12 @@ public class RippleEffect : MonoBehaviour
             {
                 RippleAtPoint(hit.point);
                 lastRippleTime = Time.time;
+                
+                // Reset inactivity timer when mouse creates ripples
+                if (InactivityWarning.Instance != null)
+                {
+                    InactivityWarning.Instance.RegisterActivity();
+                }
             }
         }
     }

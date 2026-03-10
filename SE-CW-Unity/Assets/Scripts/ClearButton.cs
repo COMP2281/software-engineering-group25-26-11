@@ -29,5 +29,19 @@ public class ClearButton : MonoBehaviour
             fluidSimulation.ClearAllParticles();
             Debug.Log("[ClearButton] Paint screen cleared");
         }
+        
+        // Reset accuracy to 100%
+        if (Accuracy.Instance != null)
+        {
+            Accuracy.Instance.ResetAccuracy();
+            Debug.Log("[ClearButton] Accuracy reset to 100%");
+        }
+        
+        // Reset inactivity timer
+        if (InactivityWarning.Instance != null)
+        {
+            InactivityWarning.Instance.ResetActivityTimer();
+            Debug.Log("[ClearButton] Inactivity timer reset");
+        }
     }
 }

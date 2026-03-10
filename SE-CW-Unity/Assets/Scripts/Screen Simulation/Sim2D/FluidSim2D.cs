@@ -259,6 +259,12 @@ namespace Seb.Fluid2D.Simulation
 				// External interaction (e.g., VR hand)
 				interactionPoint = externalInteractionPoint;
 				currInteractStrength = externalInteractionStrength;
+				
+				// Reset inactivity timer when VR hand interaction is active
+				if (currInteractStrength != 0 && InactivityWarning.Instance != null)
+				{
+					InactivityWarning.Instance.RegisterActivity();
+				}
 			}
 			else if (interactionPlane != null)
 			{
@@ -275,6 +281,12 @@ namespace Seb.Fluid2D.Simulation
 				if (isPushInteraction || isPullInteraction)
 				{
 					currInteractStrength = isPushInteraction ? -interactionStrength : interactionStrength;
+					
+					// Reset inactivity timer when mouse interaction is active
+					if (InactivityWarning.Instance != null)
+					{
+						InactivityWarning.Instance.RegisterActivity();
+					}
 				}
 			}
 

@@ -85,6 +85,12 @@ public class HandWaterDetection : MonoBehaviour
             }
 
             TriggerHapticPulse(0.8f, 0.15f);
+            
+            // Reset inactivity timer when hand enters water
+            if (InactivityWarning.Instance != null)
+            {
+                InactivityWarning.Instance.RegisterActivity();
+            }
         }
     }
 
