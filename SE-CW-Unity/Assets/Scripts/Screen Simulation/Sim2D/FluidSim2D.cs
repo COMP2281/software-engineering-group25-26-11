@@ -39,6 +39,12 @@ namespace Seb.Fluid2D.Simulation
 		public float interactionRadius;
 
 		public float interactionStrength;
+		
+		[Header("External Interaction")]
+		[Tooltip("Allows external scripts (e.g., VR hands) to set interaction data")]
+		public bool hasExternalInteraction = false;
+		public Vector2 externalInteractionPoint;
+		public float externalInteractionStrength;
 
 		[Header("References")]
 		public ComputeShader compute;
@@ -244,24 +250,32 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetFloat("SpikyPow3DerivativeScalingFactor", 30 / (Mathf.Pow(smoothingRadius, 5) * Mathf.PI));
 			compute.SetFloat("SpikyPow2DerivativeScalingFactor", 12 / (Mathf.Pow(smoothingRadius, 4) * Mathf.PI));
 
-			// Mouse interaction settings:
+			// Interaction settings - prioritize external (VR hand) over mouse
 			Vector2 interactionPoint = Vector2.zero;
-			if (interactionPlane != null)
+			float currInteractStrength = 0;
+			
+			if (hasExternalInteraction)
 			{
+				// External interaction (e.g., VR hand)
+				interactionPoint = externalInteractionPoint;
+				currInteractStrength = externalInteractionStrength;
+			}
+			else if (interactionPlane != null)
+			{
+				// Mouse interaction
 				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 				if (interactionPlane.Raycast(ray, out RaycastHit hit, float.MaxValue))
 				{
 					// Convert world-space hit point to simulation local coordinates
 					interactionPoint = WorldToSimLocal(hit.point);
 				}
-			}
 
-			bool isPushInteraction = Input.GetMouseButton(0);
-			bool isPullInteraction = Input.GetMouseButton(1);
-			float currInteractStrength = 0;
-			if (isPushInteraction || isPullInteraction)
-			{
-				currInteractStrength = isPushInteraction ? -interactionStrength : interactionStrength;
+				bool isPushInteraction = Input.GetMouseButton(0);
+				bool isPullInteraction = Input.GetMouseButton(1);
+				if (isPushInteraction || isPullInteraction)
+				{
+					currInteractStrength = isPushInteraction ? -interactionStrength : interactionStrength;
+				}
 			}
 
 			compute.SetVector("interactionInputPoint", interactionPoint);

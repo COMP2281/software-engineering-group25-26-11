@@ -2,11 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using Seb.Fluid2D.Simulation;
 
 public class HandWaterDetection : MonoBehaviour
 {
     [Header("Physics Settings")]
     public float pushStrength = 10f;
+    
+    [Header("Fluid Interaction")]
+    [Tooltip("The FluidSim2D to apply interaction forces to")]
+    public FluidSim2D fluidSimulation;
+    [Tooltip("Strength of fluid repulsion (positive = repel, negative = attract)")]
+    public float fluidInteractionStrength = 50f;
 
     [Header("Surface Detection")]
     public string surfaceTag = "Surface";
@@ -89,6 +96,15 @@ public class HandWaterDetection : MonoBehaviour
             Rigidbody rb = other.attachedRigidbody;
 
             RippleEffect.Instance.RippleAtPoint(transform.position);
+            
+            // Apply fluid simulation interaction
+            if (fluidSimulation != null)
+            {
+                Vector2 simPoint = fluidSimulation.WorldToSimLocal(transform.position);
+                fluidSimulation.hasExternalInteraction = true;
+                fluidSimulation.externalInteractionPoint = simPoint;
+                fluidSimulation.externalInteractionStrength = -fluidInteractionStrength; // Negative = repel
+            }
 
             if (rb != null && currentHandSpeed > 0.1f)
             {
@@ -104,6 +120,13 @@ public class HandWaterDetection : MonoBehaviour
         if (other.CompareTag(surfaceTag))
         {
             isInsideWater = false;
+            
+            // Clear fluid simulation interaction
+            if (fluidSimulation != null)
+            {
+                fluidSimulation.hasExternalInteraction = false;
+                fluidSimulation.externalInteractionStrength = 0f;
+            }
         }
     }
 

@@ -61,6 +61,14 @@ public class PausePlayButton : MonoBehaviour
         {
             Debug.Log($"PausePlayButton clicked. Before toggle: IsPaused={fluidSimulation.IsPaused}");
             fluidSimulation.TogglePause();
+            
+            // Also toggle RippleEffect pause state
+            if (RippleEffect.Instance != null)
+            {
+                RippleEffect.Instance.SetPaused(fluidSimulation.IsPaused);
+                Debug.Log($"RippleEffect paused: {fluidSimulation.IsPaused}");
+            }
+            
             Debug.Log($"After toggle: IsPaused={fluidSimulation.IsPaused}");
             UpdateButtonSprite();
             UpdateRippleEffects();

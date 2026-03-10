@@ -22680,6 +22680,9 @@ MonoBehaviour:
   interactionPlane: {fileID: 1666421594}
   interactionRadius: 0.5
   interactionStrength: 90
+  hasExternalInteraction: 0
+  externalInteractionPoint: {x: 0, y: 0}
+  externalInteractionStrength: 0
   compute: {fileID: 7200000, guid: 1c77ce8de78fddb419ed2d15cae41af0, type: 3}
   spawner2D: {fileID: 865727573}
   particleDisplay: {fileID: 865727572}
@@ -25476,7 +25479,7 @@ PrefabInstance:
     - target: {fileID: 6598815579406187037, guid: 18ddb545287c546e19cc77dc9fbb2189,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -29528,6 +29531,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pushStrength: 10
+  fluidSimulation: {fileID: 865727574}
+  fluidInteractionStrength: 50
   surfaceTag: Water
   splashSound: {fileID: 8300000, guid: 88e5508c7d869c141b4ba331bf66f7de, type: 3}
   moveSound: {fileID: 8300000, guid: e080f7589daaf26419fdddd1ad02f66e, type: 3}
@@ -51599,6 +51604,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pushStrength: 10
+  fluidSimulation: {fileID: 865727574}
+  fluidInteractionStrength: 50
   surfaceTag: Water
   splashSound: {fileID: 8300000, guid: 88e5508c7d869c141b4ba331bf66f7de, type: 3}
   moveSound: {fileID: 8300000, guid: e080f7589daaf26419fdddd1ad02f66e, type: 3}
@@ -57864,6 +57871,7 @@ MonoBehaviour:
   timeBetweenRipples: 0.001
   waterCollider: {fileID: 1666421594}
   splashParticleSystem: {fileID: 486176648}
+  isPaused: 0
   TextureWidth: 512
   TextureHeight: 200
   ObjectsRT: {fileID: 8400000, guid: f650063de21177c408058ff6fb306863, type: 2}

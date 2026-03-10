@@ -45,25 +45,33 @@ public class InteractionRadiusSlider : MonoBehaviour
     /// <summary>
     /// Updates the interaction radius based on slider value
     /// Slider range: 1-100
-    /// Slider 100 = radius 5
-    /// Slider 1 = radius 0.05
-    /// Formula: radius = (sliderValue * 0.05) + 0.00005
+    /// Slider 100 = fluid radius 5, ripple radius 0.4
+    /// Slider 1 = fluid radius 0.05, ripple radius 0.05
     /// This ensures all values have a visible effect
     /// </summary>
     private void UpdateInteractionRadius(float sliderValue)
     {
         // Convert slider value (1-100) to interaction radius (0.05-5)
         // Using linear interpolation: min=0.05 at slider=1, max=5 at slider=100
-        float radius = Mathf.Lerp(0.05f, 5f, (sliderValue - 1f) / 99f);
+        float fluidRadius = Mathf.Lerp(0.05f, 5f, (sliderValue - 1f) / 99f);
+        
+        // Convert slider value to ripple radius (0.05-0.4)
+        float rippleRadius = Mathf.Lerp(0.05f, 0.4f, (sliderValue - 1f) / 99f);
 
         // Update FluidSim2D interaction radius
         if (fluidSimulation != null)
         {
-            fluidSimulation.interactionRadius = radius;
+            fluidSimulation.interactionRadius = fluidRadius;
         }
         else
         {
             Debug.LogWarning("FluidSimulation reference is not assigned!");
+        }
+        
+        // Update RippleEffect ripple radius
+        if (RippleEffect.Instance != null)
+        {
+            RippleEffect.Instance.rippleRadius = rippleRadius;
         }
 
         // Update text display (show slider value, not radius)
@@ -72,7 +80,7 @@ public class InteractionRadiusSlider : MonoBehaviour
             valueText.text = sliderValue.ToString("F0");
         }
 
-        Debug.Log($"Interaction radius updated: slider={sliderValue}, radius={radius:F2}");
+        Debug.Log($"Radius updated: slider={sliderValue}, fluidRadius={fluidRadius:F2}, rippleRadius={rippleRadius:F3}");
     }
 
     /// <summary>

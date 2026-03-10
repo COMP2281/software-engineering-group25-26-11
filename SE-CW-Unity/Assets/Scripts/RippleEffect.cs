@@ -12,6 +12,7 @@ public class RippleEffect : MonoBehaviour
     public float timeBetweenRipples = 0.2f;
     public Collider waterCollider;
     public ParticleSystem splashParticleSystem;
+    public bool isPaused = false;
 
     public int TextureWidth  = 1024;
     public int TextureHeight = 400;
@@ -87,6 +88,9 @@ public class RippleEffect : MonoBehaviour
     /// </summary>
     public void RippleAtPoint(Vector3 worldPoint)
     {
+        // Don't create ripples when paused
+        if (isPaused) return;
+        
         if (splashParticleSystem != null)
         {
             splashParticleSystem.transform.position = worldPoint;
@@ -101,6 +105,22 @@ public class RippleEffect : MonoBehaviour
         float v = Mathf.Clamp01(1f - (worldPoint.y - b.min.y) / b.size.y); // negate Y (UV origin is top-left)
 
         StampRipple(u, v);
+    }
+
+    /// <summary>
+    /// Toggles the ripple simulation pause state.
+    /// </summary>
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+    }
+
+    /// <summary>
+    /// Sets the pause state directly.
+    /// </summary>
+    public void SetPaused(bool paused)
+    {
+        isPaused = paused;
     }
 
     /// <summary>
@@ -201,6 +221,9 @@ public class RippleEffect : MonoBehaviour
 
     private void Update()
     {
+        // Don't process mouse input when paused
+        if (isPaused) return;
+        
         if (Input.GetMouseButton(0) && Time.time - lastRippleTime >= timeBetweenRipples)
         {
             Ray ray = _mainCam.ScreenPointToRay(Input.mousePosition);
@@ -214,33 +237,37 @@ public class RippleEffect : MonoBehaviour
 
     IEnumerator ripples()
     {
-        // ── Step 1: Wave propagation on pure wave buffers ─────────────────────
-        // CurrRT and PrevRT contain ONLY wave displacement — no ObjectsRT mixed
-        // in — so the wave equation never sees a permanent height bias that would
-        // generate a restoring (backwards-travelling) wave.
-        RippleMat.SetTexture("_PrevRT",    PrevRT);
-        RippleMat.SetTexture("_CurrentRT", CurrRT);
-        Graphics.Blit(null, TempRT, RippleMat);
-        // TempRT = wave(CurrRT, PrevRT)
+        // Skip wave propagation if paused
+        if (!isPaused)
+        {
+            // ── Step 1: Wave propagation on pure wave buffers ─────────────────────
+            // CurrRT and PrevRT contain ONLY wave displacement — no ObjectsRT mixed
+            // in — so the wave equation never sees a permanent height bias that would
+            // generate a restoring (backwards-travelling) wave.
+            RippleMat.SetTexture("_PrevRT",    PrevRT);
+            RippleMat.SetTexture("_CurrentRT", CurrRT);
+            Graphics.Blit(null, TempRT, RippleMat);
+            // TempRT = wave(CurrRT, PrevRT)
 
-        // ── Step 2: Rotate pure-wave ping-pong ───────────────────────────────
-        // PrevRT ← CurrRT  (previous pure-wave step)
-        // CurrRT ← TempRT  (new pure-wave step)
-        // TempRT ← old PrevRT  (now free — will become the display buffer)
-        RenderTexture oldPrev = PrevRT;
-        PrevRT = CurrRT;   // pure previous
-        CurrRT = TempRT;   // pure current
-        TempRT = oldPrev;  // free scratch
+            // ── Step 2: Rotate pure-wave ping-pong ───────────────────────────────
+            // PrevRT ← CurrRT  (previous pure-wave step)
+            // CurrRT ← TempRT  (new pure-wave step)
+            // TempRT ← old PrevRT  (now free — will become the display buffer)
+            RenderTexture oldPrev = PrevRT;
+            PrevRT = CurrRT;   // pure previous
+            CurrRT = TempRT;   // pure current
+            TempRT = oldPrev;  // free scratch
 
-        // ── Step 3: Build display buffer = pure wave + ObjectsRT ──────────────
-        // This is written into TempRT only; it does NOT flow back into CurrRT or
-        // PrevRT, so ObjectsRT can never contaminate the wave simulation.
-        AddMat.SetTexture("_ObjectsRT", ObjectsRT);
-        AddMat.SetTexture("_CurrentRT", CurrRT);
-        Graphics.Blit(null, TempRT, AddMat);
-        // TempRT = CurrRT + ObjectsRT  (display-only)
+            // ── Step 3: Build display buffer = pure wave + ObjectsRT ──────────────
+            // This is written into TempRT only; it does NOT flow back into CurrRT or
+            // PrevRT, so ObjectsRT can never contaminate the wave simulation.
+            AddMat.SetTexture("_ObjectsRT", ObjectsRT);
+            AddMat.SetTexture("_CurrentRT", CurrRT);
+            Graphics.Blit(null, TempRT, AddMat);
+            // TempRT = CurrRT + ObjectsRT  (display-only)
 
-        _renderer.material.SetTexture("_RippleTex", TempRT);
+            _renderer.material.SetTexture("_RippleTex", TempRT);
+        }
 
         yield return null;
         StartCoroutine(ripples());
