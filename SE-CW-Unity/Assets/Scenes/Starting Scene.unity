@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.73607254, g: 0.5549378, b: 0.1481374, a: 1}
+  m_IndirectSpecularColor: {r: 0.73612785, g: 0.5549478, b: 0.14815521, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -24405,6 +24405,7 @@ MonoBehaviour:
   heightText: {fileID: 14676518}
   initialWidthValue: 80
   initialHeightValue: 30
+  rippleEffect: {fileID: 0}
 --- !u!1 &932502152
 GameObject:
   m_ObjectHideFlags: 0
@@ -57860,7 +57861,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d103dec7ac8e8f4dbc85a8520f943f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeBetweenRipples: 0.01
+  timeBetweenRipples: 0.001
   waterCollider: {fileID: 1666421594}
   splashParticleSystem: {fileID: 486176648}
   TextureWidth: 512
@@ -57868,6 +57869,9 @@ MonoBehaviour:
   ObjectsRT: {fileID: 8400000, guid: f650063de21177c408058ff6fb306863, type: 2}
   RippleShader: {fileID: 4800000, guid: b62f7e69f75a6c742a6028d3e07f06ed, type: 3}
   AddShader: {fileID: 4800000, guid: 90b17fc6d7f5c66478bdd7ccea8f90bc, type: 3}
+  StampShader: {fileID: 4800000, guid: f9cc32228c2964d4f824197ac58d4582, type: 3}
+  rippleRadius: 0.03
+  rippleStrength: 1
 --- !u!114 &8142385307331734860
 MonoBehaviour:
   m_ObjectHideFlags: 0

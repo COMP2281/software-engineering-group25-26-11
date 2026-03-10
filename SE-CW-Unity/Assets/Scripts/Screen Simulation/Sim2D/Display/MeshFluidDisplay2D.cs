@@ -68,13 +68,16 @@ namespace Seb.Fluid2D.Rendering
         [Header("Ripple")]
         [Tooltip("Leave empty to auto-resolve from RippleEffect.Instance at runtime.")]
         public RippleEffect rippleEffect;
-        [Tooltip("The camera that renders into ObjectsRT (RenderCam). Drag it here.")]
+        [Tooltip("No longer used for UV — kept so existing scene references are not lost.")]
         public Camera rippleCamera;
 
         // ───────── Private state ─────────
         Mesh fluidMesh;
         MeshFilter meshFilter;
         MeshRenderer meshRenderer;
+
+        // Cached renderer on the WaterCube (source of the ripple bounds)
+        Renderer _rippleRenderer;
 
         // GPU read-back buffers (reused across frames)
         float2[] readPos;
@@ -140,6 +143,11 @@ namespace Seb.Fluid2D.Rendering
             // Auto-resolve RippleEffect
             if (rippleEffect == null)
                 rippleEffect = RippleEffect.Instance;
+
+            // Cache the WaterCube renderer so LateUpdate can read its world bounds
+            // without a per-frame GetComponent call.
+            if (rippleEffect != null)
+                _rippleRenderer = rippleEffect.GetComponent<Renderer>();
         }
 
         void LateUpdate()
@@ -169,19 +177,21 @@ namespace Seb.Fluid2D.Rendering
 
             RebuildMesh(n, maxE);
 
-            // Push ripple RT + RenderCam VP matrix so shader UV matches the RT exactly
+            // Push ripple RT and world-space bounds so the shader UV matches the
+            // stamp UV used by RippleEffect.RippleAtPoint exactly.
             if (rippleEffect != null && rippleEffect.RippleRT != null)
             {
                 meshRenderer.material.SetTexture("_RippleTex", rippleEffect.RippleRT);
 
-                if (rippleCamera != null)
+                if (_rippleRenderer != null)
                 {
-                    // Match the aspect ratio of the RT so projection is correct
-                    rippleCamera.aspect = (float)rippleEffect.TextureWidth / rippleEffect.TextureHeight;
-
-                    Matrix4x4 V = rippleCamera.worldToCameraMatrix;
-                    Matrix4x4 P = GL.GetGPUProjectionMatrix(rippleCamera.projectionMatrix, true);
-                    meshRenderer.material.SetMatrix("_RippleCamVP", P * V);
+                    // Bounds are re-read every frame so dynamic WaterCube resizes
+                    // (via UpdateWaterScale) propagate to the mesh automatically.
+                    Bounds b = _rippleRenderer.bounds;
+                    meshRenderer.material.SetVector("_RippleBoundsMin",
+                        new Vector4(b.min.x, b.min.y, 0f, 0f));
+                    meshRenderer.material.SetVector("_RippleBoundsSize",
+                        new Vector4(b.size.x, b.size.y, 0f, 0f));
                 }
             }
         }
