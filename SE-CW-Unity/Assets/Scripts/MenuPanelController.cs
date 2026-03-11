@@ -21,7 +21,6 @@ public class MenuPanelController : MonoBehaviour
     public bool startClosed = true;
 
     private bool isMenuOpen = false;
-    private bool wasSimulationPausedBefore = false;
 
     void Start()
     {
@@ -77,23 +76,17 @@ public class MenuPanelController : MonoBehaviour
         }
 
         Debug.Log("MenuPanelController: Opening menu");
-        
-        // Save the current pause state before we change it
-        if (fluidSimulation != null)
-        {
-            wasSimulationPausedBefore = fluidSimulation.IsPaused;
-        }
 
         // Show the menu panel
         menuPanel.SetActive(true);
         isMenuOpen = true;
 
-        // Pause the simulation
+        // Pause the simulation and all effects
         PauseSimulation();
     }
 
     /// <summary>
-    /// Closes the menu panel and resumes the simulation (if it wasn't manually paused)
+    /// Closes the menu panel (does NOT resume simulation - user must manually unpause)
     /// </summary>
     public void CloseMenu()
     {
@@ -103,54 +96,36 @@ public class MenuPanelController : MonoBehaviour
             return;
         }
 
-        Debug.Log("MenuPanelController: Closing menu");
+        Debug.Log("MenuPanelController: Closing menu (simulation remains paused)");
         
         // Hide the menu panel
         menuPanel.SetActive(false);
         isMenuOpen = false;
-
-        // Resume the simulation (only if it wasn't already paused before opening menu)
-        ResumeSimulation();
+        
+        // Do NOT resume - let the user manually unpause using the pause/play button
     }
 
     /// <summary>
-    /// Pauses the fluid simulation and disables ripple effects
+    /// Pauses the fluid simulation, ripple effects, and all animations/particle systems
     /// </summary>
     private void PauseSimulation()
     {
         if (fluidSimulation != null)
         {
             fluidSimulation.SetPaused(true);
-            Debug.Log("MenuPanelController: Simulation paused");
+            Debug.Log("MenuPanelController: Fluid simulation paused");
+        }
+
+        if (RippleEffect.Instance != null)
+        {
+            RippleEffect.Instance.SetPaused(true);
+            Debug.Log("MenuPanelController: Ripple effects paused (includes animations and particle systems)");
         }
 
         if (rippleEffectsParent != null)
         {
             rippleEffectsParent.SetActive(false);
-            Debug.Log("MenuPanelController: Ripple effects disabled");
-        }
-    }
-
-    /// <summary>
-    /// Resumes the fluid simulation and enables ripple effects (respects previous pause state)
-    /// </summary>
-    private void ResumeSimulation()
-    {
-        // Only resume if the simulation wasn't manually paused before opening the menu
-        if (fluidSimulation != null && !wasSimulationPausedBefore)
-        {
-            fluidSimulation.SetPaused(false);
-            Debug.Log("MenuPanelController: Simulation resumed");
-        }
-        else if (wasSimulationPausedBefore)
-        {
-            Debug.Log("MenuPanelController: Simulation stays paused (was paused before menu opened)");
-        }
-
-        if (rippleEffectsParent != null && !wasSimulationPausedBefore)
-        {
-            rippleEffectsParent.SetActive(true);
-            Debug.Log("MenuPanelController: Ripple effects enabled");
+            Debug.Log("MenuPanelController: Ripple effects parent disabled");
         }
     }
 

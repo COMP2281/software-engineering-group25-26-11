@@ -48,16 +48,12 @@ public class ColorSelectionManager : MonoBehaviour
     private int totalBallCount = 0;
     private int pendingButtonIndex = -1; // Tracks which button was clicked
     private Color pendingColor;
-    private bool wasSimulationPausedBefore = false;
 
     // Track which paintball GameObject belongs to which button
     public static Dictionary<int, GameObject> buttonToPaintball = new Dictionary<int, GameObject>();
 
     // Track the confirmed color for each button (for respawning with correct color)
     private Dictionary<int, Color> buttonConfirmedColor = new Dictionary<int, Color>();
-
-    // Track used colors
-    private HashSet<Color32> usedColors = new HashSet<Color32>();
 
     // Store original positions for respawn
     public static Dictionary<Color32, Queue<Vector3>> colorToSpawnQueue =
@@ -175,14 +171,10 @@ public class ColorSelectionManager : MonoBehaviour
             if (oldRenderer != null)
             {
                 Color oldColor = oldRenderer.material.color;
-                Color32 oldColorKey = (Color32)oldColor;
                 
-                // Remove from used colors only if not white
+                // Only decrement for colored balls (not white)
                 if (oldColor != Color.white)
                 {
-                    usedColors.Remove(oldColorKey);
-                    
-                    // Only decrement for colored balls
                     if (totalBallCount > 0)
                     {
                         totalBallCount--;
@@ -208,11 +200,17 @@ public class ColorSelectionManager : MonoBehaviour
 
         pendingButtonIndex = buttonIndex;
         
-        // Pause simulation and disable ripple effects when opening color panel
+        // Pause simulation and ripple effects when opening color panel
         if (fluidSimulation != null)
         {
-            wasSimulationPausedBefore = fluidSimulation.IsPaused;
             fluidSimulation.SetPaused(true);
+            Debug.Log("ColorSelectionManager: Fluid simulation paused");
+        }
+        
+        if (RippleEffect.Instance != null)
+        {
+            RippleEffect.Instance.SetPaused(true);
+            Debug.Log("ColorSelectionManager: Ripple effects paused (includes animations and particle systems)");
         }
         
         if (rippleEffectsParent != null)
@@ -326,16 +324,8 @@ public class ColorSelectionManager : MonoBehaviour
             colorSelectionPanel.SetActive(false);
         }
 
-        // Resume simulation and ripple effects if they weren't paused before
-        if (fluidSimulation != null && !wasSimulationPausedBefore)
-        {
-            fluidSimulation.SetPaused(false);
-        }
-        
-        if (rippleEffectsParent != null && !wasSimulationPausedBefore)
-        {
-            rippleEffectsParent.SetActive(true);
-        }
+        // Do NOT resume - let the user manually unpause using the pause/play button
+        Debug.Log("ColorSelectionManager: Color confirmed, panel closed (simulation remains paused)");
 
         // Reset pending state
         pendingButtonIndex = -1;
@@ -351,19 +341,10 @@ public class ColorSelectionManager : MonoBehaviour
             colorSelectionPanel.SetActive(false);
         }
         
-        // Resume simulation and ripple effects if they weren't paused before
-        if (fluidSimulation != null && !wasSimulationPausedBefore)
-        {
-            fluidSimulation.SetPaused(false);
-        }
-        
-        if (rippleEffectsParent != null && !wasSimulationPausedBefore)
-        {
-            rippleEffectsParent.SetActive(true);
-        }
+        // Do NOT resume - let the user manually unpause using the pause/play button
+        Debug.Log("ColorSelectionManager: Color selection cancelled (simulation remains paused)");
         
         pendingButtonIndex = -1;
-        Debug.Log("Color selection cancelled.");
     }
 
     private void HandleColorSelection(Color color, int buttonIndex)
@@ -375,13 +356,6 @@ public class ColorSelectionManager : MonoBehaviour
         {
             DestroyImmediate(buttonToPaintball[buttonIndex]);
             buttonToPaintball.Remove(buttonIndex);
-        }
-
-        // Check for duplicates with other buttons
-        if (usedColors.Contains(colorKey))
-        {
-            Debug.LogWarning($"Color {colorKey} is already used by another button. Cannot select the same color again.");
-            return;
         }
 
         // Check total count
@@ -462,8 +436,6 @@ public class ColorSelectionManager : MonoBehaviour
         // Track this paintball for this button
         buttonToPaintball[buttonIndex] = newBall;
 
-        // Add color to used set
-        usedColors.Add(colorKey);
         totalBallCount++;
 
         // Update the button's visual color to match the paintball
@@ -603,7 +575,6 @@ public class ColorSelectionManager : MonoBehaviour
         }
 
         totalBallCount = 0;
-        usedColors.Clear();
         colorToSpawnQueue.Clear();
         buttonToPaintball.Clear();
         buttonConfirmedColor.Clear(); // Clear confirmed colors so buttons reset to white
