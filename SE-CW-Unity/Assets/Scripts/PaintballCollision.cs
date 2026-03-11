@@ -86,14 +86,14 @@ public class PaintballCollision : MonoBehaviour
 
     private void OnGrabbed(SelectEnterEventArgs args)
     {
-        // When grabbed, enable physics immediately
+        // When grabbed, enable physics but disable gravity to prevent jitter
         Debug.Log($"OnGrabbed EVENT FIRED for {gameObject.name}!");
         if (rb != null)
         {
             rb.isKinematic = false;
-            rb.useGravity = true;
+            rb.useGravity = false;
             hasBeenGrabbed = true;
-            Debug.Log($"OnGrabbed: Set {gameObject.name} to non-kinematic. isKinematic={rb.isKinematic}, hasBeenGrabbed={hasBeenGrabbed}");
+            Debug.Log($"OnGrabbed: Set {gameObject.name} to non-kinematic, gravity OFF while held. isKinematic={rb.isKinematic}, hasBeenGrabbed={hasBeenGrabbed}");
         }
         else
         {
@@ -127,6 +127,9 @@ public class PaintballCollision : MonoBehaviour
                     hasBeenGrabbed = true;
                     Debug.LogWarning($"FixedUpdate: Forced {gameObject.name} to non-kinematic (is being held)");
                 }
+                // Keep gravity off while held to prevent physics jitter
+                if (rb.useGravity)
+                    rb.useGravity = false;
             }
             // Also keep non-kinematic if it has been grabbed before
             else if (hasBeenGrabbed && rb.isKinematic)

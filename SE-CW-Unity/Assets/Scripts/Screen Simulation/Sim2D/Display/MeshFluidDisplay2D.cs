@@ -5,85 +5,54 @@ using System.Collections.Generic;
 
 namespace Seb.Fluid2D.Rendering
 {
-    /// <summary>
     /// Renders the fluid simulation as a dynamic triangle mesh instead of individual ball-shaped particles.
     /// Particles act as invisible vertex points; a Delaunay triangulation connects neighbouring
     /// particles (within a radius) into a continuous surface mesh that deforms with the simulation
     /// every frame.
-    ///
-    /// Setup:
-    ///   1. Add this component to a GameObject (MeshFilter + MeshRenderer are auto-added).
-    ///   2. Assign the FluidSim2D reference and (optionally) the worldAnchor transform.
-    ///      If worldAnchor is left empty it falls back to sim.particleDisplay.worldAnchor.
-    ///   3. Assign a material (e.g. the included FluidMesh2D shader).
-    ///   4. Optionally disable or hide ParticleDisplay2D so the old ball rendering is invisible.
-    /// </summary>
+
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class MeshFluidDisplay2D : MonoBehaviour
     {
         // ───────── Inspector ─────────
-        [Header("References")]
         public FluidSim2D sim;
-        [Tooltip("World-space anchor transform. Falls back to sim.particleDisplay.worldAnchor if null.")]
         public Transform worldAnchor;
 
-        [Header("Mesh Generation")]
-        [Tooltip("Maximum triangle edge length in simulation-space units. " +
-                 "Triangles with any edge longer than this are culled (alpha-shape). " +
-                 "Controls how 'tight' the mesh wraps the fluid body.")]
         public float maxEdgeLength = 4f;
 
-        [Tooltip("Automatically derive maxEdgeLength from sim.smoothingRadius × edgeLengthFactor.")]
         public bool autoMaxEdgeLength = true;
 
         [Range(1.0f, 4.0f)]
-        [Tooltip("Multiplier on smoothingRadius when autoMaxEdgeLength is true. Higher = less seams.")]
         public float edgeLengthFactor = 2.5f;
 
-        [Header("Smoothing")]
         [Range(0, 5)]
-        [Tooltip("Number of Laplacian smoothing iterations. Higher = smoother, more curved edges.")]
         public int smoothingIterations = 2;
 
         [Range(0f, 1f)]
-        [Tooltip("Strength of each smoothing pass. 0 = no smoothing, 1 = maximum smoothing.")]
         public float smoothingStrength = 0.5f;
 
-        [Tooltip("Subdivide triangle edges to create curved appearance.")]
-        public bool subdivideEdges = true;
-
-        [Header("Color Blending")]
         [Range(0, 3)]
-        [Tooltip("Number of color blending passes. Higher = smoother color transitions between different colors.")]
         public int colorBlendingPasses = 2;
 
         [Range(0f, 1f)]
-        [Tooltip("Strength of color blending. 0 = sharp color boundaries, 1 = fully blended colors.")]
         public float colorBlendingStrength = 0.6f;
 
-        [Header("Appearance")]
         [Range(0f, 1f)]
         public float baseAlpha = 0.85f;
 
-        [Header("Ripple")]
-        [Tooltip("Leave empty to auto-resolve from RippleEffect.Instance at runtime.")]
         public RippleEffect rippleEffect;
-        [Tooltip("No longer used for UV — kept so existing scene references are not lost.")]
-        public Camera rippleCamera;
 
-        // ───────── Private state ─────────
         Mesh fluidMesh;
         MeshFilter meshFilter;
         MeshRenderer meshRenderer;
 
-        // Cached renderer on the WaterCube (source of the ripple bounds)
+        // Cached renderer on the WaterCube
         Renderer _rippleRenderer;
 
-        // GPU read-back buffers (reused across frames)
+        // GPU read-back buffers 
         float2[] readPos;
         float4[] readCol;
 
-        // Mesh data (reused)
+        // Mesh data
         readonly List<Vector3> meshVerts = new List<Vector3>();
         readonly List<Color> meshCols = new List<Color>();
         readonly List<int> meshTris = new List<int>();
@@ -93,10 +62,10 @@ namespace Seb.Fluid2D.Rendering
         readonly List<Color> blendedColors = new List<Color>();
         readonly Dictionary<int, List<int>> vertexNeighbors = new Dictionary<int, List<int>>();
 
-        // Triangulator (holds its own working memory)
+        // Triangulator 
         readonly Delaunay2D delaunay = new Delaunay2D();
 
-        // ───────── Lifecycle ─────────
+        // Lifecycle 
         void Start()
         {
             fluidMesh = new Mesh { name = "FluidMesh2D" };
@@ -106,28 +75,8 @@ namespace Seb.Fluid2D.Rendering
             meshRenderer = GetComponent<MeshRenderer>();
             meshFilter.mesh = fluidMesh;
 
-            // Auto-find FluidSim2D if not assigned in Inspector
-            if (sim == null)
+            if (sim != null)
             {
-                // Try by tag first (same approach as SpawnOnContact)
-                GameObject fluidSimObj = GameObject.FindWithTag("FLUIDSIM");
-                if (fluidSimObj != null)
-                    sim = fluidSimObj.GetComponent<FluidSim2D>();
-            }
-            if (sim == null)
-            {
-                // Fallback: search scene for any FluidSim2D
-                sim = FindObjectOfType<FluidSim2D>();
-            }
-            if (sim == null)
-            {
-                Debug.LogError("[MeshFluidDisplay2D] Could not find a FluidSim2D in the scene! " +
-                               "Assign it manually or ensure a GameObject tagged 'FLUIDSIM' exists.");
-            }
-            else
-            {
-                Debug.Log($"[MeshFluidDisplay2D] Auto-found FluidSim2D on '{sim.gameObject.name}'");
-
                 // Also auto-resolve world anchor
                 if (worldAnchor == null && sim.particleDisplay != null)
                     worldAnchor = sim.particleDisplay.worldAnchor;
@@ -196,10 +145,10 @@ namespace Seb.Fluid2D.Rendering
             }
         }
 
-        // ───────── Mesh construction ─────────
+        // Mesh construction 
         void RebuildMesh(int n, float maxEdge)
         {
-            // 1. Delaunay triangulate in sim-space, then alpha-shape filter
+            // Delaunay triangulate in sim-space, then alpha-shape filter
             meshTris.Clear();
             delaunay.Run(readPos, n, maxEdge * maxEdge, meshTris);
 
@@ -209,7 +158,7 @@ namespace Seb.Fluid2D.Rendering
                 return;
             }
 
-            // 2. Map sim-space positions → mesh-local vertices
+            // Map sim-space positions → mesh-local vertices
             float scale = Mathf.Approximately(sim.worldScale, 0f) ? 1f : sim.worldScale;
             Vector3 off = sim.worldOffset;
 
@@ -234,19 +183,19 @@ namespace Seb.Fluid2D.Rendering
                 meshCols.Add(new Color(c.x, c.y, c.z, baseAlpha));
             }
 
-            // 3. Apply Laplacian smoothing for curved, liquid-like edges
+            // Apply Laplacian smoothing for curved, liquid-like edges
             if (smoothingIterations > 0 && smoothingStrength > 0f)
             {
                 ApplyLaplacianSmoothing(n);
             }
 
-            // 4. Apply color blending for smooth color transitions
+            // Apply color blending for smooth color transitions
             if (colorBlendingPasses > 0 && colorBlendingStrength > 0f)
             {
                 ApplyColorBlending(n);
             }
 
-            // 5. Upload to mesh (no need for RecalculateNormals in 2D - saves performance)
+            // Upload to mesh (no need for RecalculateNormals in 2D)
             fluidMesh.Clear();
             fluidMesh.SetVertices(smoothingIterations > 0 ? smoothedVerts : meshVerts);
             fluidMesh.SetColors(colorBlendingPasses > 0 ? blendedColors : meshCols);
@@ -265,7 +214,7 @@ namespace Seb.Fluid2D.Rendering
             return null;
         }
 
-        // ───────── Smoothing ─────────
+        // Smoothing 
         void ApplyLaplacianSmoothing(int vertexCount)
         {
             // Build neighbor connectivity from triangles
@@ -403,13 +352,7 @@ namespace Seb.Fluid2D.Rendering
             if (fluidMesh != null) Destroy(fluidMesh);
         }
 
-        // ═══════════════════════════════════════════════════════════════
         //  Bowyer–Watson incremental Delaunay triangulation  (2-D)
-        //
-        //  Produces a proper non-overlapping triangulation, then applies
-        //  an alpha-shape filter (max edge length) to carve out the
-        //  fluid body silhouette.
-        // ═══════════════════════════════════════════════════════════════
         sealed class Delaunay2D
         {
             // SoA triangle storage (cache-friendly)
@@ -430,11 +373,9 @@ namespace Seb.Fluid2D.Rendering
             readonly List<int> polyA = new List<int>(64);
             readonly List<int> polyB = new List<int>(64);
 
-            /// <summary>
             /// Triangulate <paramref name="n"/> points from <paramref name="positions"/>
             /// and append the resulting triangle indices (groups of 3) into <paramref name="outTris"/>.
             /// Triangles with any edge² &gt; <paramref name="maxEdgeSq"/> are discarded (alpha shape).
-            /// </summary>
             public void Run(float2[] positions, int n, float maxEdgeSq, List<int> outTris)
             {
                 outTris.Clear();
