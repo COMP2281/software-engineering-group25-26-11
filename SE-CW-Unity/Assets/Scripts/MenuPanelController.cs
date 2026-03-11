@@ -12,9 +12,6 @@ public class MenuPanelController : MonoBehaviour
     
     [Tooltip("The FluidSim2D component to pause when menu is open")]
     public FluidSim2D fluidSimulation;
-    
-    [Tooltip("Parent GameObject containing ripple effects (disabled when menu is open)")]
-    public GameObject rippleEffectsParent;
 
     [Header("Settings")]
     [Tooltip("Should the menu start closed?")]
@@ -54,6 +51,12 @@ public class MenuPanelController : MonoBehaviour
     /// </summary>
     public void ToggleMenu()
     {
+        // Sync with actual panel state before toggling (in case closed/opened externally)
+        if (menuPanel != null)
+        {
+            isMenuOpen = menuPanel.activeSelf;
+        }
+
         if (isMenuOpen)
         {
             CloseMenu();
@@ -75,6 +78,16 @@ public class MenuPanelController : MonoBehaviour
             return;
         }
 
+        // Sync the internal flag with actual panel state (in case it was closed externally)
+        isMenuOpen = menuPanel.activeSelf;
+
+        // Check if menu is already open
+        if (isMenuOpen)
+        {
+            Debug.Log("MenuPanelController: Menu is already open");
+            return;
+        }
+
         Debug.Log("MenuPanelController: Opening menu");
 
         // Show the menu panel
@@ -93,6 +106,16 @@ public class MenuPanelController : MonoBehaviour
         if (menuPanel == null)
         {
             Debug.LogWarning("MenuPanelController: Cannot close menu - menuPanel is not assigned");
+            return;
+        }
+
+        // Sync the internal flag with actual panel state (in case it was opened externally)
+        isMenuOpen = menuPanel.activeSelf;
+
+        // Check if menu is already closed
+        if (!isMenuOpen)
+        {
+            Debug.Log("MenuPanelController: Menu is already closed");
             return;
         }
 
@@ -120,12 +143,6 @@ public class MenuPanelController : MonoBehaviour
         {
             RippleEffect.Instance.SetPaused(true);
             Debug.Log("MenuPanelController: Ripple effects paused (includes animations and particle systems)");
-        }
-
-        if (rippleEffectsParent != null)
-        {
-            rippleEffectsParent.SetActive(false);
-            Debug.Log("MenuPanelController: Ripple effects parent disabled");
         }
     }
 

@@ -45,13 +45,13 @@ public class SmoothingRadiusSlider : MonoBehaviour
     /// <summary>
     /// Updates the smoothing radius based on slider value
     /// Slider range: 1-100
-    /// Radius range: 0.05-0.5
+    /// Radius range: 0.5-0.05 (reversed: 1=0.5, 100=0.05)
     /// Linear interpolation between min and max radius
     /// </summary>
     private void UpdateSmoothingRadius(float sliderValue)
     {
-        // Convert slider value (1-100) to smoothing radius (0.05-0.5)
-        float radius = Mathf.Lerp(0.05f, 0.5f, (sliderValue - 1f) / 99f);
+        // Convert slider value (1-100) to smoothing radius (0.5-0.05, reversed)
+        float radius = Mathf.Lerp(0.5f, 0.05f, (sliderValue - 1f) / 99f);
 
         // Update FluidSim2D smoothing radius
         if (fluidSimulation != null)
@@ -99,8 +99,8 @@ public class SmoothingRadiusSlider : MonoBehaviour
     /// </summary>
     public void SetRadius(float radius)
     {
-        // Convert radius (0.05-0.5) back to slider value (1-100)
-        float sliderValue = Mathf.Lerp(1f, 100f, (radius - 0.05f) / 0.45f);
+        // Convert radius (0.5-0.05, reversed) back to slider value (1-100)
+        float sliderValue = Mathf.Lerp(1f, 100f, (0.5f - radius) / 0.45f);
         SetSliderValue(sliderValue);
     }
 }
