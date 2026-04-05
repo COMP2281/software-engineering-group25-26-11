@@ -116,7 +116,7 @@ namespace Seb.Fluid2D.Rendering
                 readCol = new float4[n];
             }
 
-            // GPU → CPU  (synchronous; acceptable for moderate particle counts)
+            // GPU → CPU  
             sim.positionBuffer.GetData(readPos, 0, 0, n);
             sim.colorBuffer.GetData(readCol, 0, 0, n);
 
@@ -135,7 +135,7 @@ namespace Seb.Fluid2D.Rendering
                 if (_rippleRenderer != null)
                 {
                     // Bounds are re-read every frame so dynamic WaterCube resizes
-                    // (via UpdateWaterScale) propagate to the mesh automatically.
+                    // propagate to the mesh automatically.
                     Bounds b = _rippleRenderer.bounds;
                     meshRenderer.material.SetVector("_RippleBoundsMin",
                         new Vector4(b.min.x, b.min.y, 0f, 0f));
@@ -201,7 +201,7 @@ namespace Seb.Fluid2D.Rendering
             fluidMesh.SetColors(colorBlendingPasses > 0 ? blendedColors : meshCols);
             fluidMesh.SetTriangles(meshTris, 0);
             
-            // Compute simple forward-facing normals for 2D (much faster than RecalculateNormals)
+            // Compute simple forward-facing normals for 2D 
             SetForwardNormals(smoothingIterations > 0 ? smoothedVerts.Count : meshVerts.Count);
             
             fluidMesh.RecalculateBounds();
@@ -334,7 +334,7 @@ namespace Seb.Fluid2D.Rendering
 
         void SetForwardNormals(int vertexCount)
         {
-            // For 2D fluid, all normals point forward (toward camera)
+            // For 2D fluid, all normals point forward 
             // This is much faster than RecalculateNormals()
             Vector3[] normals = new Vector3[vertexCount];
             Vector3 forward = Vector3.forward;
@@ -352,36 +352,34 @@ namespace Seb.Fluid2D.Rendering
             if (fluidMesh != null) Destroy(fluidMesh);
         }
 
-        //  Bowyer–Watson incremental Delaunay triangulation  (2-D)
+        //  Bowyer–Watson incremental Delaunay triangulation  
         sealed class Delaunay2D
         {
-            // SoA triangle storage (cache-friendly)
+            // SoA triangle storage 
             int triCap;
             int triCount;
             int[] va, vb, vc;             // vertex indices
             float[] cxArr, cyArr, crSqArr; // circumcentre x, y  &  circumradius²
             bool[] alive;
 
-            // Point buffer  (n real points + 3 super-triangle vertices)
+            // Point buffer  
             float2[] pts;
 
             // Super-triangle vertex indices
             int sA, sB, sC;
 
-            // Scratch lists (reused every insertion)
+            // Scratch lists
             readonly List<int> bad = new List<int>(64);
             readonly List<int> polyA = new List<int>(64);
             readonly List<int> polyB = new List<int>(64);
 
-            /// Triangulate <paramref name="n"/> points from <paramref name="positions"/>
-            /// and append the resulting triangle indices (groups of 3) into <paramref name="outTris"/>.
-            /// Triangles with any edge² &gt; <paramref name="maxEdgeSq"/> are discarded (alpha shape).
+            /// Triangulate
             public void Run(float2[] positions, int n, float maxEdgeSq, List<int> outTris)
             {
                 outTris.Clear();
                 if (n < 3) return;
 
-                // --- prepare point array (real + 3 super) ---
+                // prepare point array (real + 3 super) 
                 int total = n + 3;
                 if (pts == null || pts.Length < total)
                     pts = new float2[total];
@@ -396,25 +394,25 @@ namespace Seb.Fluid2D.Rendering
                 }
                 float2 ctr = (mn + mx) * 0.5f;
                 float span = math.max(mx.x - mn.x, mx.y - mn.y) + 1f;
-                float d = span * 10f; // well outside all data
+                float d = span * 10f; 
 
                 sA = n; sB = n + 1; sC = n + 2;
                 pts[sA] = ctr + new float2(-d, -d * 0.5f);
                 pts[sB] = ctr + new float2(d * 2f, -d * 0.5f);
                 pts[sC] = ctr + new float2(0, d * 2f);
 
-                // --- allocate / reset triangle storage ---
+                // allocate / reset triangle storage 
                 int initCap = Mathf.Max(n * 10 + 10, 128);
                 EnsureTriArrays(initCap);
                 triCount = 0;
 
                 AddTri(sA, sB, sC);
 
-                // --- incremental insertion ---
+                // incremental insertion 
                 for (int i = 0; i < n; i++)
                     InsertPoint(i);
 
-                // --- collect output (skip super-triangle verts & long edges) ---
+                // collect output (skip super-triangle verts & long edges) 
                 for (int t = 0; t < triCount; t++)
                 {
                     if (!alive[t]) continue;
@@ -433,12 +431,12 @@ namespace Seb.Fluid2D.Rendering
                 }
             }
 
-            // ── single point insertion ──────────────────────────────
+            // single point insertion
             void InsertPoint(int pi)
             {
                 float px = pts[pi].x, py = pts[pi].y;
 
-                // 1. Find every triangle whose circumcircle contains the point
+                // Find every triangle whose circumcircle contains the point
                 bad.Clear();
                 for (int t = 0; t < triCount; t++)
                 {
@@ -449,7 +447,7 @@ namespace Seb.Fluid2D.Rendering
                         bad.Add(t);
                 }
 
-                // 2. Boundary polygon = edges of bad triangles NOT shared by another bad triangle
+                // Boundary polygon = edges of bad triangles NOT shared by another bad triangle
                 polyA.Clear();
                 polyB.Clear();
                 int badCount = bad.Count;
@@ -461,11 +459,11 @@ namespace Seb.Fluid2D.Rendering
                     TryAddEdge(vc[t], va[t], bi);
                 }
 
-                // 3. Kill bad triangles
+                // Kill bad triangles
                 for (int bi = 0; bi < badCount; bi++)
                     alive[bad[bi]] = false;
 
-                // 4. Create fan of new triangles from the point to each boundary edge
+                // Create fan of new triangles from the point to each boundary edge
                 int edgeCount = polyA.Count;
                 for (int e = 0; e < edgeCount; e++)
                     AddTri(pi, polyA[e], polyB[e]);
@@ -490,7 +488,7 @@ namespace Seb.Fluid2D.Rendering
                     || (ta == b && tb == a) || (tb == b && tc == a) || (tc == b && ta == a);
             }
 
-            // ── add a triangle with CCW winding ────────────────────
+            // add a triangle with CCW winding
             void AddTri(int a, int b, int c)
             {
                 float2 pa = pts[a], pb = pts[b], pc = pts[c];
@@ -498,7 +496,7 @@ namespace Seb.Fluid2D.Rendering
                             - (pb.y - pa.y) * (pc.x - pa.x);
                 if (cross < 0)
                 {
-                    // Swap b ↔ c to make CCW
+                    // Swap b <-> c to make CCW
                     int ti = b; b = c; c = ti;
                     float2 tp = pb; pb = pc; pc = tp;
                 }
@@ -536,7 +534,7 @@ namespace Seb.Fluid2D.Rendering
                 crSqArr[idx] = dx * dx + dy * dy;
             }
 
-            // ── array management ───────────────────────────────────
+            // array management 
             void EnsureTriArrays(int cap)
             {
                 if (triCap >= cap) return;
