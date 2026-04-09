@@ -1,11 +1,7 @@
 using UnityEngine;
 using Seb.Fluid2D.Simulation;
 
-/// <summary>
 /// Button script to clear all paint from the screen by removing all particles from the fluid simulation.
-/// Attach this to a UI button and assign the FluidSim2D reference in the Inspector.
-/// Connect the OnClick event to the ClearPaint() method.
-/// </summary>
 public class ClearPaintButton : MonoBehaviour
 {
     [Header("References")]
@@ -48,10 +44,8 @@ public class ClearPaintButton : MonoBehaviour
         }
     }
 
-    /// <summary>
+
     /// Clears all paint particles from the screen.
-    /// Call this method from a UI Button's OnClick event.
-    /// </summary>
     public void ClearPaint()
     {
         if (fluidSim == null)

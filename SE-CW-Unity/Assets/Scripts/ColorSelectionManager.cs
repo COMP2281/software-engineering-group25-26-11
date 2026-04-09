@@ -81,9 +81,7 @@ public class ColorSelectionManager : MonoBehaviour
         SpawnInitialWhiteBalls();
     }
 
-    /// <summary>
     /// Spawns white placeholder paintballs at all 5 spawn points at game start
-    /// </summary>
     private void SpawnInitialWhiteBalls()
     {
         if (ballPrefab == null)
@@ -113,49 +111,40 @@ public class ColorSelectionManager : MonoBehaviour
         return totalBallCount < maxSelectableColors;
     }
 
-    /// <summary>
-    /// Called by Button 1 - Opens color selection panel
-    /// </summary>
+    // Opens color selection panel
     public void OnButton1Clicked()
     {
         OpenColorPanel(1);
     }
 
-    /// <summary>
-    /// Called by Button 2 - Opens color selection panel
-    /// </summary>
+    //Opens color selection panel
     public void OnButton2Clicked()
     {
         OpenColorPanel(2);
     }
 
-    /// <summary>
-    /// Called by Button 3 - Opens color selection panel
-    /// </summary>
+    // Opens color selection panel
     public void OnButton3Clicked()
     {
         OpenColorPanel(3);
     }
 
-    /// <summary>
-    /// Called by Button 4 - Opens color selection panel
-    /// </summary>
+
+    //Opens color selection panel
     public void OnButton4Clicked()
     {
         OpenColorPanel(4);
     }
 
-    /// <summary>
-    /// Called by Button 5 - Opens color selection panel
-    /// </summary>
+
+    // Opens color selection panel
+
     public void OnButton5Clicked()
     {
         OpenColorPanel(5);
     }
 
-    /// <summary>
     /// Opens the color selection panel and stores which button was clicked
-    /// </summary>
     private void OpenColorPanel(int buttonIndex)
     {
         // Use the confirmed color for this button (or white if never confirmed)
@@ -228,9 +217,7 @@ public class ColorSelectionManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Spawns a placeholder paintball at the specified button's spawn point with the given color
-    /// </summary>
+    // Spawns a placeholder paintball at the specified button's spawn point with the given color
     private void SpawnPlaceholder(int buttonIndex, Color color)
     {
         if (ballPrefab == null)
@@ -280,7 +267,7 @@ public class ColorSelectionManager : MonoBehaviour
             spawnOnContact.paintballPrefab = ballPrefab;
         }
 
-        // Add spawn position to respawn queue (so placeholder can respawn after water contact)
+        // Add spawn position to respawn queue
         Color32 colorKey = (Color32)color;
         if (!colorToSpawnQueue.ContainsKey(colorKey))
         {
@@ -294,18 +281,14 @@ public class ColorSelectionManager : MonoBehaviour
         Debug.Log($"Spawned placeholder ({color}) at Button {buttonIndex} spawn point: {spawnPosition}");
     }
 
-    /// <summary>
     /// Called by the color picker UI when a color is selected (but not yet confirmed)
-    /// </summary>
     public void OnColorPicked(Color color)
     {
         pendingColor = color;
         Debug.Log($"Color picked: {color}, pending button: {pendingButtonIndex}");
     }
 
-    /// <summary>
     /// Called by the Confirm button in the color selection panel
-    /// </summary>
     public void OnColorConfirmed()
     {
         Debug.Log($"OnColorConfirmed called - pendingButtonIndex: {pendingButtonIndex}, pendingColor: {pendingColor}");
@@ -324,16 +307,14 @@ public class ColorSelectionManager : MonoBehaviour
             colorSelectionPanel.SetActive(false);
         }
 
-        // Do NOT resume - let the user manually unpause using the pause/play button
+        // let the user manually unpause using the pause/play button
         Debug.Log("ColorSelectionManager: Color confirmed, panel closed (simulation remains paused)");
 
         // Reset pending state
         pendingButtonIndex = -1;
     }
 
-    /// <summary>
     /// Called by the Cancel button to close the panel without spawning
-    /// </summary>
     public void OnColorCancelled()
     {
         if (colorSelectionPanel != null)
@@ -341,7 +322,7 @@ public class ColorSelectionManager : MonoBehaviour
             colorSelectionPanel.SetActive(false);
         }
         
-        // Do NOT resume - let the user manually unpause using the pause/play button
+        // let the user manually unpause using the pause/play button
         Debug.Log("ColorSelectionManager: Color selection cancelled (simulation remains paused)");
         
         pendingButtonIndex = -1;
@@ -447,9 +428,7 @@ public class ColorSelectionManager : MonoBehaviour
         Debug.Log($"Spawned paintball ({colorKey}) at Button {buttonIndex} spawn point: {spawnPosition}, confirmed color saved");
     }
 
-    /// <summary>
     /// Returns the spawn point Transform for the specified button index
-    /// </summary>
     public Transform GetSpawnPointForButton(int buttonIndex)
     {
         switch (buttonIndex)
@@ -465,9 +444,7 @@ public class ColorSelectionManager : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Returns the spawn position for the specified button index
-    /// </summary>
     public Vector3 GetSpawnPositionForButton(int buttonIndex)
     {
         Transform spawnPoint = GetSpawnPointForButton(buttonIndex);
@@ -478,9 +455,7 @@ public class ColorSelectionManager : MonoBehaviour
         return Vector3.zero;
     }
 
-    /// <summary>
     /// Returns the button GameObject for the specified button index
-    /// </summary>
     private GameObject GetButtonForIndex(int buttonIndex)
     {
         switch (buttonIndex)
@@ -496,9 +471,7 @@ public class ColorSelectionManager : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Updates the button's visual color to match the paintball
-    /// </summary>
     private void UpdateButtonColor(int buttonIndex, Color color)
     {
         GameObject button = GetButtonForIndex(buttonIndex);
@@ -529,10 +502,8 @@ public class ColorSelectionManager : MonoBehaviour
         Debug.LogWarning($"Button {buttonIndex} has no Image or Renderer component to color");
     }
 
-    /// <summary>
     /// Legacy method for backward compatibility.
     /// Spawns a ball at the first available spawn point.
-    /// </summary>
     public void HandleColorSelection(Color color)
     {
         // Find first available spawn point

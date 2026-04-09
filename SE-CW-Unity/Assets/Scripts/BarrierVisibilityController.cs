@@ -5,11 +5,9 @@ public class BarrierVisibilityController : MonoBehaviour
     public Material transparentMat;   // "transparent mat"
     public Material opaqueMat;        // opaque copy
 
-    public Renderer[] barrierRenderers;   // fill this manually in Inspector
+    public Renderer[] barrierRenderers;  
 
     bool isOpaque = false;
-
-    // Start() removed - EnvironmentSelector now controls initial state
 
     public void ToggleBarrierOpacity()
     {

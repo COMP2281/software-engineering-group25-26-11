@@ -367,8 +367,8 @@ public class SpawnOnContact : MonoBehaviour
         Destroy(gameObject);
     }
 
-    /// Attempts to get the color from the object's Renderer material.
-    /// Falls back to defaultColor if no color can be found.
+    // Attempts to get the color from the object's Renderer material.
+    // Falls back to defaultColor if no color can be found.
     Color GetColorFromObject(GameObject obj)
     {
         // Try to get color from Renderer

@@ -444,9 +444,7 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetInt("numParticles", numParticles);
 		}
 
-		/// <summary>
-		/// Clears all particles from the simulation (resets the paint screen)
-		/// </summary>
+		// Clears all particles from the simulation (resets the paint screen)
 		public void ClearAllParticles()
 		{
 			if (numParticles == 0) return;
@@ -458,19 +456,15 @@ namespace Seb.Fluid2D.Simulation
 			Debug.Log("[FluidSim2D] All particles cleared.");
 		}
 
-		/// <summary>
-		/// Toggles the simulation between paused and playing state.
-		/// Call this from UI button OnClick event.
-		/// </summary>
+		// Toggles the simulation between paused and playing state.
+		// Call this from UI button OnClick event.
 		public void TogglePause()
 		{
 			isPaused = !isPaused;
 			Debug.Log($"[FluidSim2D] Simulation {(isPaused ? "Paused" : "Playing")}");
 		}
 
-		/// <summary>
-		/// Sets the pause state explicitly
-		/// </summary>
+		// Sets the pause state explicitly
 		public void SetPaused(bool paused)
 		{
 			isPaused = paused;
