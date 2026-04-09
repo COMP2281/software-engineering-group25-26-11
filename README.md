@@ -1,50 +1,91 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/B06_mcpV)
 
-## What has been done?
-- Menu to make easier to navigate:
-    - Switch between choosing paint and painting canvas
-    - Make the environment transparent/coloured to make it easier to edit
-    - Flip the board to make the paint balls behave differently
-- Colour pallette 
-    - Can choose the colour of the paintballs (using mouse clicks)
-- Fixes to code:
-    - Oil paints no longer change scaling
-    - Connected the correct scripts to the prefabs on new instance
-    - Made the oilpaints children of the water surface when spawned in 
+# **Added Features**
+
+- **Dynamic water screen**
+    - Water surface can be adjusted to user-prefered sizes
+    - Oil paint additionally moves with screen adjustment
+    - Colours for paint can be adjusted
+    - Ripple effects
+
+- **Colour selection**
+    - Similar to Microsoft Paint's interface
+    - Can choose the colour of the paintballs
+    - Multiple interfaces for colour selection
+    - Colour wheel, Slider menu and HexPad selection provided
+    - Can adjust throughout the simulation 
+    
+- **Navigation bar**
+    - Similar to Meta Headset navigation bar
+    - Can access the settings of the simulation
+    - Can pause the entire simulation
+    - Can clear and reset the paint simulation
+
+- **Settings bar**
+    - Can adjust user preferences 
+    Environment- Allows switching between different scenery/terrains (where developers can easily add more)
+    - Brush width- Changes the width of the interaction radius which controls the stroke size for the simulation
+    - Paintball density – Affects the number of particles spawned from the paintball in contact with the canvas
+    - Fluidity – Adjusts the smoothing radius of the particles, affecting fluid detail level (higher values show more detail but need higher paintball particle density)
+    - Paint speed – Changes the simulation speed so fluid appears faster or slower over time
+    - Sensitivity – Changes how strongly particles react to local pressure, so higher values make particles  push apart more strongly in crowded areas and respond more dramatically to interaction
+    - Screen size – Changes the dimensions of the simulation bounds and water surface
+
+- **Ripple effects**
+    - When interacting with the canvas, ripple effects are created for a 3D effect
+    - Reduces computation needed for a full 3D simulation
+
+- **Mesh**
+    - For realism, a mesh is used to connect the shape of the particles to 
+
+- **Paintball Logic**
+    - Once a paintball is used on the water screen canvas, paintballs respawn in their original places of spawn
     - Paintballs respawn even when falling through the floor
     - Paintballs disappear properly
-- Accuracy of the paintballs hitting the water surface
-    - Little panel to show you your accuracy
+    - Paintballs respawn with the same colour assigned
+    - Changes to paintball colour in colour selection is not permanent     
+
+- **Accuracy of the paintballs hitting the water surface**
+    - There is a panel in the bottom corner of the screen to show you your accuracy
+    - When paintballs do not hit the intended target of the water screen, accuracy decreases, increasing when the intended target is hit
 
 
+# Documentation and User Guidance
+
+This project is intended for the development of a virtual reality application for Tai Chi. This is a modular component of a broader system where it mimics the Chinese Lacquer Fan painting technique.
+
+[![Tai Chi Simulator Demo](https://img.youtube.com/vi/lEORvgufwKo/maxresdefault.jpg)](https://youtube.com/shorts/lEORvgufwKo)
+
+<!-- PUT SOME IMAGES OF CHINESE LACQUER FAN PAINTING AND REFERENCE THEM  -->
+
+The intent of this program is to manipulate dynamic water surfaces and oil paint using intuitive VR hand tracking interactions, being optimised for usage on the Meta Quest 2. This project prioritises realistic fluid mechanics and high performance which can also be adjusted in user settings within the simulation.
+
+[![Tai Chi Simulator Demo](https://img.youtube.com/vi/PvedcEcfpY0/maxresdefault.jpg)](https://youtube.com/shorts/PvedcEcfpY0)
+
+## Background
+The code for the oil paint system has been sampled and modified from Sebastian Lague's 2D simulation of simulating fluids. This uses smoothed-particle hydrodynamics which represents fluids as discrete moving particles rather than a static grid. 
 
 
+## How Liquid 2D simulation works
+To mimic the incompressibility of water, the system calculates local particle density to generate pressure forces that push them apart. This uses a smoothing kernel which moderates the influence of neighbouring particles.
+
+![Density Image](image.png)
+
+## Optimisations
+
+### Grid-Based Spatial Partitioning
+The system runs in a compute shader on the GPU, which allows the particle simulation to be processed in parallel for better performance. This stores particle data in arrays and uses a hash-and-key lookup system to assign each particle to a spatial grid cell. Particles in the same cell are grouped so that the simulation only needs to search nearby cells when checking for neigbours instead of comparing all particles with every other particle. 
+
+![Particle Lookups](image-1.png) ![Particle index and cell keys](image-2.png)
+![Spatial Hashing](image-3.png)
+
+Even when partcles share a cell, they are also compared within the interaction disatance, so particles too far are ignored.
 
 
+## Realism 
 
-## Key takeaways from Wilson
-- There is a lot of unused code in the game: ColorPickerCanvas/Panel_ColourSelection, Submit/Visuals/Submit Text, OilPaint, new right and left controller stuff, respawn point
-- I have made a navigation bar to make it a little easier to change things up. Feel free to hide it or use it
+### Mesh System
+For added realism, we have added a mesh system since the particles alone do not look realistic for dluid simulation. This uses triangulation
 
-
-## What needs to be done
-# Task 1
-- Make more controls for wilsons menu to flip the 2d water suraface
-- Make a small script button to drop a paintball on top of the screen
-- Reverse the gravity on the paint ball when the surface is vertical
-- Make the paintball solid and the 2d surface solid 
-- Make 1 top down view when the paintball is dropped from above
-- Make 1 side view when the paintball is dropped from the side
-
-
-# Task 2
-- Make a large parent sphere to hold a bunch of smaller children inner spheres
-- Using the logic of the default balls, make these into the smaller inner spheres
-- Remove the respawn logic of the BallCollission in default balls and put that in the large sphere parent
-- Change colour changer to change the colour of the small inner ones as well so that water surface has correct colour
-- Allow the balls to move across the surface of the 2d surface for a little bit to spread
-
-# Task 3
-- Find out how to move the points about on the screen 
-- Find interactions where the user puts their hand through and model this as a lines that the computer can use to determine where points should move
-
+### Ripple Effects
+As our system uses a 2D particle and mesh system, we decided to add shaders for a 3D effect 
