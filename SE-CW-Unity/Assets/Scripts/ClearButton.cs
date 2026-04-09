@@ -1,9 +1,7 @@
 using UnityEngine;
 using Seb.Fluid2D.Simulation;
 
-/// <summary>
-/// Handles the clear button to reset the FluidSim2D paint screen
-/// </summary>
+// Handles the clear button to reset the FluidSim2D paint screen
 public class ClearButton : MonoBehaviour
 {
     [Header("References")]
@@ -19,9 +17,7 @@ public class ClearButton : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Call this from the button's OnClick event in the Inspector
-    /// </summary>
+    // Call this from the button's OnClick event in the Inspector
     public void OnButtonClicked()
     {
         if (fluidSimulation != null)

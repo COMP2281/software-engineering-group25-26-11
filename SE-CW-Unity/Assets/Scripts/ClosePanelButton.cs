@@ -1,10 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
 /// Toggles a panel open/closed when the button is clicked.
 /// Opens if closed, closes if open.
-/// </summary>
 public class ClosePanelButton : MonoBehaviour
 {
     [Header("Panel to Toggle")]
@@ -34,9 +32,7 @@ public class ClosePanelButton : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Toggles the panel active state - opens if closed, closes if open
-    /// </summary>
     public void TogglePanel()
     {
         if (panelToClose != null)
@@ -51,9 +47,7 @@ public class ClosePanelButton : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Optional: Call this method directly from a Unity Button's OnClick event
-    /// </summary>
+    /// Call this method directly from a Unity Button's OnClick event
     public void OnCloseButtonClick()
     {
         TogglePanel();

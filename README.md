@@ -107,8 +107,8 @@ Even when partcles share a cell, they are also compared within the interaction d
 
 # Visual Effects
 
-## Mesh System
-For added realism, we have added a mesh system since the particles alone do not look realistic for dluid simulation. This uses triangulation
+### Mesh System
+For added realism, we have added a mesh system since the particles alone do not look realistic for fluid simulation. This uses Delaunay triangulation to connect the particles and uses the side lengths to determine which triangles to exclude, creating realistic gaps in the fluid. The colours are then linearly interpolated to create a smooth blending of colour
 
 ## Ripple Effects
 As our system uses a 2D particle and mesh system, we decided to add shaders for a 3D effect 

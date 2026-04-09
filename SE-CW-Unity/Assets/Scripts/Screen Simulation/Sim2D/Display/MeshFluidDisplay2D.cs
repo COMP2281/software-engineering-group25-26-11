@@ -373,9 +373,9 @@ namespace Seb.Fluid2D.Rendering
             readonly List<int> polyA = new List<int>(64);
             readonly List<int> polyB = new List<int>(64);
 
-            /// Triangulate <paramref name="n"/> points from <paramref name="positions"/>
-            /// and append the resulting triangle indices (groups of 3) into <paramref name="outTris"/>.
-            /// Triangles with any edge² &gt; <paramref name="maxEdgeSq"/> are discarded (alpha shape).
+            /// Triangulate points from positions
+            /// and append the resulting triangle indices (groups of 3) 
+            /// Triangles with any edge² are discarded (alpha shape).
             public void Run(float2[] positions, int n, float maxEdgeSq, List<int> outTris)
             {
                 outTris.Clear();
@@ -490,7 +490,7 @@ namespace Seb.Fluid2D.Rendering
                     || (ta == b && tb == a) || (tb == b && tc == a) || (tc == b && ta == a);
             }
 
-            // ── add a triangle with CCW winding ────────────────────
+            // add a triangle with CCW winding
             void AddTri(int a, int b, int c)
             {
                 float2 pa = pts[a], pb = pts[b], pc = pts[c];
@@ -536,7 +536,7 @@ namespace Seb.Fluid2D.Rendering
                 crSqArr[idx] = dx * dx + dy * dy;
             }
 
-            // ── array management ───────────────────────────────────
+            // array management
             void EnsureTriArrays(int cap)
             {
                 if (triCap >= cap) return;
