@@ -1,6 +1,41 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/B06_mcpV)
 
-# **Added Features**
+# Table of Contents
+- [Project Overview](#project-overview)
+- [Demo Video](#demo-video)
+- [Background](#background)
+- [Core Features](#core-features)
+- [System Architecture](#system-architecture)
+- [Fluid Simulation](#fluid-simulation)
+- [Optimisations](#optimisations)
+- [Visual Effects](#visual-effects)
+- [User Interface](#user-interface)
+- [Known Limitations](#known-limitations)
+- [Future Work](#future-work)
+- [References](#references)
+
+# Project Overview
+
+This project is intended for the development of a virtual reality application for Tai Chi. This is a modular component of a broader system where it mimics the Chinese Lacquer Fan painting technique:
+
+[![Lacquer Fan Painting 1](https://img.youtube.com/vi/lEORvgufwKo/maxresdefault.jpg)](https://youtube.com/shorts/lEORvgufwKo)
+
+<!-- PUT SOME IMAGES OF CHINESE LACQUER FAN PAINTING AND REFERENCE THEM  -->
+
+The intent of this program is to manipulate dynamic water surfaces and oil paint using intuitive VR hand tracking interactions, being optimised for usage on the Meta Quest 2. This project prioritises realistic fluid mechanics and high performance which can also be adjusted in user settings within the simulation.
+
+[![Lacquer Fan Painting 2](https://img.youtube.com/vi/PvedcEcfpY0/maxresdefault.jpg)](https://youtube.com/shorts/PvedcEcfpY0)
+
+# Demo Video
+
+<video controls src="ParticleSystem.mp4"></video>
+
+# Background
+The code for the oil paint system has been sampled and modified from Sebastian Lague's 2D simulation of simulating fluids. This uses smoothed-particle hydrodynamics which represents fluids as discrete moving particles rather than a static grid. 
+
+[![Sebastian Lague's Video on fluid simulation](https://img.youtube.com/vi/rSKMYc1CQHE/maxresdefault.jpg)](https://youtu.be/rSKMYc1CQHE)
+
+# Core Features
 
 - **Dynamic water screen**
     - Water surface can be adjusted to user-prefered sizes
@@ -49,43 +84,41 @@
     - There is a panel in the bottom corner of the screen to show you your accuracy
     - When paintballs do not hit the intended target of the water screen, accuracy decreases, increasing when the intended target is hit
 
-
-# Documentation and User Guidance
-
-This project is intended for the development of a virtual reality application for Tai Chi. This is a modular component of a broader system where it mimics the Chinese Lacquer Fan painting technique.
-
-[![Tai Chi Simulator Demo](https://img.youtube.com/vi/lEORvgufwKo/maxresdefault.jpg)](https://youtube.com/shorts/lEORvgufwKo)
-
-<!-- PUT SOME IMAGES OF CHINESE LACQUER FAN PAINTING AND REFERENCE THEM  -->
-
-The intent of this program is to manipulate dynamic water surfaces and oil paint using intuitive VR hand tracking interactions, being optimised for usage on the Meta Quest 2. This project prioritises realistic fluid mechanics and high performance which can also be adjusted in user settings within the simulation.
-
-[![Tai Chi Simulator Demo](https://img.youtube.com/vi/PvedcEcfpY0/maxresdefault.jpg)](https://youtube.com/shorts/PvedcEcfpY0)
-
-## Background
-The code for the oil paint system has been sampled and modified from Sebastian Lague's 2D simulation of simulating fluids. This uses smoothed-particle hydrodynamics which represents fluids as discrete moving particles rather than a static grid. 
+# System Architecture
 
 
-## How Liquid 2D simulation works
+# Fluid Simulation
+
 To mimic the incompressibility of water, the system calculates local particle density to generate pressure forces that push them apart. This uses a smoothing kernel which moderates the influence of neighbouring particles.
 
 ![Density Image](image.png)
 
-## Optimisations
+# Optimisations
 
-### Grid-Based Spatial Partitioning
+## Grid-Based Spatial Partitioning
 The system runs in a compute shader on the GPU, which allows the particle simulation to be processed in parallel for better performance. This stores particle data in arrays and uses a hash-and-key lookup system to assign each particle to a spatial grid cell. Particles in the same cell are grouped so that the simulation only needs to search nearby cells when checking for neigbours instead of comparing all particles with every other particle. 
 
-![Particle Lookups](image-1.png) ![Particle index and cell keys](image-2.png)
-![Spatial Hashing](image-3.png)
+![Particle Lookups](image-1.png) ![alt text](image-4.png)
+![Particle index and cell keys](image-2.png)
+![Spatial Hashing](image-3.png) 
 
-Even when partcles share a cell, they are also compared within the interaction disatance, so particles too far are ignored.
+Even when partcles share a cell, they are also compared within the interaction distance, so particles too far are ignored.
 
 
-## Realism 
+# Visual Effects
 
-### Mesh System
+## Mesh System
 For added realism, we have added a mesh system since the particles alone do not look realistic for dluid simulation. This uses triangulation
 
-### Ripple Effects
+## Ripple Effects
 As our system uses a 2D particle and mesh system, we decided to add shaders for a 3D effect 
+
+# User interface
+
+# Known Limitations
+
+# Future work
+
+# References
+
+- Sebastian Lague. *Coding Adventure: Simulating Fluids*. YouTube, 7 October 2023. https://www.youtube.com/watch?v=rSKMYc1CQHE
