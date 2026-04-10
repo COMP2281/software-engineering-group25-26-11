@@ -2,7 +2,7 @@
 
 # Table of Contents
 - [Project Overview](#project-overview)
-- [Demo Video](#demo-video)
+- [Demo](#demo)
 - [Background](#background)
 - [Core Features](#core-features)
 - [System Architecture](#system-architecture)
@@ -19,34 +19,48 @@
 This project is intended for the development of a virtual reality application for Tai Chi. This is a modular component of a broader system where it mimics the Chinese Lacquer Fan painting technique:
 
 <p align="center">
-  <a href="https://youtube.com/shorts/lEORvgufwKo">
-    <img src="https://img.youtube.com/vi/lEORvgufwKo/maxresdefault.jpg" alt="Lacquer Fan Painting 1" width="66%">
-  </a>
+  <table width="66%">
+    <tr>
+      <td width="50%" align="center">
+        <a href="https://youtube.com/shorts/lEORvgufwKo">
+          <img src="https://img.youtube.com/vi/lEORvgufwKo/maxresdefault.jpg" alt="Lacquer Fan Painting 1" width="100%">
+        </a>
+      </td>
+      <td width="50%" align="center">
+        <a href="https://youtube.com/shorts/PvedcEcfpY0">
+          <img src="https://img.youtube.com/vi/PvedcEcfpY0/maxresdefault.jpg" alt="Lacquer Fan Painting 2" width="100%">
+        </a>
+      </td>
+    </tr>
+  </table>
 </p>
 
 <!-- PUT SOME IMAGES OF CHINESE LACQUER FAN PAINTING AND REFERENCE THEM  -->
 
 The intent of this program is to manipulate dynamic water surfaces and oil paint using intuitive VR hand tracking interactions, being optimised for usage on the Meta Quest 2. This project prioritises realistic fluid mechanics and high performance which can also be adjusted in user settings within the simulation.
 
+# Demo
 
+The first demo shows in-headset gameplay, including live interaction with the canvas and real-time settings adjustments.
 <p align="center">
-  <a href="https://youtube.com/shorts/PvedcEcfpY0">
-    <img src="https://img.youtube.com/vi/PvedcEcfpY0/maxresdefault.jpg" alt="Lacquer Fan Painting 2" width="66%">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/UserDemo.mp4">
+    <img src="image-17.png" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
-# Demo 
+The second demo highlights the fluid display and colour blending behaviour across mixed paint interactions with the added ripple effects.
 
-This is what our simulation scene looks like
-![alt text](image-6.png)
+<p align="center">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/FluidDisplay.mp4">
+    <img src="image-21.png" alt="Fluid Display" width="66%">
+  </a>
+</p>
 
-Here is a demo video of a user playing the simulation on the headset
+The image below shows the simulation layout, including the navigation bar, paintball spawn area, and interactive screen.
 
-Here is a demo video of the fluid display
-
-
-
-
+<p align="center">
+  <img src="image-6.png" alt="Image 6" width="66%">
+</p>
 
 # Background
 This project builds on Sebastian Lague's fluid simulation system from *Coding Adventure: Simulating Fluids* (YouTube: https://youtu.be/rSKMYc1CQHE), then adapts it for an interactive VR painting workflow.
@@ -63,56 +77,151 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
 # Core Features
 
 - **Dynamic water screen**
-    - Water surface can be adjusted to user-prefered sizes
-    - Oil paint additionally moves with screen adjustment
-    - Colours for paint can be adjusted
-    - Ripple effects
+    - Water surface can be adjusted to user-preferred sizes
+    - Fluid bounds and visual surface interact during screen resizing
+    - Colours for paint can be adjusted during runtime
+    - Ripple responses are retained across interaction updates
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/ScreenResize.mp4">
+    <img src="image-16.png" alt="Particle System Demo" width="66%">
+  </a>
+</p>
 
 - **Colour selection**
     - Similar to Microsoft Paint's interface
-    - Can choose the colour of the paintballs
-    - Multiple interfaces for colour selection
-    - Colour wheel, Slider menu and HexPad selection provided
-    - Can adjust throughout the simulation 
-    
+  - Can choose and update the colour of paintballs
+  - Multiple interfaces for colour selection
+  - Colour wheel, RGB slider menu and HexPad input are provided
+  - Colour previews and values stay synchronized across all input methods
+  - Can adjust throughout the simulation
+
+
+<p align="center">
+  <table width="66%">
+    <tr>
+      <td width="50%" align="center">
+        <img src="image-14.png" alt="Particle Lookups" width="100%">
+      </td>
+      <td width="50%" align="center">
+        <img src="image-15.png" alt="Neighbour Cell Search" width="100%">
+      </td>
+    </tr>
+    <tr>
+      <td width="50%" align="center">
+        <img src="image-13.png" alt="Particle Index and Cell Keys" width="100%">
+      </td>
+      <td width="50%" align="center">
+        <img src="image-12.png" alt="Spatial Hashing" width="100%">
+      </td>
+    </tr>
+  </table>
+</p>
+
 - **Navigation bar**
     - Similar to Meta Headset navigation bar
     - Can access the settings of the simulation
     - Can pause the entire simulation
     - Can clear and reset the paint simulation
+  - Pause/play icons and ripple effects update with simulation state
+
+<p align="center">
+  <table width="66%">
+    <tr>
+      <td width="50%" align="center">
+        <img src="image-20.png" alt="Image 20" width="100%">
+      </td>
+      <td width="50%" align="center">
+        <img src="image-18.png" alt="Image 18" width="100%">
+      </td>
+    </tr>
+  </table>
+</p>
+
 
 - **Settings bar**
-    - Can adjust user preferences 
-    Environment- Allows switching between different scenery/terrains (where developers can easily add more)
-    - Brush width- Changes the width of the interaction radius which controls the stroke size for the simulation
+    - Can adjust user preferences
+    - Environment – Allows switching between different scenery/terrains (developers can add more presets)
+    - Brush width – Changes the interaction radius, which controls stroke size for the simulation
     - Paintball density – Affects the number of particles spawned from the paintball in contact with the canvas
-    - Fluidity – Adjusts the smoothing radius of the particles, affecting fluid detail level (higher values show more detail but need higher paintball particle density)
+    - Fluidity – Adjusts the smoothing radius of particles, affecting fluid detail level (higher values show more detail but need higher paintball particle density)
     - Paint speed – Changes the simulation speed so fluid appears faster or slower over time
-    - Sensitivity – Changes how strongly particles react to local pressure, so higher values make particles  push apart more strongly in crowded areas and respond more dramatically to interaction
+    - Sensitivity – Changes how strongly particles react to local pressure, so higher values make particles push apart more strongly in crowded areas and respond more dramatically to interaction
     - Screen size – Changes the dimensions of the simulation bounds and water surface
 
-- **Ripple effects**
-    - When interacting with the canvas, ripple effects are created for a 3D effect
-    - Reduces computation needed for a full 3D simulation
 
-![alt text](image-8.png)
-![alt text](image-9.png)
+<p align="center">
+  <table width="66%">
+    <tr>
+      <td width="50%" align="center">
+        <img src="image-11.png" alt="Image 11" width="100%">
+      </td>
+      <td width="50%" align="center">
+        <img src="image-10.png" alt="Image 10" width="100%">
+      </td>
+    </tr>
+  </table>
+</p>
+
+
+- **Ripple effects**
+    - When interacting with the canvas, ripple effects are created to give a 3D surface impression
+    - Ripple radius is linked to interaction radius controls for consistent brush behaviour
+    - Reduces computation needed for a full 3D fluid simulation
+
+<p align="center">
+  <table width="66%">
+    <tr>
+      <td width="50%" align="center">
+        <img src="image-8.png" alt="Image 8" width="100%">
+      </td>
+      <td width="50%" align="center">
+        <img src="image-9.png" alt="Image 9" width="100%">
+      </td>
+    </tr>
+  </table>
+</p>
 
 - **Mesh**
-    - For realism, a mesh is used to connect the shape of the particles to 
+    - For realism, a mesh is used to connect particle positions and give the appearance of a continuous liquid
+    - Mesh triangles are generated from particle positions and filtered to avoid unrealistic stretching
+    - Mesh geometry and colour blending update continuously as particles move
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/MeshSystem.mp4">
+    <img src="image-22.png" alt="Particle System Demo" width="66%">
+  </a>
+</p>
 
 - **Paintball Logic**
     - Once a paintball is used on the water screen canvas, paintballs respawn in their original places of spawn
     - Paintballs respawn even when falling through the floor
     - Paintballs disappear properly
     - Paintballs respawn with the same colour assigned
-    - Changes to paintball colour in colour selection is not permanent     
+    - Preview colour changes are only finalized after confirmation in the colour panel
+
+<p align="center">
+  <img src="image-23.png" alt="Image 6" width="66%">
+</p>
 
 - **Accuracy of the paintballs hitting the water surface**
     - There is a panel in the bottom corner of the screen to show you your accuracy
     - When paintballs do not hit the intended target of the water screen, accuracy decreases, increasing when the intended target is hit
 
-![alt text](image-7.png)
+<p align="center">
+  <img src="image-24.png" alt="Image 6" width="66%">
+</p>
+
+- **Visual and interaction feedback**
+    - Opening settings/colour panels pauses simulation updates for controlled adjustments
+    - Users can resume manually with the pause/play control after making changes
+    - UI sliders and labels update in real time as settings change
+    - Clear/reset actions
+    - Feedback is given when there has been no activity
+
+<p align="center">
+  <img src="image-7.png" alt="Image 6" width="66%">
+</p>
 
 # System Architecture
 
