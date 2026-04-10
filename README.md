@@ -43,23 +43,23 @@ The intent of this program is to manipulate dynamic water surfaces and oil paint
 
 The first demo shows in-headset gameplay, including live interaction with the canvas and real-time settings adjustments.
 <p align="center">
-  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\Media\UserDemo.mp4">
-    <img src="Media\image-17.png" alt="Particle System Demo" width="66%">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\UserDemo.mp4">
+    <img src="Documentation\ReadmeMedia\image-17.png" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
 The second demo highlights the fluid display and colour blending behaviour across mixed paint interactions with the added ripple effects.
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\Media\FluidDisplay.mp4">
-    <img src="Media\image-21.png" alt="Fluid Display" width="66%">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\FluidDisplay.mp4">
+    <img src="Documentation\ReadmeMedia\image-21.png" alt="Fluid Display" width="66%">
   </a>
 </p>
 
 The image below shows the simulation layout, including the navigation bar, paintball spawn area, and interactive screen.
 
 <p align="center">
-  <img src="Media\image-6.png" alt="Image 6" width="66%">
+  <img src="Documentation\ReadmeMedia\image-6.png" alt="Image 6" width="66%">
 </p>
 
 # Background
@@ -84,7 +84,7 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\Media\ScreenResize.mp4">
-    <img src="Media\image-16.png" alt="Particle System Demo" width="66%">
+    <img src="Documentation\ReadmeMedia\image-16.png" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
@@ -101,18 +101,18 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
   <table width="66%">
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-14.png" alt="Particle Lookups" width="100%">
+        <img src="Documentation\ReadmeMedia\image-14.png" alt="Particle Lookups" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-15.png" alt="Neighbour Cell Search" width="100%">
+        <img src="Documentation\ReadmeMedia\image-15.png" alt="Neighbour Cell Search" width="100%">
       </td>
     </tr>
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-13.png" alt="Particle Index and Cell Keys" width="100%">
+        <img src="Documentation\ReadmeMedia\image-13.png" alt="Particle Index and Cell Keys" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-12.png" alt="Spatial Hashing" width="100%">
+        <img src="Documentation\ReadmeMedia\image-12.png" alt="Spatial Hashing" width="100%">
       </td>
     </tr>
   </table>
@@ -129,10 +129,10 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
   <table width="66%">
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-20.png" alt="Image 20" width="100%">
+        <img src="Documentation\ReadmeMedia\image-20.png" alt="Image 20" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-18.png" alt="Image 18" width="100%">
+        <img src="Documentation\ReadmeMedia\image-18.png" alt="Image 18" width="100%">
       </td>
     </tr>
   </table>
@@ -154,10 +154,10 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
   <table width="66%">
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-11.png" alt="Image 11" width="100%">
+        <img src="Documentation\ReadmeMedia\image-11.png" alt="Image 11" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-10.png" alt="Image 10" width="100%">
+        <img src="Documentation\ReadmeMedia\image-10.png" alt="Image 10" width="100%">
       </td>
     </tr>
   </table>
@@ -173,10 +173,10 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
   <table width="66%">
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-8.png" alt="Image 8" width="100%">
+        <img src="Documentation\ReadmeMedia\image-8.png" alt="Image 8" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-9.png" alt="Image 9" width="100%">
+        <img src="Documentation\ReadmeMedia\image-9.png" alt="Image 9" width="100%">
       </td>
     </tr>
   </table>
@@ -188,8 +188,8 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
     - Mesh geometry and colour blending update continuously as particles move
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\Media\MeshSystem.mp4">
-    <img src="Media\image-22.png" alt="Particle System Demo" width="66%">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\MeshSystem.mp4">
+    <img src="Documentation\ReadmeMedia\image-22.png" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
@@ -201,7 +201,7 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
     - Preview colour changes are only finalized after confirmation in the colour panel
 
 <p align="center">
-  <img src="Media\image-23.png" alt="Image 6" width="66%">
+  <img src="Documentation\ReadmeMedia\image-23.png" alt="Image 6" width="66%">
 </p>
 
 - **Accuracy of the paintballs hitting the water surface**
@@ -209,7 +209,7 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
     - When paintballs do not hit the intended target of the water screen, accuracy decreases, increasing when the intended target is hit
 
 <p align="center">
-  <img src="Media\image-24.png" alt="Image 6" width="66%">
+  <img src="Documentation\ReadmeMedia\image-24.png" alt="Image 6" width="66%">
 </p>
 
 - **Visual and interaction feedback**
@@ -220,7 +220,7 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
     - Feedback is given when there has been no activity
 
 <p align="center">
-  <img src="Media\image-7.png" alt="Image 6" width="66%">
+  <img src="Documentation\ReadmeMedia\image-7.png" alt="Image 6" width="66%">
 </p>
 
 # System Architecture
@@ -287,14 +287,14 @@ This separation keeps the project maintainable while supporting real-time perfor
 The fluid model uses a 2D Smoothed-Particle Hydrodynamics (SPH) approach adapted for interactive VR painting. Instead of solving fluid on a fixed grid, the fluid is represented by moving particles that exchange forces with nearby neighbours.
 
 <p align="center">
-  <img src="Media\image.png" alt="Density Image" width="66%">
+  <img src="Documentation\ReadmeMedia\image.png" alt="Density Image" width="66%">
 </p>
 
 To approximate incompressible behaviour, the solver estimates local density and applies pressure forces that push crowded particles apart. Smoothing kernels control how strongly nearby particles influence each other, which stabilises motion and produces continuous-looking flow.
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\Media\ParticleSystem.mp4">
-    <img src="Media\image-5.png" alt="Particle System Demo" width="66%">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\ParticleSystem.mp4">
+    <img src="Documentation\ReadmeMedia\image-5.png" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
@@ -311,18 +311,18 @@ To keep neighbour queries efficient, the implementation uses **grid-based spatia
   <table width="66%">
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-1.png" alt="Particle Lookups" width="100%">
+        <img src="Documentation\ReadmeMedia\image-1.png" alt="Particle Lookups" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-4.png" alt="Neighbour Cell Search" width="100%">
+        <img src="Documentation\ReadmeMedia\image-4.png" alt="Neighbour Cell Search" width="100%">
       </td>
     </tr>
     <tr>
       <td width="50%" align="center">
-        <img src="Media\image-2.png" alt="Particle Index and Cell Keys" width="100%">
+        <img src="Documentation\ReadmeMedia\image-2.png" alt="Particle Index and Cell Keys" width="100%">
       </td>
       <td width="50%" align="center">
-        <img src="Media\image-3.png" alt="Spatial Hashing" width="100%">
+        <img src="Documentation\ReadmeMedia\image-3.png" alt="Spatial Hashing" width="100%">
       </td>
     </tr>
   </table>
