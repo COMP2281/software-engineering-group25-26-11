@@ -39,6 +39,41 @@ This project is intended for the development of a virtual reality application fo
 
 The intent of this program is to manipulate dynamic water surfaces and oil paint using intuitive VR hand tracking interactions, being optimised for usage on the Meta Quest 2. This project prioritises realistic fluid mechanics and high performance which can also be adjusted in user settings within the simulation.
 
+# Controls Manual
+
+### VR Headset Controls
+<p align="center">
+  <img src="Documentation\ReadmeMedia\ControllerDiagram.png" alt="ControllerDiagram" width="66%">
+</p>
+
+| Number      | Description      |
+| ----------- | ---------------- |
+| 1           | Left Grip Button |
+| 2           | Right Grip Button|
+| 3           | Left Trigger     |
+| 4           | Right Trigger    |
+| 5           | X button         |
+| 6           | A Button         |
+| 7           | Y Button         |
+| 8           | B Button         |
+| 9           | Left Thumbstick  |
+| 10          | Right Thumbstick |
+
+**Walking** - left thumbstick \
+**Grab paintballs** - point controller at the paintball and hold grip button (left or right) \
+**Button Selection** (i.e. colour selection, settings...) - point controller at the button and press the trigger\
+**Hand-water Interaction** - touch the water with the controller
+
+### Unity XR Device Simulator Controls
+
+**Walking** - *WASD* \
+**View** - mouse (view control can be paused/unpaused by pressing tab) \
+**Grab Paintballs** - point controller projection at a paintball and hold g key \
+**Button selection** - mouse click \
+**Hand-water Interaction** - touch virtual controllers against the water
+
+
+
 # Demo
 
 The first demo shows in-headset gameplay, including live interaction with the canvas and real-time settings adjustments.
@@ -181,6 +216,12 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
     </tr>
   </table>
 </p>
+
+- **Hand-Water Interaction**
+  - Ripple effects and fluid simulation can be triggered by moving your hand/controller through the water.
+  - Splashes and water swirl sounds are played as well as controller vibrations.
+  - Velocity of the hand moving through the water determines the volume of the swirling sound and intensity of vibrations.
+
 
 - **Mesh**
     - For realism, a mesh is used to connect particle positions and give the appearance of a continuous liquid
@@ -346,7 +387,7 @@ u_{t+1} = \alpha ( \frac{u_{i-1,j} + u_{i+1,j} + u_{i,j-1} + u_{i,j+1}}{2} - u_{
 ### Implementation
 For each texel, the shader samples five values: the four neighbouring texels from the current render texture, and the same texel from the previous render texture. The neighbouring texels correspond to the values: $ u_{i-1,j}, u_{i+1,j}, u_{i,j-1}, u_{i,j+1} $. And the same texel from the previous render texture $u_{t-1}$.
 The image shows the resulting effect:
-![Top-down rippel view](Spherical_wave2.gif)
+![Top-down rippel view](Documentation\ReadmeMedia\Spherical_wave2.gif)
 
 The dynamic water surface ripples are generated in "RippleShader.shader". For each frame:
 - The shader reads the current and previous render textures and writes the propagated wave in a temporary render texture.
@@ -356,14 +397,14 @@ The dynamic water surface ripples are generated in "RippleShader.shader". For ea
 
 The final step is dealing with lighting to make the wave appear 3D. Curvature of the waves determines the direction of reflected light. We must calculate surface normals. This calculation is done within a shadergraph:
 
-![Ripple with light effects](Shadergraph.png)
+![Ripple with light effects](Documentation\ReadmeMedia\Shadergraph.png)
 Why we opt for a shader graph instead of code:​
 - Easier for developer to view pipeline​
 - Requires little HLSL experience​
 - Future developers can make changes easily, easy access to parameters​
 
 The final ripple effect with lighting is shown below:
-![Ripple with light effects](FinalRipple.gif)
+![Ripple with light effects](Documentation\ReadmeMedia\FinalRipple.gif)
 
 # Optimisations
 
