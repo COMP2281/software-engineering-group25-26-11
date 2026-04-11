@@ -111,7 +111,35 @@ Even when partcles share a cell, they are also compared within the interaction d
 For added realism, we have added a mesh system since the particles alone do not look realistic for fluid simulation. This uses Delaunay triangulation to connect the particles and uses the side lengths to determine which triangles to exclude, creating realistic gaps in the fluid. The colours are then linearly interpolated to create a smooth blending of colour
 
 ## Ripple Effects
-As our system uses a 2D particle and mesh system, we decided to add shaders for a 3D effect 
+We model ripples using the continuous wave equation $\frac{\partial^2 u}{\partial t^2} = c^2 \nabla^2 u$, where $u(x, y, t)$ is the wave height at surface position $(x, y)$ and time $t$. Discretising space and time using a texel grid with dimensions $\Delta x = \Delta y = 1$, the 2D Laplacian becomes $\nabla^2 u \approx u_{i-1,j} + u_{i+1,j} + u_{i,j-1} + u_{i,j+1} - 4u_{i,j}$.
+
+Approximating the second time derivative with $\Delta t = 1$ frame gives $\frac{\partial^2 u}{\partial t^2} = u_{t+1} - 2u_t + u_{t-1}$. We set $c^2\Delta t^2 = 0.5$ to satisfy the Courant-Friedrichs-Lewy condition, ensuring the wave stays stable. A damping factor $\alpha$ ensures the ripple loses energy as it propagates, the final equation we implement is:
+
+$
+u_{t+1} = \alpha ( \frac{u_{i-1,j} + u_{i+1,j} + u_{i,j-1} + u_{i,j+1}}{2} - u_{t-1} )$
+
+### Implementation
+For each texel, the shader samples five values: the four neighbouring texels from the current render texture, and the same texel from the previous render texture. The neighbouring texels correspond to the values: $ u_{i-1,j}, u_{i+1,j}, u_{i,j-1}, u_{i,j+1} $. And the same texel from the previous render texture $u_{t-1}$.
+The image shows the resulting effect:
+![Top-down rippel view](Spherical_wave2.gif)
+
+The dynamic water surface ripples are generated in "RippleShader.shader". For each frame:
+- The shader reads the current and previous render textures and writes the propagated wave in a temporary render texture.
+- The previous render texture becomes the current, the current is assigned temporary, and the temporary is assigned the freed old previous texture, rotating buffers.
+- The current render texture is combined with object textures using the Add Shader, writing the result to the temporary render texture.
+- The material’s ripple texture is set to the temporary render texture
+
+The final step is dealing with lighting to make the wave appear 3D. Curvature of the waves determines the direction of reflected light. We must calculate surface normals. This calculation is done within a shadergraph:
+
+![Ripple with light effects](Shadergraph.png)
+Why we opt for a shader graph instead of code:​
+- Easier for developer to view pipeline​
+- Requires little HLSL experience​
+- Future developers can make changes easily, easy access to parameters​
+
+The final ripple effect with lighting is shown below:
+![Ripple with light effects](FinalRipple.gif)
+
 
 # User interface
 
