@@ -3,6 +3,7 @@
 # Table of Contents
 - [Project Overview](#project-overview)
 - [Demo](#demo)
+- [Controls Manual](#controls-manual)
 - [Background](#background)
 - [Core Features](#core-features)
 - [System Architecture](#system-architecture)
