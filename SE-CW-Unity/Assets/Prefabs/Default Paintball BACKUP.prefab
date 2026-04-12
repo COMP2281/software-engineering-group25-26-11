@@ -322,6 +322,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51816339563c441459a9de884c5903e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  paintballPrefab: {fileID: 0}
+  minY: -20
   targetTag: Water
   cooldown: 0.25
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  splashSound: {fileID: 8300000, guid: 782e1453664e5a549876d86971544a5d, type: 3}
+  splashVolume: 0.8

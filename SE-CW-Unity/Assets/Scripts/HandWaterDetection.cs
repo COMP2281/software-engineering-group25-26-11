@@ -6,24 +6,12 @@ using Seb.Fluid2D.Simulation;
 
 public class HandWaterDetection : MonoBehaviour
 {
-    [Header("Physics Settings")]
     public float pushStrength = 10f;
-
-    [Header("Fluid Interaction")]
-    [Tooltip("The FluidSim2D to apply interaction forces to")]
     public FluidSim2D fluidSimulation;
-    [Tooltip("Strength of fluid repulsion (positive = repel, negative = attract)")]
     public float fluidInteractionStrength = 50f;
-
-    [Header("Surface Detection")]
     public string surfaceTag = "Surface";
-
-    [Header("Audio Feedback")]
     public AudioClip moveSound;
-
     private AudioSource moveSource;
-
-    // Tracking Variables
     private HandPresence handPresence;
     private Vector3 previousPosition;
     private Vector3 smoothVelocity;
