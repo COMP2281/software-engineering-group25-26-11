@@ -2,8 +2,8 @@
 
 # Table of Contents
 - [Project Overview](#project-overview)
-- [Demo](#demo)
 - [Controls Manual](#controls-manual)
+- [Demo](#demo)
 - [Background](#background)
 - [Core Features](#core-features)
 - [System Architecture](#system-architecture)
@@ -43,35 +43,50 @@ The intent of this program is to manipulate dynamic water surfaces and oil paint
 # Controls Manual
 
 ### VR Headset Controls
-<p align="center">
-  <img src="Documentation\ReadmeMedia\ControllerDiagram.png" alt="ControllerDiagram" width="66%">
-</p>
+<div align="center">
+  <table>
+    <tr>
+      <td width="40%" align="center">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Controller Input</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td align="center">1</td><td>Left Grip Button</td></tr>
+            <tr><td align="center">2</td><td>Right Grip Button</td></tr>
+            <tr><td align="center">3</td><td>Left Trigger</td></tr>
+            <tr><td align="center">4</td><td>Right Trigger</td></tr>
+            <tr><td align="center">5</td><td>X Button</td></tr>
+            <tr><td align="center">6</td><td>A Button</td></tr>
+            <tr><td align="center">7</td><td>Y Button</td></tr>
+            <tr><td align="center">8</td><td>B Button</td></tr>
+            <tr><td align="center">9</td><td>Left Thumbstick</td></tr>
+            <tr><td align="center">10</td><td>Right Thumbstick</td></tr>
+          </tbody>
+        </table>
+      </td>
+      <td width="60%" align="center">
+        <img src="Documentation\ReadmeMedia\ControllerDiagram.png" alt="ControllerDiagram" width="100%">
+      </td>
+    </tr>
+  </table>
+</div>
 
-| Number      | Description      |
-| ----------- | ---------------- |
-| 1           | Left Grip Button |
-| 2           | Right Grip Button|
-| 3           | Left Trigger     |
-| 4           | Right Trigger    |
-| 5           | X button         |
-| 6           | A Button         |
-| 7           | Y Button         |
-| 8           | B Button         |
-| 9           | Left Thumbstick  |
-| 10          | Right Thumbstick |
-
-**Walking** - left thumbstick \
-**Grab paintballs** - point controller at the paintball and hold grip button (left or right) \
-**Button Selection** (i.e. colour selection, settings...) - point controller at the button and press the trigger\
-**Hand-water Interaction** - touch the water with the controller
+- **Walking** - Left thumbstick 
+- **Grab paintballs** - Point controller at the paintball and hold grip button (Left or Right) 
+- **Button Selection** (i.e. Colour selection, settings...) - Point controller at the button and press the trigger
+- **Hand-water Interaction** - Touch the water with the controller
 
 ### Unity XR Device Simulator Controls
 
-**Walking** - *WASD* \
-**View** - mouse (view control can be paused/unpaused by pressing tab) \
-**Grab Paintballs** - point controller projection at a paintball and hold g key \
-**Button selection** - mouse click \
-**Hand-water Interaction** - touch virtual controllers against the water
+- **Walking** - *WASD* 
+- **View** - Mouse (View control can be paused/unpaused by pressing tab) 
+- **Grab Paintballs** - Point controller projection at a paintball and hold G key 
+- **Button selection** - Mouse click 
+- **Hand-water Interaction** - Touch virtual controllers against the water
 
 
 
@@ -88,7 +103,7 @@ The second demo highlights the fluid display and colour blending behaviour acros
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\FluidDisplay.mp4">
-    <img src="Documentation\ReadmeMedia\image-21.png" alt="Fluid Display" width="66%">
+    <img src="Documentation\ReadmeMedia\FluidDisplay.gif" alt="Fluid Display" width="66%">
   </a>
 </p>
 
@@ -119,8 +134,8 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
     - Ripple responses are retained across interaction updates
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\Media\ScreenResize.mp4">
-    <img src="Documentation\ReadmeMedia\image-16.png" alt="Particle System Demo" width="66%">
+  <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\ScreenResize.mp4">
+    <img src="Documentation\ReadmeMedia\ScreenResize.gif" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
@@ -231,7 +246,7 @@ Sebastian's base system models fluid with **Smoothed-Particle Hydrodynamics (SPH
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\MeshSystem.mp4">
-    <img src="Documentation\ReadmeMedia\image-22.png" alt="Particle System Demo" width="66%">
+    <img src="Documentation\ReadmeMedia\MeshSystem.gif" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
@@ -336,7 +351,7 @@ To approximate incompressible behaviour, the solver estimates local density and 
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/COMP2281/software-engineering-group25-26-11/main/Documentation\ReadmeMedia\ParticleSystem.mp4">
-    <img src="Documentation\ReadmeMedia\image-5.png" alt="Particle System Demo" width="66%">
+    <img src="Documentation\ReadmeMedia\ParticleSystem.gif" alt="Particle System Demo" width="66%">
   </a>
 </p>
 
