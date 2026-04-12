@@ -382,13 +382,15 @@ We model ripples using the continuous wave equation $\frac{\partial^2 u}{\partia
 
 Approximating the second time derivative with $\Delta t = 1$ frame gives $\frac{\partial^2 u}{\partial t^2} = u_{t+1} - 2u_t + u_{t-1}$. We set $c^2\Delta t^2 = 0.5$ to satisfy the Courant-Friedrichs-Lewy condition, ensuring the wave stays stable. A damping factor $\alpha$ ensures the ripple loses energy as it propagates, the final equation we implement is:
 
-$
-u_{t+1} = \alpha ( \frac{u_{i-1,j} + u_{i+1,j} + u_{i,j-1} + u_{i,j+1}}{2} - u_{t-1} )$
+$u_{t+1} = \alpha ( \frac{u_{i-1,j} + u_{i+1,j} + u_{i,j-1} + u_{i,j+1}}{2} - u_{t-1} )$
 
 ### Implementation
 For each texel, the shader samples five values: the four neighbouring texels from the current render texture, and the same texel from the previous render texture. The neighbouring texels correspond to the values: $ u_{i-1,j}, u_{i+1,j}, u_{i,j-1}, u_{i,j+1} $. And the same texel from the previous render texture $u_{t-1}$.
-The image shows the resulting effect:
-![Top-down rippel view](Documentation\ReadmeMedia\Spherical_wave2.gif)
+The image below shows the resulting effect:
+
+<p align="center">
+  <img src="Documentation\ReadmeMedia\Spherical_wave2.gif" alt="Top-down Ripple view" width="40%">
+</p>
 
 The dynamic water surface ripples are generated in "RippleShader.shader". For each frame:
 - The shader reads the current and previous render textures and writes the propagated wave in a temporary render texture.
@@ -398,14 +400,20 @@ The dynamic water surface ripples are generated in "RippleShader.shader". For ea
 
 The final step is dealing with lighting to make the wave appear 3D. Curvature of the waves determines the direction of reflected light. We must calculate surface normals. This calculation is done within a shadergraph:
 
-![Ripple with light effects](Documentation\ReadmeMedia\Shadergraph.png)
+<p align="center">
+  <img src="Documentation\ReadmeMedia\Shadergraph.png" alt="Shadergraph" width="100%">
+</p>
+
 Why we opt for a shader graph instead of code:​
 - Easier for developer to view pipeline​
 - Requires little HLSL experience​
-- Future developers can make changes easily, easy access to parameters​
+- Developers can make changes easily, easy access to parameters​
 
 The final ripple effect with lighting is shown below:
-![Ripple with light effects](Documentation\ReadmeMedia\FinalRipple.gif)
+
+<p align="center">
+  <img src="Documentation\ReadmeMedia\FinalRipple.gif" alt="Ripple with light effects" width="66%">
+</p>
 
 # Optimisations
 
