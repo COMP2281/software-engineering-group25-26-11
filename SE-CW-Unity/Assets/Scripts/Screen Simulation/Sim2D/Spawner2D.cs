@@ -73,39 +73,31 @@ public class Spawner2D : MonoBehaviour
 		Vector2 centre = region.position;
 		Vector2 size = region.size * clumpScale; // Apply clump scale to make tighter spawn
 
-		int i = 0;
-		Vector2Int numPerAxis = CalculateSpawnCountPerAxisBox2D(region.size, spawnDensity);
-		float2[] points = new float2[numPerAxis.x * numPerAxis.y];
+		int pointCount = CalculateSpawnCount(region.size, spawnDensity);
+		List<float2> points = new(pointCount);
 
-		for (int y = 0; y < numPerAxis.y; y++)
+		float radiusX = size.x * 0.5f;
+		float radiusY = size.y * 0.5f;
+		float goldenAngle = 2.39996323f;
+
+		for (int i = 0; i < pointCount; i++)
 		{
-			for (int x = 0; x < numPerAxis.x; x++)
-			{
-				float tx = numPerAxis.x > 1 ? x / (numPerAxis.x - 1f) : 0.5f;
-				float ty = numPerAxis.y > 1 ? y / (numPerAxis.y - 1f) : 0.5f;
-				float px = (tx - 0.5f) * size.x + centre.x;
-				float py = (ty - 0.5f) * size.y + centre.y;
-				points[i] = new float2(px, py);
-				i++;
-			}
+			float t = (i + 0.5f) / pointCount;
+			float radius = Mathf.Sqrt(t);
+			float angle = i * goldenAngle;
+			float px = centre.x + Mathf.Cos(angle) * radius * radiusX;
+			float py = centre.y + Mathf.Sin(angle) * radius * radiusY;
+			points.Add(new float2(px, py));
 		}
 
-		return points;
+		return points.ToArray();
 	}
 
 
-	static Vector2Int CalculateSpawnCountPerAxisBox2D(Vector2 size, float spawnDensity)
+	static int CalculateSpawnCount(Vector2 size, float spawnDensity)
 	{
 		float area = size.x * size.y;
-		int targetTotal = Mathf.CeilToInt(area * spawnDensity);
-
-		float lenSum = size.x + size.y;
-		Vector2 t = size / lenSum;
-		float m = Mathf.Sqrt(targetTotal / (t.x * t.y));
-		int nx = Mathf.CeilToInt(t.x * m);
-		int ny = Mathf.CeilToInt(t.y * m);
-
-		return new Vector2Int(nx, ny);
+		return Mathf.Max(1, Mathf.CeilToInt(area * spawnDensity));
 	}
 
 	public struct ParticleSpawnData
@@ -137,8 +129,7 @@ public class Spawner2D : MonoBehaviour
 		spawnParticleCount = 0;
 		foreach (SpawnRegion region in spawnRegions)
 		{
-			Vector2Int spawnCountPerAxis = CalculateSpawnCountPerAxisBox2D(region.size, spawnDensity);
-			spawnParticleCount += spawnCountPerAxis.x * spawnCountPerAxis.y;
+			spawnParticleCount += CalculateSpawnCount(region.size, spawnDensity);
 		}
 	}
 
