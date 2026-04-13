@@ -19,6 +19,10 @@ public class SpawnOnContact : MonoBehaviour
     [Tooltip("Default color if the triggering object has no color")]
     public Color defaultColor = Color.white;
 
+    [Header("Audio Settings")]
+    public AudioClip splashSound;
+    [Range(0f, 1f)] public float splashVolume = 0.5f;
+
     float lastSpawnTime = -999f;
 
     // XR Grab handling
@@ -78,13 +82,13 @@ public class SpawnOnContact : MonoBehaviour
         {
             grabInteractable.selectEntered.AddListener(OnGrabbed);
             grabInteractable.selectExited.AddListener(OnReleased);
-            
+
             // Configure for throwing
             grabInteractable.movementType = XRBaseInteractable.MovementType.Instantaneous;
             grabInteractable.throwOnDetach = true;
             grabInteractable.throwSmoothingDuration = 0.25f;
             grabInteractable.throwVelocityScale = 1.5f;
-            
+
             Debug.Log($"SpawnOnContact: XRGrabInteractable configured on {gameObject.name}");
         }
     }
@@ -113,7 +117,7 @@ public class SpawnOnContact : MonoBehaviour
         {
             Debug.LogError($"OnGrabbed: Rigidbody is NULL on {gameObject.name}!");
         }
-        
+
         // Reset inactivity timer when paintball is picked up
         if (InactivityWarning.Instance != null)
         {
@@ -142,7 +146,7 @@ public class SpawnOnContact : MonoBehaviour
             {
                 Accuracy.Instance.RegisterMiss();
             }
-            
+
             Color ballColor = GetColorFromObject(gameObject);
             RespawnPaintball(ballColor);
         }
@@ -204,7 +208,7 @@ public class SpawnOnContact : MonoBehaviour
             {
                 Accuracy.Instance.RegisterMiss();
             }
-            
+
             Color ballColor = GetColorFromObject(gameObject);
             RespawnPaintball(ballColor);
         }
@@ -236,6 +240,11 @@ public class SpawnOnContact : MonoBehaviour
         lastSpawnTime = Time.time;
 
         RippleEffect.Instance.RippleAtPoint(samplePoint);
+
+        if (splashSound != null)
+        {
+            AudioSource.PlayClipAtPoint(splashSound, samplePoint, splashVolume);
+        }
 
         // Register activity for inactivity warning system
         if (InactivityWarning.Instance != null)
@@ -335,7 +344,7 @@ public class SpawnOnContact : MonoBehaviour
             if (buttonIndex != -1)
             {
                 newBall.name = $"Paintball_{colorKey}_Button{buttonIndex}";
-                
+
                 // Update the ColorSelectionManager's tracking dictionary
                 if (ColorSelectionManager.buttonToPaintball.ContainsKey(buttonIndex))
                 {

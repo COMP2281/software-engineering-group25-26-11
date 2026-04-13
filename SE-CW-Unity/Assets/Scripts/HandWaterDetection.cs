@@ -6,29 +6,15 @@ using Seb.Fluid2D.Simulation;
 
 public class HandWaterDetection : MonoBehaviour
 {
-    [Header("Physics Settings")]
     public float pushStrength = 10f;
-    
-    [Header("Fluid Interaction")]
-    [Tooltip("The FluidSim2D to apply interaction forces to")]
     public FluidSim2D fluidSimulation;
-    [Tooltip("Strength of fluid repulsion (positive = repel, negative = attract)")]
     public float fluidInteractionStrength = 50f;
-
-    [Header("Surface Detection")]
     public string surfaceTag = "Surface";
-
-    [Header("Audio Feedback")]
-    public AudioClip splashSound;
     public AudioClip moveSound;
-    
     private AudioSource moveSource;
-    private AudioSource splashSource;
-
-    // Tracking Variables
     private HandPresence handPresence;
     private Vector3 previousPosition;
-    private Vector3 smoothVelocity; 
+    private Vector3 smoothVelocity;
     private float currentHandSpeed;
     private bool isInsideWater = false;
 
@@ -46,11 +32,6 @@ public class HandWaterDetection : MonoBehaviour
         moveSource.loop = true;
         moveSource.volume = 0; // Start silent
         moveSource.playOnAwake = false;
-        
-        // We create a secondary source so fading the move sound doesn't kill the splash
-        splashSource = gameObject.AddComponent<AudioSource>();
-        splashSource.spatialBlend = 1.0f;
-        splashSource.volume = 0.5f;
 
         // Start the loop immediately (at volume 0) so it's ready to fade in
         if (moveSound != null) moveSource.Play();
@@ -59,9 +40,9 @@ public class HandWaterDetection : MonoBehaviour
     void Update()
     {
         Vector3 rawVelocity = (transform.position - previousPosition) / Time.deltaTime;
-        smoothVelocity = Vector3.Lerp(smoothVelocity, rawVelocity, Time.deltaTime * 20); 
+        smoothVelocity = Vector3.Lerp(smoothVelocity, rawVelocity, Time.deltaTime * 20);
         currentHandSpeed = smoothVelocity.magnitude;
-        
+
         previousPosition = transform.position;
 
         if (!isInsideWater)
@@ -70,29 +51,23 @@ public class HandWaterDetection : MonoBehaviour
         }
     }
 
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(surfaceTag))
         {
             isInsideWater = true;
-            
-            RippleEffect.Instance.RippleAtPoint(transform.position);
 
-            if (splashSound != null)
-            {
-                splashSource.pitch = Random.Range(0.85f, 1.15f);
-                splashSource.PlayOneShot(splashSound);
-            }
-
-            TriggerHapticPulse(0.8f, 0.15f);
-            
-            // Reset inactivity timer when hand enters water
             if (InactivityWarning.Instance != null)
             {
                 InactivityWarning.Instance.RegisterActivity();
             }
+
+            RippleEffect.Instance.RippleAtPoint(transform.position);
+            TriggerHapticPulse(0.8f, 0.15f);
         }
     }
+
 
     private void OnTriggerStay(Collider other)
     {
@@ -102,7 +77,7 @@ public class HandWaterDetection : MonoBehaviour
             Rigidbody rb = other.attachedRigidbody;
 
             RippleEffect.Instance.RippleAtPoint(transform.position);
-            
+
             // Apply fluid simulation interaction
             if (fluidSimulation != null)
             {
@@ -126,7 +101,7 @@ public class HandWaterDetection : MonoBehaviour
         if (other.CompareTag(surfaceTag))
         {
             isInsideWater = false;
-            
+
             // Clear fluid simulation interaction
             if (fluidSimulation != null)
             {
@@ -139,8 +114,8 @@ public class HandWaterDetection : MonoBehaviour
     private void ProcessContinuousFeedback()
     {
         float intensity = Mathf.Clamp01(currentHandSpeed / 0.2f);
-        float targetVolume = intensity > 0.05f ? Mathf.Lerp(0.1f, 1.0f, intensity*2) : 0f;
-        
+        float targetVolume = intensity > 0.05f ? Mathf.Lerp(0.1f, 1.0f, intensity * 2) : 0f;
+
         moveSource.volume = Mathf.Lerp(moveSource.volume, targetVolume, Time.deltaTime * 10);
         moveSource.pitch = Mathf.Lerp(0.8f, 1.2f, intensity);
 

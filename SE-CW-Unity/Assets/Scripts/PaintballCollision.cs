@@ -62,14 +62,14 @@ public class PaintballCollision : MonoBehaviour
         {
             grabInteractable.selectEntered.AddListener(OnGrabbed);
             grabInteractable.selectExited.AddListener(OnReleased);
-            
+
             // Use Instantaneous movement (most stable for VR)
             // This handles the object position while held, but releases control when detached
             grabInteractable.movementType = XRBaseInteractable.MovementType.Instantaneous;
             grabInteractable.throwOnDetach = true;
             grabInteractable.throwSmoothingDuration = 0.25f;
             grabInteractable.throwVelocityScale = 1.5f;
-            
+
             Debug.Log("PaintballCollision: XRGrabInteractable configured - Movement: Instantaneous, ThrowOnDetach: true");
         }
     }
@@ -141,7 +141,7 @@ public class PaintballCollision : MonoBehaviour
     }
 
 
-        void Update()
+    void Update()
     {
         // Only do the check if we have a respawn point
         if (safeRespawnPoint == null) return;
@@ -176,12 +176,14 @@ public class PaintballCollision : MonoBehaviour
 
             SpawnPaintOnWater();
             StartCoroutine(RespawnPaintball());
-        } else if (other.CompareTag("Barrier")) {
+        }
+        else if (other.CompareTag("Barrier"))
+        {
             Debug.Log("Paintball left boundaries: " + other.name);
             if (Accuracy.Instance != null) Accuracy.Instance.RegisterMiss();
             StartCoroutine(RespawnPaintball());
         }
-        
+
     }
 
     void SpawnPaintOnWater()
