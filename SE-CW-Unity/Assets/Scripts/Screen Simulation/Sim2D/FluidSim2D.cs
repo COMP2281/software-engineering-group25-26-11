@@ -89,6 +89,8 @@ namespace Seb.Fluid2D.Simulation
 		const int pressureKernel = 5;
 		const int viscosityKernel = 6;
 		const int updatePositionKernel = 7;
+		const int reorderColorKernel = 8;
+		const int copybackColorKernel = 9;
 
 		// State
 		bool isPaused;
@@ -169,8 +171,8 @@ namespace Seb.Fluid2D.Simulation
 			ComputeHelper.SetBuffer(compute, sortTarget_Position, "SortTarget_Positions", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_PredicitedPosition, "SortTarget_PredictedPositions", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_Velocity, "SortTarget_Velocities", reorderKernel, copybackKernel);
-			ComputeHelper.SetBuffer(compute, colorBuffer, "ParticleColors", reorderKernel, copybackKernel);
-			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, colorBuffer, "ParticleColors", reorderColorKernel, copybackColorKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderColorKernel, copybackColorKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_SpawnGroup, "SortTarget_SpawnGroups", reorderKernel, copybackKernel);
 
 			compute.SetInt("numParticles", numParticles);
@@ -243,7 +245,9 @@ namespace Seb.Fluid2D.Simulation
 			spatialHash.Run();
 
 			ComputeHelper.Dispatch(compute, numParticles, kernelIndex: reorderKernel);
+			ComputeHelper.Dispatch(compute, numParticles, kernelIndex: reorderColorKernel);
 			ComputeHelper.Dispatch(compute, numParticles, kernelIndex: copybackKernel);
+			ComputeHelper.Dispatch(compute, numParticles, kernelIndex: copybackColorKernel);
 		}
 
 		void UpdateSettings(float deltaTime)
@@ -545,8 +549,8 @@ namespace Seb.Fluid2D.Simulation
 			ComputeHelper.SetBuffer(compute, sortTarget_Position, "SortTarget_Positions", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_PredicitedPosition, "SortTarget_PredictedPositions", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_Velocity, "SortTarget_Velocities", reorderKernel, copybackKernel);
-			ComputeHelper.SetBuffer(compute, colorBuffer, "ParticleColors", reorderKernel, copybackKernel);
-			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, colorBuffer, "ParticleColors", reorderColorKernel, copybackColorKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderColorKernel, copybackColorKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_SpawnGroup, "SortTarget_SpawnGroups", reorderKernel, copybackKernel);
 
 			compute.SetInt("numParticles", numParticles);

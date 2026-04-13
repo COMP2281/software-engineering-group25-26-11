@@ -6,6 +6,8 @@
 #pragma kernel CalculatePressureForce
 #pragma kernel CalculateViscosity
 #pragma kernel UpdatePositions
+#pragma kernel ReorderColor
+#pragma kernel ReorderCopybackColor
 
 // Includes
 #include "./FluidMaths2D.hlsl"
@@ -250,7 +252,6 @@ void Reorder (uint3 id : SV_DispatchThreadID)
 	SortTarget_Positions[id.x] = Positions[sortedIndex];
 	SortTarget_PredictedPositions[id.x] = PredictedPositions[sortedIndex];
 	SortTarget_Velocities[id.x] = Velocities[sortedIndex];
-	SortTarget_Colors[id.x] = ParticleColors[sortedIndex];
 	SortTarget_SpawnGroups[id.x] = ParticleSpawnGroups[sortedIndex];
 }
 
@@ -263,8 +264,25 @@ void ReorderCopyback (uint3 id : SV_DispatchThreadID)
 	Positions[id.x] = SortTarget_Positions[id.x];
 	PredictedPositions[id.x] = SortTarget_PredictedPositions[id.x];
 	Velocities[id.x] = SortTarget_Velocities[id.x];
-	ParticleColors[id.x] = SortTarget_Colors[id.x];
 	ParticleSpawnGroups[id.x] = SortTarget_SpawnGroups[id.x];
+}
+
+[numthreads(NumThreads,1,1)]
+void ReorderColor (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= numParticles) return;
+
+	uint sortedIndex = SortedIndices[id.x];
+	SortTarget_Colors[id.x] = ParticleColors[sortedIndex];
+}
+
+
+[numthreads(NumThreads,1,1)]
+void ReorderCopybackColor (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= numParticles) return;
+
+	ParticleColors[id.x] = SortTarget_Colors[id.x];
 }
 
 
