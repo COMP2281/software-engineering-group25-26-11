@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.73628634, g: 0.55551946, b: 0.14788294, a: 1}
+  m_IndirectSpecularColor: {r: 0.73607254, g: 0.5549378, b: 0.1481374, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -8365,7 +8365,6 @@ MonoBehaviour:
   fluidSimulation: {fileID: 0}
   fluidInteractionStrength: 50
   surfaceTag: Surface
-  splashSound: {fileID: 8300000, guid: 782e1453664e5a549876d86971544a5d, type: 3}
   moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!54 &605557385
 Rigidbody:
@@ -9474,7 +9473,6 @@ MonoBehaviour:
   fluidSimulation: {fileID: 865727574}
   fluidInteractionStrength: 50
   surfaceTag: Surface
-  splashSound: {fileID: 8300000, guid: 782e1453664e5a549876d86971544a5d, type: 3}
   moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!54 &761251409
 Rigidbody:
@@ -10283,9 +10281,9 @@ MonoBehaviour:
   sensitivitySlider: {fileID: 1287353233}
   heightSlider: {fileID: 401389993}
   widthSlider: {fileID: 1291853181}
-  defaultBrushWidth: 10
-  defaultPaintballDensity: 50
-  defaultFluidity: 90
+  defaultBrushWidth: 40
+  defaultPaintballDensity: 18
+  defaultFluidity: 20
   defaultPaintSpeed: 50
   defaultSensitivity: 60
   defaultHeight: 35
@@ -10914,7 +10912,7 @@ MonoBehaviour:
     size: {x: 1, y: 1}
     debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
   showSpawnBoundsGizmos: 1
-  spawnParticleCount: 169
+  spawnParticleCount: 159
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10931,23 +10929,23 @@ MonoBehaviour:
   worldScale: 1
   scaleByParent: 1
   spawnOnStart: 0
-  timeScale: 0.5
+  timeScale: 0.2
   maxTimestepFPS: 60
   iterationsPerFrame: 30
   gravity: 0
   gravityDir: {x: 0, y: -1}
-  collisionDamping: 0.95
-  smoothingRadius: 0.28
+  collisionDamping: 0.08
+  smoothingRadius: 0.4128182
   targetDensity: 45
-  pressureMultiplier: 350
-  nearPressureMultiplier: 5
-  viscosityStrength: 0
+  pressureMultiplier: 320
+  nearPressureMultiplier: 6.4
+  viscosityStrength: 10
   boundsSize: {x: 1, y: 1}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}
   interactionPlane: {fileID: 1666421594}
   interactionRadius: 0.5
-  interactionStrength: 90
+  interactionStrength: 130
   hasExternalInteraction: 0
   externalInteractionPoint: {x: 0, y: 0}
   externalInteractionStrength: 0
@@ -14179,7 +14177,7 @@ MonoBehaviour:
   radiusSlider: {fileID: 322527919}
   valueText: {fileID: 2139304244}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 10
+  initialSliderValue: 40
 --- !u!114 &1119764031
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17432,7 +17430,7 @@ MonoBehaviour:
   radiusSlider: {fileID: 1308686014}
   valueText: {fileID: 238475291}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 90
+  initialSliderValue: 20
 --- !u!1 &1484766179
 GameObject:
   m_ObjectHideFlags: 0
@@ -23227,7 +23225,7 @@ MonoBehaviour:
   densitySlider: {fileID: 590807803}
   valueText: {fileID: 772996932}
   spawner: {fileID: 865727573}
-  initialSliderValue: 50
+  initialSliderValue: 18
 --- !u!1 &1935916348
 GameObject:
   m_ObjectHideFlags: 0
@@ -27018,6 +27016,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 497888491}
     m_Modifications:
+    - target: {fileID: 179657620234111663, guid: 8bd8f7e1fcd76fd4b8b0cf337cef6984,
+        type: 3}
+      propertyPath: splashSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 782e1453664e5a549876d86971544a5d, type: 3}
     - target: {fileID: 5945366439062732766, guid: 8bd8f7e1fcd76fd4b8b0cf337cef6984,
         type: 3}
       propertyPath: m_LocalPosition.x

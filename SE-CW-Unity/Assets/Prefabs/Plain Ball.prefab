@@ -152,6 +152,8 @@ MonoBehaviour:
   targetTag: Water
   cooldown: 1
   defaultColor: {r: 0.06787701, g: 0.8301887, b: 0.101336144, a: 1}
+  splashSound: {fileID: 8300000, guid: 782e1453664e5a549876d86971544a5d, type: 3}
+  splashVolume: 0.8
 --- !u!114 &1424325704278640315
 MonoBehaviour:
   m_ObjectHideFlags: 0
