@@ -29,6 +29,18 @@ namespace Seb.Fluid2D.Simulation
 		public float pressureMultiplier;
 		public float nearPressureMultiplier;
 		public float viscosityStrength;
+
+		[Header("Spawn Barrier Settings")]
+		[Tooltip("Temporarily contain new spawns inside an expanding circular barrier")]
+		public bool useSpawnBarrier = true;
+		[Tooltip("Extra radius added around new spawn points for the initial barrier")]
+		public float spawnBarrierPadding = 0.02f;
+		[Tooltip("How far the temporary barrier expands before being released")]
+		public float spawnBarrierExpandDistance = 0.2f;
+		[Tooltip("Expansion speed of the temporary barrier (sim units per second)")]
+		public float spawnBarrierExpandSpeed = 0.7f;
+		[Tooltip("How much outward velocity is damped at the temporary barrier")]
+		[Range(0f, 1f)] public float spawnBarrierDamping = 0.2f;
 		public Vector2 boundsSize;
 		public Vector2 obstacleSize;
 		public Vector2 obstacleCentre;
@@ -57,11 +69,13 @@ namespace Seb.Fluid2D.Simulation
 		public ComputeBuffer velocityBuffer { get; private set; }
 		public ComputeBuffer densityBuffer { get; private set; }
 		public ComputeBuffer colorBuffer { get; private set; }
+		public ComputeBuffer spawnGroupBuffer { get; private set; }
 
 		ComputeBuffer sortTarget_Position;
 		ComputeBuffer sortTarget_PredicitedPosition;
 		ComputeBuffer sortTarget_Velocity;
 		ComputeBuffer sortTarget_Color;
+		ComputeBuffer sortTarget_SpawnGroup;
 
 		ComputeBuffer predictedPositionBuffer;
 		SpatialHash spatialHash;
@@ -80,6 +94,12 @@ namespace Seb.Fluid2D.Simulation
 		bool isPaused;
 		Spawner2D.ParticleSpawnData spawnData;
 		bool pauseNextFrame;
+		bool spawnBarrierActive;
+		float2 spawnBarrierCentre;
+		float spawnBarrierCurrentRadius;
+		float spawnBarrierMaxRadius;
+		int currentSpawnGroupId;
+		int spawnBarrierGroupId;
 
 		public int numParticles { get; private set; }
 		public bool IsPaused => isPaused;
@@ -108,23 +128,31 @@ namespace Seb.Fluid2D.Simulation
 			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			colorBuffer = ComputeHelper.CreateStructuredBuffer<float4>(bufferCapacity);
+			spawnGroupBuffer = ComputeHelper.CreateStructuredBuffer<int>(bufferCapacity);
 
 			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			sortTarget_Velocity = ComputeHelper.CreateStructuredBuffer<float2>(bufferCapacity);
 			sortTarget_Color = ComputeHelper.CreateStructuredBuffer<float4>(bufferCapacity);
+			sortTarget_SpawnGroup = ComputeHelper.CreateStructuredBuffer<int>(bufferCapacity);
 
 			// Set buffer data
 			if (spawnOnStart)
 			{
+				currentSpawnGroupId = 1;
 				SetInitialBufferData(spawnData);
+				ActivateSpawnBarrier(spawnData.positions, currentSpawnGroupId);
 			}
 			else
 			{
+				currentSpawnGroupId = 0;
+				spawnBarrierGroupId = 0;
 				float2[] empty = new float2[bufferCapacity];
+				int[] emptyGroups = new int[bufferCapacity];
 				positionBuffer.SetData(empty);
 				predictedPositionBuffer.SetData(empty);
 				velocityBuffer.SetData(empty);
+				spawnGroupBuffer.SetData(emptyGroups);
 			}
 
 			// Init compute
@@ -132,6 +160,7 @@ namespace Seb.Fluid2D.Simulation
 			ComputeHelper.SetBuffer(compute, predictedPositionBuffer, "PredictedPositions", externalForcesKernel, spatialHashKernel, densityKernel, pressureKernel, viscosityKernel, reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel, reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, densityBuffer, "Densities", densityKernel, pressureKernel, viscosityKernel);
+			ComputeHelper.SetBuffer(compute, spawnGroupBuffer, "ParticleSpawnGroups", updatePositionKernel, reorderKernel, copybackKernel);
 
 			ComputeHelper.SetBuffer(compute, spatialHash.SpatialIndices, "SortedIndices", spatialHashKernel, reorderKernel);
 			ComputeHelper.SetBuffer(compute, spatialHash.SpatialOffsets, "SpatialOffsets", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
@@ -142,6 +171,7 @@ namespace Seb.Fluid2D.Simulation
 			ComputeHelper.SetBuffer(compute, sortTarget_Velocity, "SortTarget_Velocities", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, colorBuffer, "ParticleColors", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_SpawnGroup, "SortTarget_SpawnGroups", reorderKernel, copybackKernel);
 
 			compute.SetInt("numParticles", numParticles);
 		}
@@ -171,6 +201,8 @@ namespace Seb.Fluid2D.Simulation
 			{
 				return;
 			}
+
+			UpdateSpawnBarrier(frameTime);
 
 			float timeStep = frameTime / iterationsPerFrame;
 
@@ -228,6 +260,11 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetFloat("pressureMultiplier", pressureMultiplier);
 			compute.SetFloat("nearPressureMultiplier", nearPressureMultiplier);
 			compute.SetFloat("viscosityStrength", viscosityStrength);
+			compute.SetInt("spawnBarrierActive", useSpawnBarrier && spawnBarrierActive ? 1 : 0);
+			compute.SetVector("spawnBarrierCentre", new Vector4(spawnBarrierCentre.x, spawnBarrierCentre.y, 0f, 0f));
+			compute.SetFloat("spawnBarrierRadius", spawnBarrierCurrentRadius);
+			compute.SetFloat("spawnBarrierDamping", spawnBarrierDamping);
+			compute.SetInt("spawnBarrierGroupId", spawnBarrierGroupId);
 			
 			// Apply parent scale to bounds if enabled
 			Vector2 scaledBoundsSize = boundsSize;
@@ -303,6 +340,12 @@ namespace Seb.Fluid2D.Simulation
 			positionBuffer.SetData(allPoints);
 			predictedPositionBuffer.SetData(allPoints);
 			velocityBuffer.SetData(spawnData.velocities);
+			int[] groups = new int[spawnData.positions.Length];
+			for (int i = 0; i < groups.Length; i++)
+			{
+				groups[i] = currentSpawnGroupId;
+			}
+			spawnGroupBuffer.SetData(groups);
 
 			// Set colors (default to white if not provided)
 			if (spawnData.colors != null && spawnData.colors.Length > 0)
@@ -317,6 +360,53 @@ namespace Seb.Fluid2D.Simulation
 					defaultColors[i] = new float4(1, 1, 1, 1);
 				}
 				colorBuffer.SetData(defaultColors);
+			}
+		}
+
+		void ActivateSpawnBarrier(float2[] positions, int groupId)
+		{
+			if (!useSpawnBarrier || positions == null || positions.Length == 0)
+			{
+				spawnBarrierActive = false;
+				spawnBarrierGroupId = 0;
+				return;
+			}
+
+			float2 centre = float2.zero;
+			for (int i = 0; i < positions.Length; i++)
+			{
+				centre += positions[i];
+			}
+			centre /= positions.Length;
+
+			float maxSqrDist = 0;
+			for (int i = 0; i < positions.Length; i++)
+			{
+				float2 offset = positions[i] - centre;
+				maxSqrDist = Mathf.Max(maxSqrDist, math.lengthsq(offset));
+			}
+
+			float initialRadius = Mathf.Sqrt(maxSqrDist) + Mathf.Max(0, spawnBarrierPadding);
+			spawnBarrierCentre = centre;
+			spawnBarrierCurrentRadius = Mathf.Max(0.001f, initialRadius);
+			spawnBarrierMaxRadius = spawnBarrierCurrentRadius + Mathf.Max(0, spawnBarrierExpandDistance);
+			spawnBarrierGroupId = groupId;
+			spawnBarrierActive = spawnBarrierMaxRadius > spawnBarrierCurrentRadius;
+		}
+
+		void UpdateSpawnBarrier(float frameTime)
+		{
+			if (!useSpawnBarrier || !spawnBarrierActive)
+			{
+				return;
+			}
+
+			spawnBarrierCurrentRadius += Mathf.Max(0, spawnBarrierExpandSpeed) * frameTime;
+			if (spawnBarrierCurrentRadius >= spawnBarrierMaxRadius)
+			{
+				spawnBarrierCurrentRadius = spawnBarrierMaxRadius;
+				spawnBarrierActive = false;
+				spawnBarrierGroupId = 0;
 			}
 		}
 
@@ -337,7 +427,9 @@ namespace Seb.Fluid2D.Simulation
 			{
 				isPaused = true;
 				// Reset positions, the run single frame to get density etc (for debug purposes) and then reset positions again
+				currentSpawnGroupId = Mathf.Max(1, currentSpawnGroupId);
 				SetInitialBufferData(spawnData);
+				ActivateSpawnBarrier(spawnData.positions, currentSpawnGroupId);
 				RunSimulationStep();
 				SetInitialBufferData(spawnData);
 			}
@@ -369,19 +461,25 @@ namespace Seb.Fluid2D.Simulation
 				offsetPositions[i] = spawnData.positions[i] + offset;
 			}
 
+			int newSpawnGroupId = ++currentSpawnGroupId;
+			ActivateSpawnBarrier(offsetPositions, newSpawnGroupId);
+
 			// Store current particle data
 			var oldPositions = new float2[numParticles];
 			var oldVelocities = new float2[numParticles];
 			var oldColors = new float4[numParticles];
+			var oldGroups = new int[numParticles];
 			positionBuffer.GetData(oldPositions);
 			velocityBuffer.GetData(oldVelocities);
 			colorBuffer.GetData(oldColors);
+			spawnGroupBuffer.GetData(oldGroups);
 
 			// Create new arrays with combined size
 			int newParticleCount = numParticles + additionalCount;
 			var allPositions = new float2[newParticleCount];
 			var allVelocities = new float2[newParticleCount];
 			var allColors = new float4[newParticleCount];
+			var allGroups = new int[newParticleCount];
 
 			// Copy old and new data
 			System.Array.Copy(oldPositions, allPositions, numParticles);
@@ -389,6 +487,11 @@ namespace Seb.Fluid2D.Simulation
 			System.Array.Copy(oldVelocities, allVelocities, numParticles);
 			System.Array.Copy(spawnData.velocities, 0, allVelocities, numParticles, spawnData.velocities.Length);
 			System.Array.Copy(oldColors, allColors, numParticles);
+			System.Array.Copy(oldGroups, allGroups, numParticles);
+			for (int i = numParticles; i < newParticleCount; i++)
+			{
+				allGroups[i] = newSpawnGroupId;
+			}
 			// Copy new colors (default to white if not provided)
 			if (spawnData.colors != null && spawnData.colors.Length > 0)
 			{
@@ -403,7 +506,7 @@ namespace Seb.Fluid2D.Simulation
 			}
 
 			// Release old buffers
-			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, colorBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition, sortTarget_Color);
+			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, colorBuffer, spawnGroupBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition, sortTarget_Color, sortTarget_SpawnGroup);
 			spatialHash.Release();
 
 			// Update particle count and re-initialize buffers and spatial hash
@@ -416,22 +519,26 @@ namespace Seb.Fluid2D.Simulation
 			velocityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			densityBuffer = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			colorBuffer = ComputeHelper.CreateStructuredBuffer<float4>(numParticles);
+			spawnGroupBuffer = ComputeHelper.CreateStructuredBuffer<int>(numParticles);
 			sortTarget_Position = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			sortTarget_PredicitedPosition = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			sortTarget_Velocity = ComputeHelper.CreateStructuredBuffer<float2>(numParticles);
 			sortTarget_Color = ComputeHelper.CreateStructuredBuffer<float4>(numParticles);
+			sortTarget_SpawnGroup = ComputeHelper.CreateStructuredBuffer<int>(numParticles);
 
 			// Set data on new buffers
 			positionBuffer.SetData(allPositions);
 			predictedPositionBuffer.SetData(allPositions);
 			velocityBuffer.SetData(allVelocities);
 			colorBuffer.SetData(allColors);
+			spawnGroupBuffer.SetData(allGroups);
 
 			// Re-bind all buffers to the compute shader
 			ComputeHelper.SetBuffer(compute, positionBuffer, "Positions", externalForcesKernel, updatePositionKernel, reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, predictedPositionBuffer, "PredictedPositions", externalForcesKernel, spatialHashKernel, densityKernel, pressureKernel, viscosityKernel, reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, velocityBuffer, "Velocities", externalForcesKernel, pressureKernel, viscosityKernel, updatePositionKernel, reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, densityBuffer, "Densities", densityKernel, pressureKernel, viscosityKernel);
+			ComputeHelper.SetBuffer(compute, spawnGroupBuffer, "ParticleSpawnGroups", updatePositionKernel, reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, spatialHash.SpatialIndices, "SortedIndices", spatialHashKernel, reorderKernel);
 			ComputeHelper.SetBuffer(compute, spatialHash.SpatialOffsets, "SpatialOffsets", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
 			ComputeHelper.SetBuffer(compute, spatialHash.SpatialKeys, "SpatialKeys", spatialHashKernel, densityKernel, pressureKernel, viscosityKernel);
@@ -440,6 +547,7 @@ namespace Seb.Fluid2D.Simulation
 			ComputeHelper.SetBuffer(compute, sortTarget_Velocity, "SortTarget_Velocities", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, colorBuffer, "ParticleColors", reorderKernel, copybackKernel);
 			ComputeHelper.SetBuffer(compute, sortTarget_Color, "SortTarget_Colors", reorderKernel, copybackKernel);
+			ComputeHelper.SetBuffer(compute, sortTarget_SpawnGroup, "SortTarget_SpawnGroups", reorderKernel, copybackKernel);
 
 			compute.SetInt("numParticles", numParticles);
 		}
@@ -452,6 +560,8 @@ namespace Seb.Fluid2D.Simulation
 			// Store empty data
 			numParticles = 0;
 			compute.SetInt("numParticles", numParticles);
+			spawnBarrierActive = false;
+			spawnBarrierGroupId = 0;
 
 			Debug.Log("[FluidSim2D] All particles cleared.");
 		}
@@ -481,7 +591,7 @@ namespace Seb.Fluid2D.Simulation
 
 		void OnDestroy()
 		{
-			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, colorBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition, sortTarget_Color);
+			ComputeHelper.Release(positionBuffer, predictedPositionBuffer, velocityBuffer, densityBuffer, colorBuffer, spawnGroupBuffer, sortTarget_Position, sortTarget_Velocity, sortTarget_PredicitedPosition, sortTarget_Color, sortTarget_SpawnGroup);
 			spatialHash.Release();
 		}
 

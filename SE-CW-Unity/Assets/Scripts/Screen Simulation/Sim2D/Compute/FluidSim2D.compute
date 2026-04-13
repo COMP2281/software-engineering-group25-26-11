@@ -18,6 +18,7 @@ RWStructuredBuffer<float2> Positions;
 RWStructuredBuffer<float2> PredictedPositions;
 RWStructuredBuffer<float2> Velocities;
 RWStructuredBuffer<float2> Densities; // Density, Near Density
+RWStructuredBuffer<uint> ParticleSpawnGroups;
 
 // Spatial hashing
 RWStructuredBuffer<uint> SpatialKeys;
@@ -34,6 +35,11 @@ const float targetDensity;
 const float pressureMultiplier;
 const float nearPressureMultiplier;
 const float viscosityStrength;
+const int spawnBarrierActive;
+const float2 spawnBarrierCentre;
+const float spawnBarrierRadius;
+const float spawnBarrierDamping;
+const int spawnBarrierGroupId;
 const float2 boundsSize;
 const float2 interactionInputPoint;
 const float interactionInputStrength;
@@ -180,6 +186,24 @@ void HandleCollisions(uint particleIndex)
 		}
 	}
 
+	if (spawnBarrierActive != 0 && (int)ParticleSpawnGroups[particleIndex] == spawnBarrierGroupId)
+	{
+		float2 toParticle = pos - spawnBarrierCentre;
+		float dist = length(toParticle);
+		if (dist > spawnBarrierRadius)
+		{
+			float2 normal = dist > 1e-6 ? toParticle / dist : float2(1, 0);
+			pos = spawnBarrierCentre + normal * spawnBarrierRadius;
+
+			float outwardSpeed = dot(vel, normal);
+			if (outwardSpeed > 0)
+			{
+				float clampedDamping = saturate(spawnBarrierDamping);
+				vel -= normal * outwardSpeed * (1 + clampedDamping);
+			}
+		}
+	}
+
 	// Update position and velocity
 	Positions[particleIndex] = pos;
 	Velocities[particleIndex] = vel;
@@ -215,6 +239,7 @@ RWStructuredBuffer<float2> SortTarget_PredictedPositions;
 RWStructuredBuffer<float2> SortTarget_Velocities;
 RWStructuredBuffer<float4> ParticleColors;
 RWStructuredBuffer<float4> SortTarget_Colors;
+RWStructuredBuffer<uint> SortTarget_SpawnGroups;
 
 [numthreads(NumThreads,1,1)]
 void Reorder (uint3 id : SV_DispatchThreadID)
@@ -226,6 +251,7 @@ void Reorder (uint3 id : SV_DispatchThreadID)
 	SortTarget_PredictedPositions[id.x] = PredictedPositions[sortedIndex];
 	SortTarget_Velocities[id.x] = Velocities[sortedIndex];
 	SortTarget_Colors[id.x] = ParticleColors[sortedIndex];
+	SortTarget_SpawnGroups[id.x] = ParticleSpawnGroups[sortedIndex];
 }
 
 
@@ -238,6 +264,7 @@ void ReorderCopyback (uint3 id : SV_DispatchThreadID)
 	PredictedPositions[id.x] = SortTarget_PredictedPositions[id.x];
 	Velocities[id.x] = SortTarget_Velocities[id.x];
 	ParticleColors[id.x] = SortTarget_Colors[id.x];
+	ParticleSpawnGroups[id.x] = SortTarget_SpawnGroups[id.x];
 }
 
 
