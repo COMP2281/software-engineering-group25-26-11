@@ -10912,7 +10912,7 @@ MonoBehaviour:
     size: {x: 1, y: 1}
     debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
   showSpawnBoundsGizmos: 1
-  spawnParticleCount: 169
+  spawnParticleCount: 159
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10926,12 +10926,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldOffset: {x: 0, y: 0, z: -0.01}
-  worldScale: 1
+  worldScale: 0.5
   scaleByParent: 1
   spawnOnStart: 0
   timeScale: 0.2
   maxTimestepFPS: 60
   iterationsPerFrame: 30
+  maxIterationsSafetyCap: 40
   gravity: 0
   gravityDir: {x: 0, y: -1}
   collisionDamping: 0.08
@@ -10939,8 +10940,12 @@ MonoBehaviour:
   targetDensity: 45
   pressureMultiplier: 320
   nearPressureMultiplier: 6.4
+  clampNegativePressure: 1
+  maxPressureAcceleration: 300
+  maxVelocity: 25
+  maxNeighbourChecksPerCell: 512
   viscosityStrength: 10
-  boundsSize: {x: 1, y: 1}
+  boundsSize: {x: 2, y: 2}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}
   interactionPlane: {fileID: 1666421594}

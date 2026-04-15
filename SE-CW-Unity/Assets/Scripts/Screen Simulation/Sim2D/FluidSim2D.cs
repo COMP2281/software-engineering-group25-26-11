@@ -21,6 +21,8 @@ namespace Seb.Fluid2D.Simulation
 		public float timeScale = 1;
 		public float maxTimestepFPS = 60; // if time-step dips lower than this fps, simulation will run slower (set to 0 to disable)
 		public int iterationsPerFrame;
+		[Tooltip("Hard safety cap for simulation sub-steps each frame (prevents GPU overload)")]
+		[Range(1, 200)] public int maxIterationsSafetyCap = 40;
 		public float gravity;
 		public Vector2 gravityDir = new Vector2(0, -1);
 		[Range(0, 1)] public float collisionDamping = 0.95f;
@@ -28,6 +30,15 @@ namespace Seb.Fluid2D.Simulation
 		public float targetDensity;
 		public float pressureMultiplier;
 		public float nearPressureMultiplier;
+		[Tooltip("Prevents negative pressure (tensile attraction) to improve stability at high target density")]
+		public bool clampNegativePressure = true;
+		[Header("Stability Guards")]
+		[Tooltip("Caps pressure acceleration per sub-step to prevent blow-ups")]
+		public float maxPressureAcceleration = 300f;
+		[Tooltip("Caps particle speed to keep simulation numerically stable")]
+		public float maxVelocity = 25f;
+		[Tooltip("Maximum neighbors scanned per cell in compute kernels (lower = safer, faster)")]
+		[Range(16, 2048)] public int maxNeighbourChecksPerCell = 512;
 		public float viscosityStrength;
 		public Vector2 boundsSize;
 		public Vector2 obstacleSize;
@@ -153,6 +164,10 @@ namespace Seb.Fluid2D.Simulation
 			{
 				float maxDeltaTime = maxTimestepFPS > 0 ? 1 / maxTimestepFPS : float.PositiveInfinity; // If framerate dips too low, run the simulation slower than real-time
 				float dt = Mathf.Min(Time.deltaTime * timeScale, maxDeltaTime);
+				if (!float.IsFinite(dt) || dt <= 0f)
+				{
+					return;
+				}
 				RunSimulationFrame(dt);
 			}
 
@@ -172,11 +187,17 @@ namespace Seb.Fluid2D.Simulation
 				return;
 			}
 
-			float timeStep = frameTime / iterationsPerFrame;
+			int maxIterations = Mathf.Max(1, maxIterationsSafetyCap);
+			int iterations = Mathf.Clamp(iterationsPerFrame, 1, maxIterations);
+			float timeStep = frameTime / iterations;
+			if (!float.IsFinite(timeStep) || timeStep <= 0f)
+			{
+				return;
+			}
 
 			UpdateSettings(timeStep);
 
-			for (int i = 0; i < iterationsPerFrame; i++)
+			for (int i = 0; i < iterations; i++)
 			{
 				RunSimulationStep();
 				SimulationStepCompleted?.Invoke();
@@ -220,13 +241,16 @@ namespace Seb.Fluid2D.Simulation
 			Vector2 g = gravityDir.normalized * gravity;
 			compute.SetVector("gravityVec", new Vector4(g.x, g.y, 0f, 0f));
 
+			float safeSmoothingRadius = Mathf.Max(smoothingRadius, 0.01f);
 			compute.SetFloat("collisionDamping", collisionDamping);
-			compute.SetFloat("smoothingRadius", smoothingRadius);
-			compute.SetFloat("collisionDamping", collisionDamping);
-			compute.SetFloat("smoothingRadius", smoothingRadius);
+			compute.SetFloat("smoothingRadius", safeSmoothingRadius);
 			compute.SetFloat("targetDensity", targetDensity);
 			compute.SetFloat("pressureMultiplier", pressureMultiplier);
 			compute.SetFloat("nearPressureMultiplier", nearPressureMultiplier);
+			compute.SetFloat("clampNegativePressure", clampNegativePressure ? 1f : 0f);
+			compute.SetFloat("maxPressureAcceleration", Mathf.Max(0f, maxPressureAcceleration));
+			compute.SetFloat("maxVelocity", Mathf.Max(0f, maxVelocity));
+			compute.SetInt("maxNeighbourChecksPerCell", Mathf.Max(16, maxNeighbourChecksPerCell));
 			compute.SetFloat("viscosityStrength", viscosityStrength);
 			
 			// Apply parent scale to bounds if enabled
@@ -244,11 +268,11 @@ namespace Seb.Fluid2D.Simulation
 			compute.SetVector("worldOffset", new Vector4(worldOffset.x, worldOffset.y, worldOffset.z, 0f));
         	compute.SetFloat("worldScale", worldScale);
 
-			compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(smoothingRadius, 8)));
-			compute.SetFloat("SpikyPow3ScalingFactor", 10 / (Mathf.PI * Mathf.Pow(smoothingRadius, 5)));
-			compute.SetFloat("SpikyPow2ScalingFactor", 6 / (Mathf.PI * Mathf.Pow(smoothingRadius, 4)));
-			compute.SetFloat("SpikyPow3DerivativeScalingFactor", 30 / (Mathf.Pow(smoothingRadius, 5) * Mathf.PI));
-			compute.SetFloat("SpikyPow2DerivativeScalingFactor", 12 / (Mathf.Pow(smoothingRadius, 4) * Mathf.PI));
+			compute.SetFloat("Poly6ScalingFactor", 4 / (Mathf.PI * Mathf.Pow(safeSmoothingRadius, 8)));
+			compute.SetFloat("SpikyPow3ScalingFactor", 10 / (Mathf.PI * Mathf.Pow(safeSmoothingRadius, 5)));
+			compute.SetFloat("SpikyPow2ScalingFactor", 6 / (Mathf.PI * Mathf.Pow(safeSmoothingRadius, 4)));
+			compute.SetFloat("SpikyPow3DerivativeScalingFactor", 30 / (Mathf.Pow(safeSmoothingRadius, 5) * Mathf.PI));
+			compute.SetFloat("SpikyPow2DerivativeScalingFactor", 12 / (Mathf.Pow(safeSmoothingRadius, 4) * Mathf.PI));
 
 			// Interaction settings - prioritize external (VR hand) over mouse
 			Vector2 interactionPoint = Vector2.zero;
