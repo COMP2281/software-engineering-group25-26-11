@@ -3018,7 +3018,7 @@ MonoBehaviour:
   sensitivitySlider: {fileID: 1287353233}
   valueText: {fileID: 938081503}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 60
+  initialSliderValue: 10
 --- !u!1 &194058326
 GameObject:
   m_ObjectHideFlags: 0
@@ -10283,9 +10283,9 @@ MonoBehaviour:
   widthSlider: {fileID: 1291853181}
   defaultBrushWidth: 10
   defaultPaintballDensity: 50
-  defaultFluidity: 90
-  defaultPaintSpeed: 50
-  defaultSensitivity: 60
+  defaultFluidity: 75
+  defaultPaintSpeed: 20
+  defaultSensitivity: 10
   defaultHeight: 35
   defaultWidth: 80
   resetButton: {fileID: 0}
@@ -10912,7 +10912,7 @@ MonoBehaviour:
     size: {x: 1, y: 1}
     debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
   showSpawnBoundsGizmos: 1
-  spawnParticleCount: 169
+  spawnParticleCount: 159
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10930,13 +10930,13 @@ MonoBehaviour:
   scaleByParent: 1
   spawnOnStart: 0
   timeScale: 0.2
-  maxTimestepFPS: 60
-  iterationsPerFrame: 30
+  maxTimestepFPS: 40
+  iterationsPerFrame: 20
   gravity: 0
   gravityDir: {x: 0, y: -1}
-  collisionDamping: 0.08
-  smoothingRadius: 0.4128182
-  targetDensity: 45
+  collisionDamping: 0.5
+  smoothingRadius: 0.164169
+  targetDensity: 200
   pressureMultiplier: 320
   nearPressureMultiplier: 6.4
   viscosityStrength: 10
@@ -10945,7 +10945,7 @@ MonoBehaviour:
   obstacleCentre: {x: 0, y: 0}
   interactionPlane: {fileID: 1666421594}
   interactionRadius: 0.5
-  interactionStrength: 130
+  interactionStrength: 300
   hasExternalInteraction: 0
   externalInteractionPoint: {x: 0, y: 0}
   externalInteractionStrength: 0
@@ -17430,7 +17430,7 @@ MonoBehaviour:
   radiusSlider: {fileID: 1308686014}
   valueText: {fileID: 238475291}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 90
+  initialSliderValue: 75
 --- !u!1 &1484766179
 GameObject:
   m_ObjectHideFlags: 0
@@ -17583,7 +17583,7 @@ MonoBehaviour:
   timeScaleSlider: {fileID: 915599776}
   valueText: {fileID: 370580193}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 50
+  initialSliderValue: 20
 --- !u!1 &1490149347
 GameObject:
   m_ObjectHideFlags: 0
