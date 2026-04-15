@@ -10281,9 +10281,9 @@ MonoBehaviour:
   sensitivitySlider: {fileID: 1287353233}
   heightSlider: {fileID: 401389993}
   widthSlider: {fileID: 1291853181}
-  defaultBrushWidth: 40
-  defaultPaintballDensity: 18
-  defaultFluidity: 20
+  defaultBrushWidth: 10
+  defaultPaintballDensity: 50
+  defaultFluidity: 90
   defaultPaintSpeed: 50
   defaultSensitivity: 60
   defaultHeight: 35
@@ -10912,7 +10912,7 @@ MonoBehaviour:
     size: {x: 1, y: 1}
     debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
   showSpawnBoundsGizmos: 1
-  spawnParticleCount: 159
+  spawnParticleCount: 169
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14177,7 +14177,7 @@ MonoBehaviour:
   radiusSlider: {fileID: 322527919}
   valueText: {fileID: 2139304244}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 40
+  initialSliderValue: 10
 --- !u!114 &1119764031
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17430,7 +17430,7 @@ MonoBehaviour:
   radiusSlider: {fileID: 1308686014}
   valueText: {fileID: 238475291}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 20
+  initialSliderValue: 90
 --- !u!1 &1484766179
 GameObject:
   m_ObjectHideFlags: 0
@@ -23225,7 +23225,7 @@ MonoBehaviour:
   densitySlider: {fileID: 590807803}
   valueText: {fileID: 772996932}
   spawner: {fileID: 865727573}
-  initialSliderValue: 18
+  initialSliderValue: 50
 --- !u!1 &1935916348
 GameObject:
   m_ObjectHideFlags: 0
