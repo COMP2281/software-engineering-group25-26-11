@@ -10282,7 +10282,7 @@ MonoBehaviour:
   heightSlider: {fileID: 401389993}
   widthSlider: {fileID: 1291853181}
   defaultBrushWidth: 10
-  defaultPaintballDensity: 50
+  defaultPaintballDensity: 30
   defaultFluidity: 75
   defaultPaintSpeed: 20
   defaultSensitivity: 10
@@ -10902,7 +10902,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 895837b52d5fc53409ded3589d4da696, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnDensity: 159
+  spawnDensity: 328.2828
   initialVelocity: {x: 0, y: 0}
   jitterStr: 0.03
   clumpScale: 1
@@ -10912,7 +10912,7 @@ MonoBehaviour:
     size: {x: 1, y: 1}
     debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
   showSpawnBoundsGizmos: 1
-  spawnParticleCount: 159
+  spawnParticleCount: 329
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23225,7 +23225,7 @@ MonoBehaviour:
   densitySlider: {fileID: 590807803}
   valueText: {fileID: 772996932}
   spawner: {fileID: 865727573}
-  initialSliderValue: 50
+  initialSliderValue: 30
 --- !u!1 &1935916348
 GameObject:
   m_ObjectHideFlags: 0
