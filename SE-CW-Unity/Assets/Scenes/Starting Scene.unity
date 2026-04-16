@@ -10939,7 +10939,7 @@ MonoBehaviour:
   targetDensity: 300
   pressureMultiplier: 320
   nearPressureMultiplier: 6.4
-  viscosityStrength: 0
+  viscosityStrength: 2
   boundsSize: {x: 1, y: 1}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}

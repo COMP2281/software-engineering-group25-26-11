@@ -4,6 +4,14 @@ using TMPro;
 
 public class SpawnDensitySlider : MonoBehaviour
 {
+    const float SliderMin = 1f;
+    const float SliderMax = 100f;
+    const float DensityMin = 50f;
+    const float DensityMax = 1000f;
+    const float ClumpScaleAtSliderMin = 0.5f;
+    const float ClumpScaleAtSlider30 = 1.2f;
+    const float ClumpScaleAtSliderMax = 2f;
+
     [Header("References")]
     [Tooltip("The slider controlling spawn density (range 1-100)")]
     public Slider densitySlider;
@@ -23,8 +31,8 @@ public class SpawnDensitySlider : MonoBehaviour
         // Configure slider
         if (densitySlider != null)
         {
-            densitySlider.minValue = 1f;
-            densitySlider.maxValue = 100f;
+            densitySlider.minValue = SliderMin;
+            densitySlider.maxValue = SliderMax;
             densitySlider.value = initialSliderValue;
             densitySlider.onValueChanged.AddListener(OnSliderChanged);
         }
@@ -45,17 +53,32 @@ public class SpawnDensitySlider : MonoBehaviour
     /// Updates the spawn density based on slider value
     /// Slider range: 1-100
     /// Density range: 50-1000
-    /// Linear interpolation between min and max density
+    /// Clump scale: 0.4 at slider 1, 1.15 at slider 30, 2.0 at slider 100
     /// </summary>
     private void UpdateSpawnDensity(float sliderValue)
     {
         // Convert slider value (1-100) to spawn density (50-1000)
-        float density = Mathf.Lerp(50f, 1000f, (sliderValue - 1f) / 99f);
+        float densityT = Mathf.InverseLerp(SliderMin, SliderMax, sliderValue);
+        float density = Mathf.Lerp(DensityMin, DensityMax, densityT);
+
+        // Full-range clump mapping while preserving requested anchor points at slider 1 and 30.
+        float clumpScale;
+        if (sliderValue <= 30f)
+        {
+            float clumpT = Mathf.InverseLerp(SliderMin, 30f, sliderValue);
+            clumpScale = Mathf.Lerp(ClumpScaleAtSliderMin, ClumpScaleAtSlider30, clumpT);
+        }
+        else
+        {
+            float clumpT = Mathf.InverseLerp(30f, SliderMax, sliderValue);
+            clumpScale = Mathf.Lerp(ClumpScaleAtSlider30, ClumpScaleAtSliderMax, clumpT);
+        }
 
         // Update Spawner2D spawn density
         if (spawner != null)
         {
             spawner.spawnDensity = density;
+            spawner.clumpScale = clumpScale;
         }
         else
         {
@@ -68,7 +91,7 @@ public class SpawnDensitySlider : MonoBehaviour
             valueText.text = sliderValue.ToString("F0");
         }
 
-        Debug.Log($"Spawn density updated: slider={sliderValue}, density={density:F1}");
+        Debug.Log($"Spawn settings updated: slider={sliderValue}, density={density:F1}, clumpScale={clumpScale:F2}");
     }
 
     /// <summary>
@@ -87,7 +110,7 @@ public class SpawnDensitySlider : MonoBehaviour
     /// </summary>
     public void SetSliderValue(float value)
     {
-        if (densitySlider != null && value >= 1f && value <= 100f)
+        if (densitySlider != null && value >= SliderMin && value <= SliderMax)
         {
             densitySlider.value = value;
         }
@@ -99,7 +122,7 @@ public class SpawnDensitySlider : MonoBehaviour
     public void SetDensity(float density)
     {
         // Convert density (50-1000) back to slider value (1-100)
-        float sliderValue = Mathf.Lerp(1f, 100f, (density - 50f) / 950f);
+        float sliderValue = Mathf.Lerp(SliderMin, SliderMax, (density - DensityMin) / (DensityMax - DensityMin));
         SetSliderValue(sliderValue);
     }
 }
