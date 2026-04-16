@@ -236,7 +236,21 @@ public class SpawnOnContact : MonoBehaviour
 
         Vector3 samplePoint = other.ClosestPoint(transform.position);
         Vector2 localSpawn = currentSim.WorldToSimLocal(samplePoint);
-        currentSim.SpawnParticles(currentSim.spawner2D.GetSpawnData(color), localSpawn);
+
+        // Recenter generated spawn points so contact spawns are centered on the hit point.
+        Spawner2D.ParticleSpawnData spawnData = currentSim.spawner2D.GetSpawnData(color);
+        Spawner2D.SpawnRegion[] regions = currentSim.spawner2D.spawnRegions;
+        for (int i = 0; i < spawnData.positions.Length; i++)
+        {
+            int regionIndex = spawnData.spawnIndices[i];
+            if (regionIndex >= 0 && regionIndex < regions.Length)
+            {
+                Vector2 regionPos = regions[regionIndex].position;
+                spawnData.positions[i] -= new float2(regionPos.x, regionPos.y);
+            }
+        }
+
+        currentSim.SpawnParticles(spawnData, localSpawn);
         lastSpawnTime = Time.time;
 
         RippleEffect.Instance.RippleAtPoint(samplePoint);

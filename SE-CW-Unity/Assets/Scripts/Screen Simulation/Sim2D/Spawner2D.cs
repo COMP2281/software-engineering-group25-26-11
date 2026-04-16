@@ -71,32 +71,36 @@ public class Spawner2D : MonoBehaviour
 	{
 		// Centre is region offset (local space)
 		Vector2 centre = region.position;
-		Vector2 size = region.size * clumpScale; // Apply clump scale to make tighter spawn
+		float circleRadius = GetCircleRadius(region.size) * clumpScale;
 
 		int pointCount = CalculateSpawnCount(region.size, spawnDensity);
 		List<float2> points = new(pointCount);
 
-		float radiusX = size.x * 0.5f;
-		float radiusY = size.y * 0.5f;
 		float goldenAngle = 2.39996323f;
 
 		for (int i = 0; i < pointCount; i++)
 		{
 			float t = (i + 0.5f) / pointCount;
-			float radius = Mathf.Sqrt(t);
+			float radialDistance = Mathf.Sqrt(t) * circleRadius;
 			float angle = i * goldenAngle;
-			float px = centre.x + Mathf.Cos(angle) * radius * radiusX;
-			float py = centre.y + Mathf.Sin(angle) * radius * radiusY;
+			float px = centre.x + Mathf.Cos(angle) * radialDistance;
+			float py = centre.y + Mathf.Sin(angle) * radialDistance;
 			points.Add(new float2(px, py));
 		}
 
 		return points.ToArray();
 	}
 
+	static float GetCircleRadius(Vector2 size)
+	{
+		return Mathf.Max(0f, Mathf.Min(size.x, size.y) * 0.5f);
+	}
+
 
 	static int CalculateSpawnCount(Vector2 size, float spawnDensity)
 	{
-		float area = size.x * size.y;
+		float radius = GetCircleRadius(size);
+		float area = Mathf.PI * radius * radius;
 		return Mathf.Max(1, Mathf.CeilToInt(area * spawnDensity));
 	}
 
@@ -140,7 +144,8 @@ public class Spawner2D : MonoBehaviour
 			foreach (SpawnRegion region in spawnRegions)
 			{
 				Gizmos.color = region.debugCol;
-				Gizmos.DrawWireCube((Vector2)transform.position + region.position, region.size);
+				float radius = GetCircleRadius(region.size) * clumpScale;
+				Gizmos.DrawWireSphere((Vector2)transform.position + region.position, radius);
 
 			}
 		}

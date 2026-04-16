@@ -10283,7 +10283,7 @@ MonoBehaviour:
   widthSlider: {fileID: 1291853181}
   defaultBrushWidth: 10
   defaultPaintballDensity: 30
-  defaultFluidity: 75
+  defaultFluidity: 90
   defaultPaintSpeed: 20
   defaultSensitivity: 10
   defaultHeight: 35
@@ -10905,14 +10905,14 @@ MonoBehaviour:
   spawnDensity: 328.2828
   initialVelocity: {x: 0, y: 0}
   jitterStr: 0.03
-  clumpScale: 1
-  spawnVelocityScale: 0.2
+  clumpScale: 1.19
+  spawnVelocityScale: 0
   spawnRegions:
   - position: {x: 0, y: 0.66}
     size: {x: 1, y: 1}
     debugCol: {r: 0.031372517, g: 0.061032016, b: 0.972549, a: 0}
   showSpawnBoundsGizmos: 1
-  spawnParticleCount: 329
+  spawnParticleCount: 258
 --- !u!114 &865727574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10936,15 +10936,15 @@ MonoBehaviour:
   gravityDir: {x: 0, y: -1}
   collisionDamping: 0.5
   smoothingRadius: 0.164169
-  targetDensity: 200
+  targetDensity: 300
   pressureMultiplier: 320
   nearPressureMultiplier: 6.4
-  viscosityStrength: 10
+  viscosityStrength: 0
   boundsSize: {x: 1, y: 1}
   obstacleSize: {x: 0, y: 0}
   obstacleCentre: {x: 0, y: 0}
   interactionPlane: {fileID: 1666421594}
-  interactionRadius: 0.5
+  interactionRadius: 0.1
   interactionStrength: 300
   hasExternalInteraction: 0
   externalInteractionPoint: {x: 0, y: 0}
@@ -17430,7 +17430,7 @@ MonoBehaviour:
   radiusSlider: {fileID: 1308686014}
   valueText: {fileID: 238475291}
   fluidSimulation: {fileID: 865727574}
-  initialSliderValue: 75
+  initialSliderValue: 90
 --- !u!1 &1484766179
 GameObject:
   m_ObjectHideFlags: 0
