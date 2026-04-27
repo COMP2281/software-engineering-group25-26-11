@@ -4,71 +4,46 @@ namespace StableFluids.Marbling {
 
 public sealed class MarblingController : MonoBehaviour
 {
-    #region Public properties
-
     [field:SerializeField] public float PointForce { get; set; } = 300;
     [field:SerializeField] public float PointFalloff { get; set; } = 200;
 
-    // --- NEW: Public properties for VR injection ---
-    public Vector2 Position { get; set; }
-    public Vector2 Velocity { get; set; }
-    public bool LeftPressed { get; set; }
-    public bool RightPressed { get; set; }
+    // --- Separate Slots for Dual Hand Interaction ---
+    public Vector2 ForcePosition { get; set; }
+    public Vector2 ForceVelocity { get; set; }
+    public bool IsApplyingForce { get; set; }
 
-    #endregion
-
-    #region Editable attributes
+    public Vector2 ColorPosition { get; set; }
+    public bool IsApplyingColor { get; set; }
 
     [SerializeField] RenderTexture _colorInjection = null;
     [SerializeField] RenderTexture _forceField = null;
-
-    #endregion
-
-    #region Project asset references
-
-    [SerializeField] Shader _shader = null;
-
-    #endregion
-
-    #region Private members
+    [SerializeField, HideInInspector] Shader _shader = null;
 
     Material _material;
 
-    #endregion
-
-    #region MonoBehaviour implementation
-
     void Start()
     {
-        // Removed the old MarblingInputHandler initialization
-
         _material = new Material(_shader);
         _material.SetFloat("_Aspect", (float)_forceField.width / _forceField.height);
-
         Graphics.Blit(Texture2D.blackTexture, _colorInjection);
         Graphics.Blit(Texture2D.blackTexture, _forceField);
     }
 
-    void OnDestroy()
-      => Destroy(_material);
+    void OnDestroy() => Destroy(_material);
 
     void Update()
     {
-        // Removed _input.Update();
         UpdateColorInjection();
         UpdateForceField();
     }
 
-    #endregion
-
-    #region Update methods
-
     void UpdateColorInjection()
     {
-        if (RightPressed)
+        if (IsApplyingColor)
         {
-            _material.color = Color.HSVToRGB(Time.time % 1, 1, 1);
-            _material.SetVector("_Origin", Position);
+            // HARDCODED RED
+            _material.color = Color.red; 
+            _material.SetVector("_Origin", ColorPosition);
             _material.SetFloat("_Falloff", PointFalloff);
             Graphics.Blit(null, _colorInjection, _material, 0);
         }
@@ -80,29 +55,18 @@ public sealed class MarblingController : MonoBehaviour
 
     void UpdateForceField()
     {
-        if (RightPressed)
+        if (IsApplyingForce)
         {
-            BlitToForceField(Random.insideUnitCircle * PointForce * 0.025f);
-        }
-        else if (LeftPressed)
-        {
-            BlitToForceField(Velocity * PointForce);
+            _material.SetVector("_Origin", ForcePosition);
+            _material.SetFloat("_Falloff", PointFalloff);
+            _material.SetVector("_Force", ForceVelocity * PointForce);
+            Graphics.Blit(null, _forceField, _material, 1);
         }
         else
         {
             Graphics.Blit(Texture2D.blackTexture, _forceField);
         }
     }
-
-    void BlitToForceField(Vector2 force)
-    {
-        _material.SetVector("_Origin", Position);
-        _material.SetFloat("_Falloff", PointFalloff);
-        _material.SetVector("_Force", force);
-        Graphics.Blit(null, _forceField, _material, 1);
-    }
-
-    #endregion
 }
 
 } // namespace StableFluids.Marbling
