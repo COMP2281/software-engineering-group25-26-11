@@ -9,6 +9,12 @@ public sealed class MarblingController : MonoBehaviour
     [field:SerializeField] public float PointForce { get; set; } = 300;
     [field:SerializeField] public float PointFalloff { get; set; } = 200;
 
+    // --- NEW: Public properties for VR injection ---
+    public Vector2 Position { get; set; }
+    public Vector2 Velocity { get; set; }
+    public bool LeftPressed { get; set; }
+    public bool RightPressed { get; set; }
+
     #endregion
 
     #region Editable attributes
@@ -20,13 +26,12 @@ public sealed class MarblingController : MonoBehaviour
 
     #region Project asset references
 
-    [SerializeField, HideInInspector] Shader _shader = null;
+    [SerializeField] Shader _shader = null;
 
     #endregion
 
     #region Private members
 
-    MarblingInputHandler _input;
     Material _material;
 
     #endregion
@@ -35,7 +40,7 @@ public sealed class MarblingController : MonoBehaviour
 
     void Start()
     {
-        _input = new MarblingInputHandler(_colorInjection);
+        // Removed the old MarblingInputHandler initialization
 
         _material = new Material(_shader);
         _material.SetFloat("_Aspect", (float)_forceField.width / _forceField.height);
@@ -49,7 +54,7 @@ public sealed class MarblingController : MonoBehaviour
 
     void Update()
     {
-        _input.Update();
+        // Removed _input.Update();
         UpdateColorInjection();
         UpdateForceField();
     }
@@ -60,10 +65,10 @@ public sealed class MarblingController : MonoBehaviour
 
     void UpdateColorInjection()
     {
-        if (_input.RightPressed)
+        if (RightPressed)
         {
             _material.color = Color.HSVToRGB(Time.time % 1, 1, 1);
-            _material.SetVector("_Origin", _input.Position);
+            _material.SetVector("_Origin", Position);
             _material.SetFloat("_Falloff", PointFalloff);
             Graphics.Blit(null, _colorInjection, _material, 0);
         }
@@ -75,13 +80,13 @@ public sealed class MarblingController : MonoBehaviour
 
     void UpdateForceField()
     {
-        if (_input.RightPressed)
+        if (RightPressed)
         {
             BlitToForceField(Random.insideUnitCircle * PointForce * 0.025f);
         }
-        else if (_input.LeftPressed)
+        else if (LeftPressed)
         {
-            BlitToForceField(_input.Velocity * PointForce);
+            BlitToForceField(Velocity * PointForce);
         }
         else
         {
@@ -91,7 +96,7 @@ public sealed class MarblingController : MonoBehaviour
 
     void BlitToForceField(Vector2 force)
     {
-        _material.SetVector("_Origin", _input.Position);
+        _material.SetVector("_Origin", Position);
         _material.SetFloat("_Falloff", PointFalloff);
         _material.SetVector("_Force", force);
         Graphics.Blit(null, _forceField, _material, 1);
