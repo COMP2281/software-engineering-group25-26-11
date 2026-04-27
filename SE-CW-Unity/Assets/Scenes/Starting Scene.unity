@@ -16743,15 +16743,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  role: 0
   controllerTransform: {fileID: 1367255071}
   triggerAction: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933,
     type: 3}
-  interactionDistance: 10
   canvasLayer:
     serializedVersion: 2
     m_Bits: 128
   fluidController: {fileID: 853990906}
   targetTexture: {fileID: 8400000, guid: 9f6f8ff8db5154ec3a818fdf0a35f31a, type: 2}
+  interactionDistance: 10
 --- !u!4 &1367255071 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2254594256654565939, guid: fe72fd31c72aac74fa838329f11d5d03,
@@ -18655,6 +18656,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1847181322}
+    - targetCorrespondingSourceObject: {fileID: 2254594255153119949, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1847181327}
     - targetCorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
@@ -22609,6 +22614,34 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!4 &1847181326 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2254594255153119954, guid: fe72fd31c72aac74fa838329f11d5d03,
+    type: 3}
+  m_PrefabInstance: {fileID: 1508879666}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1847181327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847181316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  role: 1
+  controllerTransform: {fileID: 1847181326}
+  triggerAction: {fileID: -4289430672226363583, guid: c348712bda248c246b8c49b3db54643f,
+    type: 3}
+  canvasLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  fluidController: {fileID: 853990906}
+  targetTexture: {fileID: 8400000, guid: 9f6f8ff8db5154ec3a818fdf0a35f31a, type: 2}
+  interactionDistance: 10
 --- !u!1 &1862222227
 GameObject:
   m_ObjectHideFlags: 0
