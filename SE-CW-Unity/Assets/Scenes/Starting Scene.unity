@@ -8364,7 +8364,7 @@ MonoBehaviour:
   pushStrength: 10
   fluidSimulation: {fileID: 0}
   fluidInteractionStrength: 50
-  surfaceTag: Surface
+  surfaceTag: Water
   moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!54 &605557385
 Rigidbody:
@@ -9472,7 +9472,7 @@ MonoBehaviour:
   pushStrength: 10
   fluidSimulation: {fileID: 865727574}
   fluidInteractionStrength: 50
-  surfaceTag: Surface
+  surfaceTag: Water
   moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!54 &761251409
 Rigidbody:
@@ -16512,6 +16512,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1367255067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1367255055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushStrength: 10
+  fluidSimulation: {fileID: 0}
+  fluidInteractionStrength: 50
+  surfaceTag: Water
+  moveSound: {fileID: 0}
 --- !u!1 &1374920845
 GameObject:
   m_ObjectHideFlags: 0
@@ -18404,6 +18421,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1847181322}
+    - targetCorrespondingSourceObject: {fileID: 2254594255153119949, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1847181327}
     - targetCorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
@@ -18412,6 +18433,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1367255061}
+    - targetCorrespondingSourceObject: {fileID: 2254594256654565938, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1367255067}
     - targetCorrespondingSourceObject: {fileID: 5648749979139498642, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
@@ -22354,6 +22379,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1847181327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847181316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushStrength: 10
+  fluidSimulation: {fileID: 0}
+  fluidInteractionStrength: 50
+  surfaceTag: Water
+  moveSound: {fileID: 0}
 --- !u!1 &1862222227
 GameObject:
   m_ObjectHideFlags: 0
