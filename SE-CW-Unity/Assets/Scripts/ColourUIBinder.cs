@@ -94,5 +94,8 @@ public class ColorUIBinder : MonoBehaviour
         }
 
         _isUpdatingUI = false;
+
+        FluidColorBridge bridge = GetComponent<FluidColorBridge>();
+        if(bridge != null) bridge.UpdateFluidColor(c);
     }   
 }

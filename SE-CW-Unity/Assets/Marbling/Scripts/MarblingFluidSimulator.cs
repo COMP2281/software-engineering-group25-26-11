@@ -51,6 +51,24 @@ public sealed class MarblingFluidSimulator : MonoBehaviour
         _simulation.PostStep();
     }
 
+    // Add this inside the MarblingFluidSimulator class
+   public void ResetSimulation()
+    {
+        // 1. Wipe the movement (Velocity field) using the built-in simulation method
+        if (_simulation != null)
+        {
+            _simulation.ClearVelocityField();
+        }
+
+        // 2. Wipe the Force Field to stop any "ghost" pushes
+        if (_forceField != null)
+        {
+            Graphics.Blit(Texture2D.blackTexture, _forceField);
+        }
+        
+        Debug.Log("Fluid Physics Reset.");
+    }
+
     #endregion
 }
 

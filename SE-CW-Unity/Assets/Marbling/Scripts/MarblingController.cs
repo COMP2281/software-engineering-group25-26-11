@@ -15,6 +15,8 @@ public sealed class MarblingController : MonoBehaviour
     public Vector2 ColorPosition { get; set; }
     public bool IsApplyingColor { get; set; }
 
+    public Color paintColor = Color.red;
+
     [SerializeField] RenderTexture _colorInjection = null;
     [SerializeField] RenderTexture _forceField = null;
     [SerializeField, HideInInspector] Shader _shader = null;
@@ -24,7 +26,9 @@ public sealed class MarblingController : MonoBehaviour
     void Start()
     {
         _material = new Material(_shader);
-        _material.SetFloat("_Aspect", (float)_forceField.width / _forceField.height);
+        if (_forceField != null)
+            _material.SetFloat("_Aspect", (float)_forceField.width / _forceField.height);
+        
         Graphics.Blit(Texture2D.blackTexture, _colorInjection);
         Graphics.Blit(Texture2D.blackTexture, _forceField);
     }
@@ -41,8 +45,7 @@ public sealed class MarblingController : MonoBehaviour
     {
         if (IsApplyingColor)
         {
-            // HARDCODED RED
-            _material.color = Color.red; 
+            _material.color = paintColor;
             _material.SetVector("_Origin", ColorPosition);
             _material.SetFloat("_Falloff", PointFalloff);
             Graphics.Blit(null, _colorInjection, _material, 0);
