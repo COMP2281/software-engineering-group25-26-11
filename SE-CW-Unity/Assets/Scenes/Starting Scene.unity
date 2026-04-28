@@ -16528,7 +16528,7 @@ MonoBehaviour:
   fluidSimulation: {fileID: 0}
   fluidInteractionStrength: 50
   surfaceTag: Water
-  moveSound: {fileID: 0}
+  moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!1 &1374920845
 GameObject:
   m_ObjectHideFlags: 0
@@ -22395,7 +22395,7 @@ MonoBehaviour:
   fluidSimulation: {fileID: 0}
   fluidInteractionStrength: 50
   surfaceTag: Water
-  moveSound: {fileID: 0}
+  moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!1 &1862222227
 GameObject:
   m_ObjectHideFlags: 0
