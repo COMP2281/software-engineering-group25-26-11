@@ -39,34 +39,40 @@ public sealed class MarblingFluidSimulator : MonoBehaviour
 
     void OnDestroy()
     {
-        _simulation.Dispose();
-        _simulation = null;
+        if (_simulation != null)
+        {
+            _simulation.Dispose();
+            _simulation = null;
+        }
     }
 
     void Update()
     {
+        if (_simulation == null) return;
+        
         _simulation.Viscosity = Viscosity;
         _simulation.PreStep();
         _simulation.ApplyForceField(_forceField);
         _simulation.PostStep();
     }
 
-    // Add this inside the MarblingFluidSimulator class
-   public void ResetSimulation()
+    // THE ULTIMATE RESET
+    public void ResetSimulation()
     {
-        // 1. Wipe the movement (Velocity field) using the built-in simulation method
+        // 1. Destroy the entire physics engine, wiping all 6 hidden memory buffers instantly
         if (_simulation != null)
         {
-            _simulation.ClearVelocityField();
+            _simulation.Dispose(); 
         }
 
-        // 2. Wipe the Force Field to stop any "ghost" pushes
-        if (_forceField != null)
-        {
-            Graphics.Blit(Texture2D.blackTexture, _forceField);
-        }
-        
-        Debug.Log("Fluid Physics Reset.");
+        // 2. Clear the external memory textures
+        if (_velocityField != null) Graphics.Blit(Texture2D.blackTexture, _velocityField);
+        if (_forceField != null) Graphics.Blit(Texture2D.blackTexture, _forceField);
+
+        // 3. Rebuild a completely fresh, 100% clean physics engine from scratch
+        _simulation = new FluidSimulation(_velocityField, _kernelShader);
+
+        Debug.Log("Fluid Physics Hard Factory Reset Complete.");
     }
 
     #endregion

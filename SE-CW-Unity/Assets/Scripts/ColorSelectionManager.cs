@@ -35,7 +35,7 @@ public class ColorSelectionManager : MonoBehaviour
     }
 
     // --- Panel Opening Logic ---
-    public void OnButton1Clicked() { OpenColorPanel(1); }
+    public void OnButton1Clicked() { OpenColorPanel(1);  }
     public void OnButton2Clicked() { OpenColorPanel(2); }
     public void OnButton3Clicked() { OpenColorPanel(3); }
     public void OnButton4Clicked() { OpenColorPanel(4); }
@@ -50,16 +50,33 @@ public class ColorSelectionManager : MonoBehaviour
     // --- Color Processing Logic ---
     public void OnColorPicked(Color color)
     {
+        // 1. Get the current transparency from the fluid controller (set by your slider)
+        float currentTransparency = 1f;
+        if (fluidController != null)
+        {
+            currentTransparency = fluidController.paintColor.a;
+        }
+
+        // 2. Apply that transparency to the new color before saving it
         pendingColor = color;
-        // Update the fluid color LIVE as you drag the slider
-        if (fluidController != null) fluidController.paintColor = pendingColor;
+        pendingColor.a = currentTransparency;
+
+        // 3. Update the fluid color LIVE as you drag the slider
+        if (fluidController != null) 
+        {
+            fluidController.paintColor = pendingColor;
+        }
     }
 
     public void OnColorConfirmed()
     {
         if (pendingButtonIndex != -1)
         {
+            // Optional: If you want the UI buttons to always be solid (so you can see them clearly),
+            // you can force the button color to have an alpha of 1 here. 
+            // Currently, it uses the transparent pendingColor.
             UpdateButtonColor(pendingButtonIndex, pendingColor);
+            
             if (fluidController != null) fluidController.paintColor = pendingColor;
         }
 
@@ -83,6 +100,9 @@ public class ColorSelectionManager : MonoBehaviour
             case 4: button = button4; break;
             case 5: button = button5; break;
         }
+        
+        // (If you want the UI buttons to always be solid, uncomment the line below)
+        // color.a = 1f;
 
         if (button != null)
         {
@@ -107,8 +127,13 @@ public class ColorSelectionManager : MonoBehaviour
 
     public void HandleColorSelection(Color color)
     {
-        // If an old script calls this, just feed the color to the fluid!
-        if (fluidController != null) fluidController.paintColor = color;
+        // Also preserve transparency for legacy scripts
+        if (fluidController != null) 
+        {
+            float currentTransparency = fluidController.paintColor.a;
+            color.a = currentTransparency;
+            fluidController.paintColor = color;
+        }
     }
 
     public Vector3 GetSpawnPositionForButton(int buttonIndex)
