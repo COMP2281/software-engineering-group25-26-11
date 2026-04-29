@@ -137,8 +137,6 @@ PlayerSettings:
   preloadedAssets:
   - {fileID: 0}
   - {fileID: 11400000, guid: a1a5d41fd2b81fe4796d802cf54aeaec, type: 2}
-  - {fileID: -3312830563885932621, guid: 05999078292a1d04abf34364739c8c35, type: 2}
-  - {fileID: 6878635226008854084, guid: 8dedb06a0a814dd4c93446941f43e1f6, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -249,7 +247,7 @@ PlayerSettings:
   clonedFromGUID: 3c72c65a16f0acb438eed22b8b16c24a
   templatePackageId: com.unity.template.urp-blank@14.0.0
   templateDefaultScene: Assets/Scenes/SampleScene.unity
-  useCustomMainManifest: 0
+  useCustomMainManifest: 1
   useCustomLauncherManifest: 0
   useCustomMainGradleTemplate: 0
   useCustomLauncherGradleManifest: 0
@@ -843,8 +841,8 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Taichi and Lacquer Paint
-  metroPackageVersion: 
+  metroPackageName: TaichiandLacquerPaint
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -852,7 +850,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: Taichi and Lacquer Paint
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: Taichi and Lacquer Paint
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
