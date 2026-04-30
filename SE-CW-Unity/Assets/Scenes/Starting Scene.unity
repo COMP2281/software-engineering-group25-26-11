@@ -8328,9 +8328,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fluidController: {fileID: 853990906}
+  canvasRenderer: {fileID: 944607779}
   pushStrength: 10
-  fluidSimulation: {fileID: 0}
-  fluidInteractionStrength: 50
   surfaceTag: Surface
   moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!54 &605557385
@@ -8381,6 +8381,28 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &605557392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 605557378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  role: 0
+  controllerTransform: {fileID: 803573490}
+  triggerAction: {fileID: -4289430672226363583, guid: c348712bda248c246b8c49b3db54643f,
+    type: 3}
+  canvasLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  fluidController: {fileID: 853990906}
+  targetTexture: {fileID: 8600000, guid: 84c1663b5ecf149c0bbe31adb8a81842, type: 2}
+  interactionDistance: 10
 --- !u!1 &606852925
 GameObject:
   m_ObjectHideFlags: 0
@@ -9575,9 +9597,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23652b920d3d1b8498478ca79338f057, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fluidController: {fileID: 853990906}
+  canvasRenderer: {fileID: 944607779}
   pushStrength: 10
-  fluidSimulation: {fileID: 0}
-  fluidInteractionStrength: 50
   surfaceTag: Surface
   moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
 --- !u!54 &761251409
@@ -10226,6 +10248,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 794443913}
   m_CullTransparentMesh: 1
+--- !u!4 &803573490 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4615113200282692249, guid: fe72fd31c72aac74fa838329f11d5d03,
+    type: 3}
+  m_PrefabInstance: {fileID: 1508879666}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &813713356
 GameObject:
   m_ObjectHideFlags: 0
@@ -18525,6 +18553,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 605557385}
+    - targetCorrespondingSourceObject: {fileID: 5648749979139498642, guid: fe72fd31c72aac74fa838329f11d5d03,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 605557392}
     - targetCorrespondingSourceObject: {fileID: 1056747117681101407, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1

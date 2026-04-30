@@ -1,141 +1,75 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR;
-using Seb.Fluid2D.Simulation;
+using StableFluids.Marbling; 
 
 public class HandWaterDetection : MonoBehaviour
 {
-    public float pushStrength = 10f;
-    public FluidSim2D fluidSimulation;
-    public float fluidInteractionStrength = 50f;
-    public string surfaceTag = "Surface";
-    public AudioClip moveSound;
-    private AudioSource moveSource;
-    private HandPresence handPresence;
+    [Header("Fluid Integration")]
+    [Tooltip("Drag your MarblingController here")]
+    public MarblingController fluidController; 
+    
+    [Tooltip("Drag the physical Water Canvas here")]
+    public Renderer canvasRenderer;
+
+    [Header("Settings")]
+    [Tooltip("How hard the hand pushes the fluid")]
+    public float pushStrength = 5f;
+    
+    [Tooltip("Make sure your canvas has this exact tag!")]
+    public string targetTag = "Water";
+
     private Vector3 previousPosition;
     private Vector3 smoothVelocity;
-    private float currentHandSpeed;
-    private bool isInsideWater = false;
+    private float _targetAspectRatio = 1f;
 
     void Start()
     {
         previousPosition = transform.position;
-        handPresence = GetComponentInParent<HandPresence>();
-        moveSource = GetComponent<AudioSource>();
-        if (moveSource == null)
+        
+        // Calculate aspect ratio so the fluid brush stays circular
+        if (canvasRenderer != null)
         {
-            moveSource = gameObject.AddComponent<AudioSource>();
+            _targetAspectRatio = canvasRenderer.bounds.size.x / canvasRenderer.bounds.size.y;
         }
-        moveSource.spatialBlend = 1.0f;
-        moveSource.clip = moveSound;
-        moveSource.loop = true;
-        moveSource.volume = 0; // Start silent
-        moveSource.playOnAwake = false;
-
-        // Start the loop immediately (at volume 0) so it's ready to fade in
-        if (moveSound != null) moveSource.Play();
     }
 
     void Update()
     {
+        // Calculate hand velocity smoothly every frame
         Vector3 rawVelocity = (transform.position - previousPosition) / Time.deltaTime;
-        smoothVelocity = Vector3.Lerp(smoothVelocity, rawVelocity, Time.deltaTime * 20);
-        currentHandSpeed = smoothVelocity.magnitude;
-
+        smoothVelocity = Vector3.Lerp(smoothVelocity, rawVelocity, Time.deltaTime * 15f);
         previousPosition = transform.position;
-
-        if (!isInsideWater)
-        {
-            moveSource.volume = Mathf.Lerp(moveSource.volume, 0, Time.deltaTime * 5);
-        }
     }
-
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag(surfaceTag))
-        {
-            isInsideWater = true;
-
-            if (InactivityWarning.Instance != null)
-            {
-                InactivityWarning.Instance.RegisterActivity();
-            }
-
-            RippleEffect.Instance.RippleAtPoint(transform.position);
-            TriggerHapticPulse(0.8f, 0.15f);
-        }
-    }
-
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag(surfaceTag))
+        // Only run if we hit the canvas and our slots are filled
+        if (other.CompareTag(targetTag) && fluidController != null && canvasRenderer != null)
         {
-            isInsideWater = true;
-            Rigidbody rb = other.attachedRigidbody;
+            // 1. Calculate where the hand is relative to the canvas bounds
+            Bounds b = canvasRenderer.bounds;
+            float u = Mathf.Clamp01(1f - (transform.position.x - b.min.x) / b.size.x);
+            float v = Mathf.Clamp01(1f - (transform.position.y - b.min.y) / b.size.y);
 
-            RippleEffect.Instance.RippleAtPoint(transform.position);
+            // 2. Center it (-0.5 to 0.5) and apply aspect ratio
+            Vector2 normalizedPos = new Vector2((u - 0.5f) * _targetAspectRatio, v - 0.5f);
+            
+            // 3. Convert 3D hand speed to 2D push velocity
+            // (Note: If the water pushes the opposite way your hand moves, remove the minus signs below!)
+            Vector2 canvasVelocity = new Vector2(-smoothVelocity.x, -smoothVelocity.y) * pushStrength;
 
-            // Apply fluid simulation interaction
-            if (fluidSimulation != null)
-            {
-                Vector2 simPoint = fluidSimulation.WorldToSimLocal(transform.position);
-                fluidSimulation.hasExternalInteraction = true;
-                fluidSimulation.externalInteractionPoint = simPoint;
-                fluidSimulation.externalInteractionStrength = -fluidInteractionStrength; // Negative = repel
-            }
-
-            if (rb != null && currentHandSpeed > 0.1f)
-            {
-                rb.AddForce(smoothVelocity.normalized * pushStrength * currentHandSpeed, ForceMode.Impulse);
-            }
-
-            ProcessContinuousFeedback();
+            // 4. Fire the force into the Marbling Controller
+            fluidController.IsApplyingForce = true;
+            fluidController.ForcePosition = normalizedPos;
+            fluidController.ForceVelocity = canvasVelocity;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag(surfaceTag))
+        // Turn off the force immediately when the hand leaves the water
+        if (other.CompareTag(targetTag) && fluidController != null)
         {
-            isInsideWater = false;
-
-            // Clear fluid simulation interaction
-            if (fluidSimulation != null)
-            {
-                fluidSimulation.hasExternalInteraction = false;
-                fluidSimulation.externalInteractionStrength = 0f;
-            }
-        }
-    }
-
-    private void ProcessContinuousFeedback()
-    {
-        float intensity = Mathf.Clamp01(currentHandSpeed / 0.2f);
-        float targetVolume = intensity > 0.05f ? Mathf.Lerp(0.1f, 1.0f, intensity * 2) : 0f;
-
-        moveSource.volume = Mathf.Lerp(moveSource.volume, targetVolume, Time.deltaTime * 10);
-        moveSource.pitch = Mathf.Lerp(0.8f, 1.2f, intensity);
-
-        if (intensity > 0.05f)
-        {
-            TriggerHapticPulse(intensity * 0.4f, Time.deltaTime + 0.02f);
-        }
-    }
-
-    private void TriggerHapticPulse(float amplitude, float duration)
-    {
-        if (handPresence == null) return;
-
-        List<InputDevice> devices = new List<InputDevice>();
-        InputDevices.GetDevicesWithCharacteristics(handPresence.controllerCharacteristics, devices);
-
-        if (devices.Count > 0)
-        {
-            InputDevice device = devices[0];
-            device.SendHapticImpulse(0, amplitude, duration);
+            fluidController.IsApplyingForce = false;
         }
     }
 }
