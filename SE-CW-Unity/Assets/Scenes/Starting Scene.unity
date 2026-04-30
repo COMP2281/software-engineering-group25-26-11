@@ -8331,8 +8331,7 @@ MonoBehaviour:
   fluidController: {fileID: 853990906}
   canvasRenderer: {fileID: 944607779}
   pushStrength: 10
-  surfaceTag: Surface
-  moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
+  targetTag: Water
 --- !u!54 &605557385
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9600,8 +9599,7 @@ MonoBehaviour:
   fluidController: {fileID: 853990906}
   canvasRenderer: {fileID: 944607779}
   pushStrength: 10
-  surfaceTag: Surface
-  moveSound: {fileID: 8300000, guid: 4ff5eda826b7d174495b559164a81ab8, type: 3}
+  targetTag: Water
 --- !u!54 &761251409
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -12495,7 +12493,7 @@ GameObject:
   - component: {fileID: 944607778}
   m_Layer: 7
   m_Name: FluidCanvas
-  m_TagString: Untagged
+  m_TagString: Water
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
