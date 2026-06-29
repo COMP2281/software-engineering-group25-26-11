@@ -3257,12 +3257,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
---- !u!4 &210336256 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 365080274251686782, guid: fe72fd31c72aac74fa838329f11d5d03,
-    type: 3}
-  m_PrefabInstance: {fileID: 1508879666}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &214795607
 GameObject:
   m_ObjectHideFlags: 0
@@ -8386,7 +8380,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &605557398
+--- !u!114 &605557392
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8398,15 +8392,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  role: 1
-  controllerTransform: {fileID: 981440292}
-  triggerAction: {fileID: -6131295136447488360, guid: c348712bda248c246b8c49b3db54643f,
+  forceMultiplier: 5
+  triggerThreshold: 0.1
+  role: 0
+  controllerTransform: {fileID: 803573490}
+  triggerAction: {fileID: -4289430672226363583, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
   canvasLayer:
     serializedVersion: 2
     m_Bits: 128
   fluidController: {fileID: 853990906}
-  targetTexture: {fileID: 8400000, guid: 9f6f8ff8db5154ec3a818fdf0a35f31a, type: 2}
+  targetTexture: {fileID: 8600000, guid: 84c1663b5ecf149c0bbe31adb8a81842, type: 2}
   interactionDistance: 10
 --- !u!1 &606852925
 GameObject:
@@ -9633,28 +9629,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &761251415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 761251401}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  role: 0
-  controllerTransform: {fileID: 210336256}
-  triggerAction: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f,
-    type: 3}
-  canvasLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  fluidController: {fileID: 853990906}
-  targetTexture: {fileID: 8400000, guid: 9f6f8ff8db5154ec3a818fdf0a35f31a, type: 2}
-  interactionDistance: 10
 --- !u!1 &763625947
 GameObject:
   m_ObjectHideFlags: 0
@@ -10274,6 +10248,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 794443913}
   m_CullTransparentMesh: 1
+--- !u!4 &803573490 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4615113200282692249, guid: fe72fd31c72aac74fa838329f11d5d03,
+    type: 3}
+  m_PrefabInstance: {fileID: 1508879666}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &813713356
 GameObject:
   m_ObjectHideFlags: 0
@@ -13119,12 +13099,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 965412287}
   m_CullTransparentMesh: 1
---- !u!4 &981440292 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8751093205558738841, guid: fe72fd31c72aac74fa838329f11d5d03,
-    type: 3}
-  m_PrefabInstance: {fileID: 1508879666}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &992067526
 GameObject:
   m_ObjectHideFlags: 0
@@ -16322,6 +16296,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  forceMultiplier: 5
+  triggerThreshold: 0.1
   role: 0
   controllerTransform: {fileID: 1367255071}
   triggerAction: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f,
@@ -18445,16 +18421,6 @@ PrefabInstance:
       propertyPath: m_Radius
       value: 0.1
       objectReference: {fileID: 0}
-    - target: {fileID: 4342004817079775122, guid: fe72fd31c72aac74fa838329f11d5d03,
-        type: 3}
-      propertyPath: m_SelectAction.m_UseReference
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4342004817079775122, guid: fe72fd31c72aac74fa838329f11d5d03,
-        type: 3}
-      propertyPath: m_ActivateAction.m_UseReference
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4366978966198588264, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       propertyPath: m_AngularDrag
@@ -18541,13 +18507,8 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 2322022496547364497, guid: fe72fd31c72aac74fa838329f11d5d03, type: 3}
+    - {fileID: 3727027200356378293, guid: fe72fd31c72aac74fa838329f11d5d03, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 2254594256631791249, guid: fe72fd31c72aac74fa838329f11d5d03,
@@ -18622,7 +18583,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5648749979139498642, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 605557398}
+      addedObject: {fileID: 605557392}
     - targetCorrespondingSourceObject: {fileID: 1056747117681101407, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
@@ -18635,10 +18596,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 761251407}
-    - targetCorrespondingSourceObject: {fileID: 1056747117681101407, guid: fe72fd31c72aac74fa838329f11d5d03,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 761251415}
     - targetCorrespondingSourceObject: {fileID: 1912150408922505390, guid: fe72fd31c72aac74fa838329f11d5d03,
         type: 3}
       insertIndex: -1
@@ -23013,6 +22970,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5577142ab8a443b45a1506073cde2398, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  forceMultiplier: 5
+  triggerThreshold: 0.1
   role: 1
   controllerTransform: {fileID: 1847181326}
   triggerAction: {fileID: -4289430672226363583, guid: c348712bda248c246b8c49b3db54643f,
